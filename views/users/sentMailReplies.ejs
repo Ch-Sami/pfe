@@ -1,0 +1,55 @@
+<%- include('../partials/profilHeader')%>
+<div class="ui red two item menu" style="border-top: none; border-right: none; border-left: none;">
+    <a class="item" href="/users/<%= user._id%>/mails/sent/<%= mailId%>/content">
+      <span class="sentReceivedSpan"><i class="fas fa-envelope-open-text"></i></span>
+    </a>
+    <a class="active item" href="/users/<%= user._id%>/mails/sent/<%= mailId%>/replies">
+      <span class="sentReceivedSpan"><i class="fas fa-reply"></i></span>
+    </a>
+</div>
+
+
+
+<div id="sentMailRepliesContainer">
+    <div id="sentMailRepliesList" class="container scrollDiv mt-4 p-4">
+      <%replies.forEach(function(reply){%>
+        <div onclick='location.href="/users/<%= user._id%>/mails/received/<%= reply._id%>"' class="hoverableDiv row d-flex py-2 px-5 m-2">
+          <div class="column col-6 d-flex align-items-center px-0">
+            <span class="bitraf mr-2" style="font-size: 1.8em;">
+              <%if(reply.read == false){%>
+                <i class="fas fa-envelope"></i>
+              <%}else{%>
+                <i class="fas fa-envelope-open"></i>
+              <%}%>
+            </span>
+            <span class="bitraf pt-0 ml-2" style="font-size: 1.2em; line-height: 5px;">
+              <span class="bitraf pt-0 mb-4">
+              Title :
+              <%if(reply.title == ''){%>
+                None
+              <%}else{%>
+                <%= reply.title%>
+              <%}%>
+            </span>
+          </div>
+          <div class="column col-6 px-0">
+            <div class="fromAndAt float-right">
+              <span>At : <span class="bitraf"><%= reply.received_at%></span></span>
+            </div>
+            
+            <div class="fromAndAt float-right"> 
+              <div class="d-flex">
+                <div class="mr-1">From :</div> 
+                <div>
+                  <img class="ui avatar image" src="<%= reply.senderImage%>">
+                  <span class="bitraf"><%= reply.sent_by%></span>
+                </div>
+              </div>
+                
+            </div>
+          </div>
+        </div>
+      <%});%>
+    </div>
+  </div>
+<%- include('../partials/mailsFooter')%>

@@ -1,0 +1,185 @@
+<%- include('../partials/profilHeader')%>
+<div class="ui red two item menu" style="border-top: none; border-right: none; border-left: none;">
+    <a class="active item" href="/users/<%= user._id%>/mails/sent/<%= mail._id%>/content">
+      <span class="sentReceivedSpan"><i class="fas fa-envelope-open-text"></i></span>
+    </a>
+    <a class="item" href="/users/<%= user._id%>/mails/sent/<%= mail._id%>/replies">
+      <span class="sentReceivedSpan"><i class="fas fa-reply"></i></span>
+    </a>
+</div>
+<div class="container py-4">
+    <form id="reSentMailFrm" class="ui form" action="/users/<%= user._id%>/mails/sent/<%= mail._id%>/reSent" method="post">
+        <div class="field mx-4 mt-4">
+            <label><span class="inputsTitles">Title</span>
+              <input type="text" name="title" value="<%= mail.title%>" disabled>
+            </label>
+        </div>
+       
+        <div class="two fields mx-3 mb-4">
+            <div class="field mr-3">
+                <label><span class="inputsTitles">Created at</span>
+                    <input type="text" value="<%= mail.created_at%>" disabled>
+                </label>
+            </div>
+            <div class="field ml-3">
+
+                <label for="typeSelector"><span class="inputsTitles">Sent to</span></label>
+                <div class="ui simple top right pointing dropdown item inputStyleClone">
+                    <%if(mail.sending_history.length == 1){%>
+                        <div class="text" style="width: 100%;">
+                            <img class="ui avatar image" src="<%= mail.sending_history[0].sent_to.imageUrl%>">
+                            <span class="bitraf"><%= mail.sending_history[0].sent_to.username%></span>
+                            <p class="float-right">
+                                read:
+                                <%if(mail.sending_history[0].read == true){%>
+                                    <span style="color: #09ed1c;">done</span>
+                                <%}else{%>
+                                    <span style="color: #ff6363;">not yet</span>
+                                <%}%>
+                            </p>
+                        </div>
+                    <%}else{%>
+                        <div class="text" style="width: 100%;">
+                            <img class="ui avatar image" src="<%= mail.sending_history[0].sent_to.imageUrl%>">
+                            <span class="bitraf"><%= mail.sending_history[0].sent_to.username%></span>
+                            <span class="float-right">
+                                and <%= mail.sending_history.length-1%> others <i class="dropdown icon"></i>
+                            </span>
+                        </div>
+                        <div class="menu" style="width: 100%;">
+                            <% mail.sending_history.forEach(function(elt){%>
+                                <div class="item">
+                                      <%if(elt.sending_type == 'send'){%>
+                                        <span style="white-space:pre;">sent to :  </span>
+                                      <%}else{%>
+                                        <span style="white-space:pre;">  CC       :  </span>
+                                      <%}%>
+                                      <img class="ui avatar image mr-0 pr-0" src="<%= elt.sent_to.imageUrl%>">
+                                      <span class="bitraf ml-0 pl-0 mr-5"><%= elt.sent_to.username%></span>
+                                      <% if(elt.read == false){%>
+                                        <!-- <span class="bitraf">not yet</span> -->
+                                        <span class="float-right bitraf">not yet</span>
+                                      <%}else{%>
+                                        <!-- <span class="bitraf">done</span> -->
+                                        <span class="float-right" style="color: #09ed1c; white-space:pre;">done   </span>
+                                      <%}%>
+                                      <span class="float-right">read :</span>
+                                      <span class="bitraf float-right mr-5"> <%= elt.sent_at%></span>
+                                      <span class="float-right">at :</span>
+                                </div>
+                            <%});%>
+                        </div>
+                    <%}%>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="field my-1 d-none">
+            <textarea id="showMailText" name="text"><%= mail.text%></textarea>
+        </div>
+        <div class="mx-4">
+            <label for="editorHugeContainer"><span class="inputsTitles">Text</span></label>
+            <div id="editorHugeContainer" class="ce-example">
+                <div class="ce-example__content _ce-example__content--small">
+                    <div id="showMailEditorjs" class="editorjs"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container my-4 p-3 py-5">
+            <div class="row">
+
+
+                <div class="column col-6 pl-0 text-center">
+                    <!-- users list -->
+                    <textarea name="" id="itemsTextArea" cols="30" rows="10" class="d-none">
+                        <%= usersList%>
+                    </textarea>
+                    <!-- search -->
+                    <div class="text-center">
+                        <span class="inputsTitles pb-0 d-inline">Send To</span>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <section id="search" style="width: 100%;">
+                            <div class="form-group form-inline">
+                              <input type="text" class="form-control wide" id="searchTextbox" placeholder="Search">
+                            </div>
+                        </section>
+                    </div>
+                    <!-- results -->
+                    <textarea id="resultTextArea" class="nohighlight m-0 p-0 d-none"></textarea>
+                    <div class="form-group form-inline d-none">
+                        <label for="thresholdRange">Threshold</label>
+                        <input type="number" id="thresholdRange" min="0" step="0.1" max="1" value="0.6">
+                        <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
+                      </div>
+                    <!-- multiselect -->
+                    <div class="d-flex">
+                        <div id="sendToList" class=" ui multiple selection dropdown" style="width: 90%;">
+                            <input name="sentTo" type="hidden">
+                            <i class="dropdown icon"></i>
+                            <div class="default text mr-2">Send To</div>
+                            <div id="usersList" class="menu d-block"></div>
+                        </div>
+                        <div id="clearSendToBtn" class=" ui button">Clear</div>
+                    </div>
+                </div>
+
+
+
+
+                <div class="column col-6 pr-0 text-center">
+                    <!-- users list -->
+                    <textarea name="" id="itemsTextArea1" cols="30" rows="10" class="d-none">
+                        <%= usersList%>
+                    </textarea>
+                    <!-- search -->
+                    <div class="text-center">
+                        <span class="inputsTitles pb-0 d-inline">CCs</span>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <section id="search2" style="width: 100%;">
+                            <div class="form-group form-inline">
+                              <input type="text" class="form-control wide" id="searchTextbox1" placeholder="Search">
+                            </div>
+                        </section>
+                    </div>
+                    <!-- results -->
+                    <textarea id="resultTextArea1" class="nohighlight m-0 p-0 d-none"></textarea>
+                    <div class="form-group form-inline d-none">
+                        <label for="thresholdRange">Threshold</label>
+                        <input type="number" id="thresholdRange" min="0" step="0.1" max="1" value="0.6">
+                        <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
+                    </div>
+                    <!-- multiselect -->
+                    <div class="d-flex">
+                        <div id="ccList" class="ui multiple selection dropdown" style="width: 90%;">
+                            <input name="CCs" type="hidden">
+                            <i class="dropdown icon"></i>
+                            <div class="default text mr-2">CCs</div>
+                            <div id="ccMenu" class="menu d-block"></div>
+                        </div>
+                        <div id="clearCcBtn" class="ui button">Clear</div>
+                    </div>
+                    
+                </div>
+
+            </div>
+        </div>
+
+        
+
+        <div class="my-2">
+            <button id="sendMail" class="standardBtnStyle">Send</button>
+            <input
+                    action="action"
+                    onclick="window.history.go(-1); return false;"
+                    type="submit"
+                    value="Go Back"
+                    class="goBackBtn float-right py-3 px-5"
+                />
+        </div>
+    </form>
+</div>
+<%- include('../partials/mailsFooter')%>

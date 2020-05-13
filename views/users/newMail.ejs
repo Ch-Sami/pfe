@@ -1,0 +1,135 @@
+<%- include('../partials/profilHeader')%>
+<div class="container py-4">
+    <form id="newMailFrm" class="ui form" action="/users/<%= user._id%>/mails/sent" method="post">
+ 
+        <div class="field mx-4 mt-4">
+            <label><span class="inputsTitles">Title</span>
+              <input type="text" name="title" placeholder="Mail title">
+            </label>
+        </div>
+
+        <div class="field my-1 d-none">
+            <textarea id="mailText" name="text"></textarea>
+        </div>
+        <div class="mx-4">
+            <label for="editorHugeContainer"><span class="inputsTitles">Text</span></label>
+            <div id="editorHugeContainer" class="ce-example">
+                <div class="ce-example__content _ce-example__content--small">
+                    <div id="newMailEditorjs" class="editorjs"></div>
+                </div>
+            </div>
+        </div>
+
+
+        
+
+        <div class="container my-4 p-3 py-5">
+            <div class="row">
+
+                <div class="column col-6 pl-0 text-center">
+                    <!-- users list -->
+                    <textarea name="" id="itemsTextArea" cols="30" rows="10" class="d-none">
+                        <%= usersList%>
+                    </textarea>
+                    <!-- search -->
+                    <div class="text-center">
+                        <span class="inputsTitles pb-0 d-inline">Send To</span>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <section id="search" style="width: 100%;">
+                            <div class="form-group form-inline">
+                              <input type="text" class="form-control wide" id="searchTextbox" placeholder="Search">
+                            </div>
+                        </section>
+                    </div>
+                    <!-- results -->
+                    <textarea id="resultTextArea" class="nohighlight m-0 p-0 d-none"></textarea>
+                    <div class="form-group form-inline d-none">
+                        <label for="thresholdRange">Threshold</label>
+                        <input type="number" id="thresholdRange" min="0" step="0.1" max="1" value="0.6">
+                        <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
+                      </div>
+                    <!-- multiselect -->
+                    <div class="d-flex">
+                        <div id="sendToList" class=" ui multiple selection dropdown" style="width: 90%;">
+                            <% if(sendTo !== undefined){%>
+                                <input name="sentTo" type="hidden" value="<%= sendTo._id%>">
+                            <%}else{%>
+                                <input name="sentTo" type="hidden">
+                            <%}%>
+                            <i class="dropdown icon"></i>
+                            <div class="default text mr-2">Send To</div>
+                            <div id="usersList" class="menu d-block">
+                                <% if(sendTo !== undefined){%>
+                                    <div class="item" data-value="<%= sendTo._id%>">
+                                        <img class="ui avatar image" src="<%= sendTo.imageUrl%>">
+                                        <span class="bitraf mt-2"><%= sendTo.username%></span>
+                                    </div>
+                                <%}%>
+                            </div>
+                        </div>
+                        <div id="clearSendToBtn" class=" ui button">Clear</div>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+                <div class="column col-6 pr-0 text-center">
+                    <!-- users list -->
+                    <textarea name="" id="itemsTextArea1" cols="30" rows="10" class="d-none">
+                        <%= usersList%>
+                    </textarea>
+                    <!-- search -->
+                    <div class="text-center">
+                        <span class="inputsTitles pb-0 d-inline">CCs</span>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <section id="search2" style="width: 100%;">
+                            <div class="form-group form-inline">
+                              <input type="text" class="form-control wide" id="searchTextbox1" placeholder="Search">
+                            </div>
+                        </section>
+                    </div>
+                    <!-- results -->
+                    <textarea id="resultTextArea1" class="nohighlight m-0 p-0 d-none"></textarea>
+                    <div class="form-group form-inline d-none">
+                        <label for="thresholdRange">Threshold</label>
+                        <input type="number" id="thresholdRange" min="0" step="0.1" max="1" value="0.6">
+                        <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
+                    </div>
+                    <!-- multiselect -->
+                    <div class="d-flex">
+                        <div id="ccList" class="ui multiple selection dropdown" style="width: 90%;">
+                            <input id="CCs" name="CCs" type="hidden">
+                            <i class="dropdown icon"></i>
+                            <div class="default text mr-2">CCs</div>
+                            <div id="ccMenu" class="menu d-block"></div>
+                        </div>
+                        <div id="clearCcBtn" class="ui button">Clear</div>
+                    </div>
+                    
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <div class="my-2">
+            <button id="sendExisingMail" class="standardBtnStyle">Send</button>
+            <input
+                    action="action"
+                    onclick="window.history.go(-1); return false;"
+                    type="submit"
+                    value="Cancel"
+                    class="goBackBtn float-right py-3 px-5"
+                />
+        </div>
+    </form>
+</div>
+<%- include('../partials/mailsFooter')%>

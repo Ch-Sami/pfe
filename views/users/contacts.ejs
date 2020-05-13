@@ -1,0 +1,78 @@
+<%- include('../partials/profilHeader')%>
+    <div id="contacts" class="container">
+        <!-- some needed data -->
+        <p id="userId" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= user._id%></p>
+        <p id="contactsForSearchData" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= contactsForSearch%></p>
+        <p id="usersListData" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= usersList%></p>
+        <!-- users list -->
+        <textarea name="" id="itemsTextArea" cols="100" rows="10" class="d-none">
+            <%= contactsForSearch%>
+        </textarea>
+        <!-- search -->
+        <div id="search" class="ui search text-center mt-5">
+            <div class="ui icon input form-group form-inline">
+              <input id="searchTextbox" class="prompt" type="text" placeholder="Search contacts...">
+              <i class="search icon"></i>
+            </div>
+            <!-- options -->
+            <div id="withinContacts" class="ui checkbox mx-5">
+                <input type="checkbox">
+                <label>Only within my contacts</label>
+            </div>
+            <div id="outsideContacts" class="ui checkbox mx-3">
+                <input type="checkbox">
+                <label>Only outside my contacts</label>
+            </div>
+        </div>
+        <!-- results -->
+        <textarea id="resultTextArea" cols="100" rows="5" class="nohighlight m-0 p-0 d-none"></textarea>
+        <div class="form-group form-inline d-none">
+            <label for="thresholdRange">Threshold</label>
+            <input type="number" id="thresholdRange" min="0" step="0.1" max="1" value="0.6">
+            <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
+        </div>
+    </div>
+    <!------------------------------------------------------------------>
+    <!-- Contacts List -->
+    <div id="contactsList" class="container scrollDiv p-4">
+        <% contacts.forEach(function(chrArray){%>
+            <%if(chrArray.length > 0){%>
+                <div class="CharacterHeader"><span class="text-uppercase"><%= chrArray[0].username[0]%></span></div>
+                <% chrArray.forEach(function(contact){%>
+                    <div class="normalDiv row py-2 px-5 m-2">
+                        <div class="column col-9">
+                            <img class="ui avatar image" src="<%= contact.imageUrl%>">
+                            <p class="mt-1 ml-5"><span class="inputsTitles"><%= contact.username%></span></p>
+                        </div>
+                        <div class="column col-3 d-flex justify-content-around text-align-center">
+                            <form action="/users/<%= user._id%>/mails/sent/new" method="get">
+                                <input type="text" value="<%= contact._id%>" class="d-none" name="sendTo">
+                                <button  class="contactsIcons" data-inverted="" data-tooltip="Send mail" data-position="top center"><i class="fas fa-envelope mt-1"></i></button>
+                                <!-- <i class="far fa-envelope mt-1"></i> -->
+                            </form>
+                            <a href="/users/<%= user._id%>/contacts/<%= contact._id%>/chat" class="contactsIcons" data-inverted="" data-tooltip="Chat" data-position="top center"><i class="fas fa-comments"></i></a>
+                            <form action="/users/<%= user._id%>/events/new" method="get">
+                                <input type="text" value="<%= contact._id%>" class="d-none" name="addTo">
+                                <button  class="contactsIcons" data-inverted="" data-tooltip="Plan an event" data-position="top center"><i class="fas fa-calendar-alt"></i></button>
+                                <!-- <i class="far fa-calendar-alt"></i> -->
+                            </form>
+                            <a href="/users/<%= contact._id%>/profil" class="contactsIcons" data-inverted="" data-tooltip="Visit profil" data-position="top center"><i class="fas fa-address-card mt-1"></i></a>
+                            <!-- <i class="far fa-address-card mt-1"></i> -->
+                            <form action="/users/<%= user._id%>/contacts/<%= contact._id %>?_method=DELETE" method="post">
+                                <button  class="contactsIcons" data-inverted="" data-tooltip="Delete contact" data-position="top center"><i class="fas fa-times" ></i></button>
+                            </form>
+                        </div>
+                    </div>
+                <%});%>
+                <br>
+            <%}%>
+        <%});%>
+    </div>
+    <!------------------------------------------------------------------>
+    <!--Search results within contacts-->
+    <div id="resultsWithinContacts" class="container scrollDiv px-4 py-5 d-none"></div>
+    <!------------------------------------------------------------------>
+    <!--Search results outside contacts-->
+    <div id="resultsOutsideContacts" class="container scrollDiv px-4 py-5 d-none"></div>
+    <!------------------------------------------------------------------>
+<%- include('../partials/contactsFooter')%>

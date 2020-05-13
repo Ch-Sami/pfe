@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Unit</title>
+    <link rel="stylesheet" href="/stylesheets/lib/bootstrap.css">
+    <link rel="stylesheet" href="/stylesheets/lib/semantic.min.css">
+    <link rel="stylesheet" href="/stylesheets/forms.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row d-flex justify-content-center align-items-center">
+            <dev class="column col-md-8">
+                <h1 class="ui header">Creating new unit</h1>
+                <form id="register-form" class="ui form" action="/units" method="post">
+                    <div class="field">
+                      <label>Unit type</label>
+                      <input type="text" name="unit[type]" placeholder="First Name">
+                    </div>
+                    <div class="field">
+                      <label>Unit name</label>
+                      <input type="text" name="unit[value]" placeholder="Last Name">
+                    </div>
+                    <div class="field">
+                      <label>Unit description</label>
+                      <textarea name="unit[desc]"></textarea>
+                    </div>
+                    <button class="btn btn-outline-success" type="submit">Create Unit</button>
+                  </form>
+            </dev>
+        </div>
+    </div>
+</body>
+</html>

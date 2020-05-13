@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8' />
+        <script src="https://kit.fontawesome.com/495f0538c0.js" crossorigin="anonymous"></script>
+
+
+        <link rel="stylesheet" href="/stylesheets/lib/bootstrap.css">
+        <link rel="stylesheet" href="/stylesheets/lib/semantic.min.css">
+        <link href='/stylesheets/core_main.css' rel='stylesheet' />
+        <link href='/stylesheets/daygrid_main.css' rel='stylesheet' />
+        <link href='/stylesheets/timegrid_main.css' rel='stylesheet' />
+        <link href='/stylesheets/list_main.css' rel='stylesheet' />
+        <link rel="stylesheet" type="text/css" href="/stylesheets/colorpicker.css" />
+        <link rel="stylesheet" href="/stylesheets/style1.css">
+        <link href="/stylesheets/event.css" rel="stylesheet">
+        <script src="/scripts/json-preview.js"></script>
+       
+        <link href='/stylesheets/profil.css' rel='stylesheet' />
+        
+
+        
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+    </head>
+<body>
+    
+
+    <nav id="mainNavbar" class="navbar navbar-dark navbar-expand-sm py-0">
+        <div class="container">
+            <a id="navBrand" href="" class="navbar-brand">Brand</a>
+            <button class="navbar-toggler" data-toggle="collapse" data-target="#navLinks">
+            <span><i class="fas fa-angle-double-down"></i></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <div class="dropdown my-0 py-0">
+                        <button class="dropbtn my-1 ml-3">Departments</button>
+                        <div class="dropdown-content">
+                            <a class="dropdown-item" href="/orgchart">All Departments</a>
+                            <% units.forEach(function(unit){ %>
+                              <a class="dropdown-item" href="/orgchart/<%= unit.value%>"><%= unit.value%></a>
+                            <% }) %>
+                        </div>
+                      </div>
+                 </ul>
+                 <ul class="navbar-nav navbar-right">
+                       <li class="nav-item mr-3">
+                        <a class="nav-link" href="#"><i class="fa fa-user" aria-hidden="true"></i> Profil</a>
+                       </li>
+                       <li class="nav-item">
+                        <a class="nav-link" href="#">Logout</a>
+                       </li>
+                 </ul>
+              </div>
+        </div>
+    </nav>
+    <div class="container my-5">
+        <div class="ui grid">
+
+            <!-- MENU -->
+            <div class="three wide column p-0">
+              <div id="menu" class="ui vertical fluid tabular menu">
+                <a id="showProfil" class="item menuItem" href="/users/<%= user._id%>/profil">
+                    Profil
+                </a>
+                <a id="showContacts" class="item menuItem" href="/users/<%= user._id%>/contacts">
+                    Contacts
+                </a>
+                <a id="showCalendar" class="item menuItem" href="/users/<%= user._id%>/events">
+                    Calendar
+                </a>
+                <a id="showProjects" class="item menuItem" href="/users/<%= user._id%>/projects/assigned">
+                    Projects
+                </a>
+                <a id="showMails" class="item menuItem" href="/users/<%= user._id%>/mails/received">
+                    Mails
+                </a>
+                <a id="showRequests" class="item menuItem" href="/users/<%= user._id%>/requests">
+                    Requests
+                </a>
+              </div>
+            </div>
+            
+            <!-- CONTENTS -->
+            <div id="thirteen" class="thirteen wide stretched column p-0" >
+                <div id="contentContainer" class="ui segment m-0">

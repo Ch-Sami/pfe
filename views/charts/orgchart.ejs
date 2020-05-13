@@ -1,0 +1,79 @@
+<%- include('../partials/orgchartheader.ejs')%>
+
+<body translate="no" >
+    <p id="gg" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= dataa%></p>
+    
+    <nav id="mainNavbar" class="navbar navbar-dark navbar-expand-sm py-0">
+        <div class="container">
+            <a id="navBrand" href="" class="navbar-brand">Brand</a>
+            <button class="navbar-toggler" data-toggle="collapse" data-target="#navLinks">
+            <span><i class="fas fa-angle-double-down"></i></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <div class="dropdown my-0 py-0">
+                        <button class="dropbtn ml-3 my-0 py-0">Departments</button>
+                        <div class="dropdown-content">
+                            <a class="dropdown-item" href="/orgchart">All Departments</a>
+                            <% units.forEach(function(unit){ %>
+                              <a class="dropdown-item" href="/orgchart/<%= unit.value%>"><%= unit.value%></a>
+                            <% }) %>
+                        </div>
+                      </div>
+                 </ul>
+                 <ul class="navbar-nav navbar-right">
+                       <li class="nav-item">
+                       </li>
+                       <li class="nav-item">
+                        <a class="nav-link" href="#">Logout</a>
+                       </li>
+                 </ul>
+              </div>
+        </div>
+    </nav>
+
+  <div id="full-container">
+    <button class="btn-action btn-fullscreen mt-5" onclick="params.funcs.toggleFullScreen()">Fullscreen <span class='icon'/> <i class="fa fa-arrows-alt" aria-hidden="true"></i></span></button>
+    <button class="btn-action btn-show-my-self mt-5" onclick="params.funcs.showMySelf()"> Show myself <span class='icon'/> <i class="fa fa-user" aria-hidden="true"></i></span></button>
+
+    <button class=" btn-action btn-search mt-5" onclick="params.funcs.search()"> Search <span class='icon'/> <i class="fa fa-search" aria-hidden="true"></i></span></button>
+
+    <button class=" btn-action btn-back mt-5" onclick="params.funcs.back()"> Back <span class='icon'/> <i class="fa fa-arrow-left" aria-hidden="true"></i></span></button>
+
+    <div class="department-information">
+      <div class="dept-name">
+        dept name
+      </div>
+      <div class="dept-emp-count">
+        dept description test, this is department description
+      </div>
+       <div class="dept-description">
+        dept description test, this is department description
+      </div>
+    </div>
+
+    <div class="user-search-box">
+      <div class="input-box">
+        <div class="close-button-wrapper"><i onclick="params.funcs.closeSearchBox()" class="fa fa-times" aria-hidden="true"></i></div>
+        <div class="input-wrapper">
+          <input type="text" class="search-input" placeholder="Search" />
+          <div class="input-bottom-placeholder">By Firstname, Lastname, Tags</div>
+        </div>
+        <div>
+        </div>
+      </div>
+      <div class="result-box">
+        <div class="result-header"> RESULTS </div>
+        <div class="result-list">
+
+
+          <div class="buffer"></div>
+        </div>
+      </div>
+    </div>
+    <div id="svgChart"></div>
+    <!--
+     <button class="btn btn-expand" onclick="params.funcs.expandAll()">Expand All</button>
+    -->
+</div>
+<%- include('../partials/orgchartfooter.ejs')%>

@@ -1,0 +1,45 @@
+<%- include('../partials/profilHeader')%>
+    <div class="ui orange three item menu" style="border-top: none; border-right: none; border-left: none;">
+        <a id="receivedProjectsBtn" class="active item" href="/users/<%= user._id%>/projects/received">
+            <span class="sentReceivedSpan">Received Projects</span>
+        </a>
+        <a id="assignedProjectsBtn" class="item" href="/users/<%= user._id%>/projects/assigned">
+            <span class="sentReceivedSpan">Assigned Projects</span>
+        </a>
+        <a id="sentProjectsBtn" class="item" href="/users/<%= user._id%>/projects/sent">
+            <span class="sentReceivedSpan">Sent Projects</span>
+        </a>
+    </div>
+    
+    <div id="ProjectsContainer" class="scrollDiv container my-4">
+        <!------------------------------------------------------------------>
+        <!------------------------------------------------------------------>
+        <input type="text" id="arrayLength" class="d-none" value="<%= user.receivedProjects.length%>">
+        <% var i = 0;%>
+        <% user.receivedProjects.forEach(function(project){%>
+            <div onclick='location.href="/users/<%= user._id%>/projects/received/<%= project._id%>/detail"' class="hoverableDiv py-2 px-5 m-2">
+                <p class="mb-2"><span class="inputsTitles"><%= project.title%></span></p>
+                <div class="row">
+                    <div class="column col-sm-5"><p class="mb-0">Start : <%=project.start%></p></div>
+                    <div class="column col-sm-7"><p class="mb-0">End : <%=project.end%></p></div>
+                </div>
+                <div class="row">
+                    <div class="column col-sm-2"><p class="mb-0">Progress :</p></div>
+                    <div class="column col-sm-10">
+                        <div class="miniProgressDiv">
+                            <div class="ui indicating progress d-inline" id="miniProgress<%= i%>">
+                                <div class="bar"></div>
+                            </div>
+                        </div>
+                        <div class="ui input d-none">
+                            <input  id="projectProgress<%= i%>" type="text" value="<%= project.progress%>">
+                        </div>  
+                    </div>
+                </div>
+            </div>
+            <% i++; %>
+        <%});%>
+        <!------------------------------------------------------------------>
+        <!------------------------------------------------------------------>
+    </div>
+<%- include('../partials/projectsFooter')%>

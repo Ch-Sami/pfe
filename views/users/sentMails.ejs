@@ -1,0 +1,63 @@
+<%- include('../partials/profilHeader')%>
+    <div class="ui red two item menu" style="border-top: none; border-right: none; border-left: none;">
+      <a id="receivedMailsBtn" class="item" href="/users/<%= user._id%>/mails/received">
+        <span class="sentReceivedSpan">Received Mails</span>
+      </a>
+      <a id="sentMailsBtn" class="active item" href="/users/<%= user._id%>/mails/sent">
+        <span class="sentReceivedSpan">Sent Mails</span>
+      </a>
+    </div>
+    <div id="sentMailsContainer">
+      <div class="container">
+        <a href="/users/<%= user._id%>/mails/sent/new" class="d-block standardBtnStyle mt-2 mb-3" style="padding: 7px; width: 100%;">New Mail</a>  
+      </div>
+        <div id="sentMailsList" class="container scrollDiv mt-4 p-4">
+          <% const sentMails = user.sentMails;%>
+          <%var i = 0;%>
+          <input type="text" name="" id="sentMailsLength" value="<%= sentMails.length%>" class="d-none">
+          <%sentMails.forEach(function(sentMail){%>
+            <div onclick='location.href="/users/<%= user._id%>/mails/sent/<%= sentMail._id%>/content"' class="hoverableDiv row d-flex justify-content-between py-2 px-5 m-2">
+              <span class="bitraf" style="font-size: 1.2em;">
+                Title :
+                <%if(sentMail.title == ''){%>
+                  None
+                <%}else{%>
+                  <%= sentMail.title%>
+                <%}%>
+              </span>
+              <!-- <div id="sendingHistory" class="ui inline dropdown"> -->
+              <div id="sendingHistory<%=i%>" class="sendingHistory ui top right pointing dropdown link item">
+                <span id="sendingHistoryHeader<%=i%>" class="sendingHistoryHeader">
+                  <i class="fas fa-history"></i> Sending History
+                </span>
+                <i class="dropdown icon"></i>
+                <div id="sendingHistoryMenu<%=i%>" class="sendingHistoryMenu menu">
+                  <% sentMail.sending_history.forEach(function(elt){%>
+                      <div class="item">
+                            <%if(elt.sending_type == 'send'){%>
+                              <span style="white-space:pre;">sent to : </span>
+                            <%}else{%>
+                              <span style="white-space:pre;">  CC      : </span>
+                            <%}%>
+                            <img class="ui avatar image mr-0 pr-0" src="<%= elt.sent_to.imageUrl%>">
+                            <span class="bitraf ml-0 pl-0 mr-5"><%= elt.sent_to.username%></span>
+                            <% if(elt.read == false){%>
+                              <!-- <span class="bitraf">not yet</span> -->
+                              <span class="float-right bitraf">not yet</span>
+                            <%}else{%>
+                              <!-- <span class="bitraf">done</span> -->
+                              <span class="float-right" style="color: #09ed1c; white-space:pre;">done   </span>
+                            <%}%>
+                            <span class="float-right">read :</span>
+                            <span class="bitraf float-right mr-5"> <%= elt.sent_at%></span>
+                            <span class="float-right">at :</span>
+                      </div>
+                  <%});%>
+                </div>
+              </div>
+            </div>
+            <% i++%>
+          <%});%>
+        </div>
+    </div>
+<%- include('../partials/mailsFooter')%>

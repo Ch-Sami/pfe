@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://kit.fontawesome.com/495f0538c0.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/stylesheets/lib/bootstrap.css">
+    <link rel="stylesheet" href="/stylesheets/lib/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css"/>
+    <link href="https://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet">
+    <link rel="stylesheet" href="/stylesheets/style1.css">
+    <link href="/stylesheets/event.css" rel="stylesheet">
+    <script src="/scripts/json-preview.js"></script>
+</head>
+<body>
+    <nav id="mainNavbar" class="navbar navbar-dark navbar-expand-sm py-0">
+        <div class="container">
+            <a id="navBrand" href="" class="navbar-brand">Brand</a>
+            <button class="navbar-toggler" data-toggle="collapse" data-target="#navLinks">
+            <span><i class="fas fa-angle-double-down"></i></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <div class="dropdown my-0 py-0">
+                        <button class="dropbtn ml-3 my-0 py-0">Departments</button>
+                        <div class="dropdown-content">
+                            <a class="dropdown-item" href="/orgchart">All Departments</a>
+                            <% units.forEach(function(unit){ %>
+                              <a class="dropdown-item" href="/orgchart/<%= unit.value%>"><%= unit.value%></a>
+                            <% }) %>
+                        </div>
+                      </div>
+                 </ul>
+                 <ul class="navbar-nav navbar-right">
+                       <li class="nav-item mr-3">
+                        <a class="nav-link" href="#"><i class="fa fa-user" aria-hidden="true"></i> Profil</a>
+                       </li>
+                       <li class="nav-item">
+                        <a class="nav-link" href="#">Logout</a>
+                       </li>
+                 </ul>
+              </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div id="mainSegment" class="ui segment pb-2">
+            <% if(event.planner.username !== user.username){%>
+                <div class="d-flex justify-content-end">
+                    <span class="bitraf mr-2">planned to you by </span>
+                    <div onclick='location.href="<%= event.planner.profileUrl%>"' class="hoverableDiv px-2">
+                        <img class="ui avatar image" src="<%= event.planner.imageUrl%>">
+                        <span class="bitraf mt-2"><%= event.planner.username%></span>
+                    </div>
+                </div>
+            <%}%>
+            <form class="ui form m-5" action="/users/<%= user._id%>/events/<%= event._id%>?_method=DELETE" method="post">
+                <div class="two fields mb-3">
+                    <div class="field mr-3">
+                        <label for="title"><span class="inputsTitles">Title</span></label>
+                        <input id="title" name="event[title]" placeholder="Title" value="<%= event.title%>" disabled>  
+                    </div>
+                    <div class="field ml-3">
+                        <label>
+                            <span class="inputsTitles">Type</span>
+                            <input id="type" type="text" name="event[type]" placeholder="Type" value="<%= event.type%>" disabled>
+                        </label>
+                    </div>
+                </div>
+                <div class="two fields mb-3">
+                    <div class="field mr-3">
+                        <label>
+                            <span class="inputsTitles">Start</span>
+                            <input id="start" type="text" name="event[start]" placeholder="Start date" value="<%= event.start%>" disabled>
+                        </label>
+                    </div>
+                    <div class="field ml-3">
+                        <label>
+                            <span class="inputsTitles">End</span>
+                            <input id="end" type="text" name="event[end]" placeholder="End date" value="<%= event.end%>" disabled>
+                        </label>
+                    </div>
+                </div>
+                <!-- <div class="field mb-4">
+                    <label for=""><span class="inputsTitles">Start and End</span>
+                        <%var eventDateTime = event.start.replace(/\//g, "-") +'-'+ event.end.replace(/\//g, "-")%>
+                      <input id="dateTimePicker" type="text" name="dateTime" value="<%= eventDateTime%>"/>
+                    </label>
+                </div> -->
+        
+                
+                <div class="field my-1 d-none">
+                    <textarea id="evtDesc" name="event[detail]" disabled> <%= event.detail%> </textarea>
+                </div>
+
+                <label for="editorHugeContainer"><span class="inputsTitles" id="editorLabel">Details</span></label>
+                <div id="editorHugeContainer" class="ce-example">
+                    <div class="ce-example__content _ce-example__content--small">
+                      <div id="editorjs" class="editorjs"></div>
+                    </div>
+                </div>
+
+                <div class="my-4">
+                    <a href="/users/<%= user._id%>/events/<%= event._id%>/edit" id="saveBtn" class="standardBtnStyle">Update</a>
+                    <button id="deleteEventBtn" class="standardBtnStyle">Delete</button>
+                    <a id="goBackBtn" href="/users/<%= user._id%>/events" class="goBackBtn float-right py-3 px-5">Go Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+<%- include('../partials/eventsFooter')%>

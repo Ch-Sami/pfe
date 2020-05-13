@@ -1,0 +1,57 @@
+<%- include('../partials/profilHeader')%>
+<div class="container py-4">
+    <form id="newMailReplyFrm" class="ui form" action="/users/<%= user._id%>/mails/received/<%= mail._id%>/replies" method="post">
+ 
+        <div class="field mx-4 mt-4">
+            <label><span class="inputsTitles">Title</span>
+              <input type="text" name="title" placeholder="Mail title">
+            </label>
+        </div>
+
+        <div class="field my-1 d-none">
+            <textarea id="mailText" name="text"></textarea>
+        </div>
+        <div class="mx-4">
+            <label for="editorHugeContainer"><span class="inputsTitles">Text</span></label>
+            <div id="editorHugeContainer" class="ce-example">
+                <div class="ce-example__content _ce-example__content--small">
+                    <div id="newMailEditorjs" class="editorjs"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container my-4 p-3 py-5">
+            <div class="row d-flex justify-content-center">
+                <div class="column col-sm-8 text-center">
+                    <span class="inputsTitles d-block my-1">Reply also visible to</span>
+                    <div id="visibleToList" class="ui multiple selection dropdown mt-2 mb-1 d-block">
+                        <input id="visibleToInput" name="visibleTo" type="hidden" value="<%= mail.sent_by._id%>">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Visible To</div>
+                        <div class="menu">
+                            <%mail.receivers.forEach(function(receiver){%>
+                                <div class="item" data-value="<%= receiver._id%>">
+                                    <img class="ui avatar image" src="<%= receiver.imageUrl%>">
+                                    <span class="bitraf"><%= receiver.username%></span>
+                                </div>
+                            <%});%>  
+                        </div>
+                    </div>
+                    <div id="clearAssignToBtn" class="ui button my-2">Clear Filters</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="my-2">
+            <button id="sendExisingMail" class="standardBtnStyle">Send</button>
+            <input
+                    action="action"
+                    onclick="window.history.go(-1); return false;"
+                    type="submit"
+                    value="Cancel"
+                    class="goBackBtn float-right py-3 px-5"
+                />
+        </div>
+    </form>
+</div>
+<%- include('../partials/mailsFooter')%>

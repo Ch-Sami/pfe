@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://kit.fontawesome.com/495f0538c0.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/stylesheets/lib/bootstrap.css">
+    <link rel="stylesheet" href="/stylesheets/lib/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css"/>
+    <link href="https://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet">
+    <link rel="stylesheet" href="/stylesheets/style1.css">
+    <link href="/stylesheets/event.css" rel="stylesheet">
+    <script src="/scripts/json-preview.js"></script>
+</head>
+<body>
+    <nav id="mainNavbar" class="navbar navbar-dark navbar-expand-sm py-0">
+        <div class="container">
+            <a id="navBrand" href="" class="navbar-brand">Brand</a>
+            <button class="navbar-toggler" data-toggle="collapse" data-target="#navLinks">
+            <span><i class="fas fa-angle-double-down"></i></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <div class="dropdown my-0 py-0">
+                        <button class="dropbtn ml-3 my-0 py-0">Departments</button>
+                        <div class="dropdown-content">
+                            <a class="dropdown-item" href="/orgchart">All Departments</a>
+                            <% units.forEach(function(unit){ %>
+                              <a class="dropdown-item" href="/orgchart/<%= unit.value%>"><%= unit.value%></a>
+                            <% }) %>
+                        </div>
+                      </div>
+                 </ul>
+                 <ul class="navbar-nav navbar-right">
+                       <li class="nav-item mr-3">
+                        <a class="nav-link" href="#"><i class="fa fa-user" aria-hidden="true"></i> Profil</a>
+                       </li>
+                       <li class="nav-item">
+                        <a class="nav-link" href="#">Logout</a>
+                       </li>
+                 </ul>
+              </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div id="mainSegment" class="ui segment pb-2">
+            <form id="updateEventFrm" action="/users/<%= user._id%>/events/<%= event._id%>?_method=PUT" method="POST" class="ui form m-5">
+                <div class="two fields mb-4">
+                    <div class="field mr-3">
+                        <label for="title"><span class="inputsTitles">Title</span></label>
+                        <input id="title" type="text" name="title" placeholder="Title" value="<%= event.title%>">
+                    </div>
+                    <div class="field ml-3">
+                        <label for="typeSelector"><span class="inputsTitles">Type</span></label>
+                        <select id="typeSelector" class="ui dropdown" name="type" value="<%= event.type%>">
+                            <option value="absence"><span id="absenceType">Absence</span></option>
+                            <option value="other"><span id="otherType">Other</span></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field mb-4">
+                    <label for=""><span class="inputsTitles">Start and End</span>
+                        <%var eventDateTime = event.start.replace(/\//g, "-") +'-'+ event.end.replace(/\//g, "-")%>
+                      <input id="dateTimePicker" type="text" name="dateTime" value="<%= eventDateTime%>"/>
+                    </label>
+                </div>
+        
+                <div class="field my-1 d-none">
+                    <textarea id="evtDesc" name="detail"> <%= event.detail%> </textarea>
+                </div>
+
+                <label for="editorHugeContainer"><span class="inputsTitles" id="editorLabel">Details</span></label>
+                <div id="editorHugeContainer" class="ce-example">
+                    <div class="ce-example__content _ce-example__content--small">
+                      <div id="editorjs" class="editorjs"></div>
+                    </div>
+                </div>
+
+                <div class="my-4">
+                    <button class="standardBtnStyle">Apply update</button>
+                    <a id="goBackBtn" href="/users/<%= user._id%>/events/<%= event._id%>" class="goBackBtn float-right py-3 px-5">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+<%- include('../partials/eventsFooter')%>

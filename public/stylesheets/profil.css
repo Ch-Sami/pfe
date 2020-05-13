@@ -1,0 +1,172 @@
+  #eventColor{
+      height: 30px;
+      width: 20vw;
+      border: 1px solid black;
+  }
+  #changeColor{
+      color: royalblue;
+  }
+
+
+  .defaultEventColor{
+      background-color: #4289cf;
+  }
+
+  .sentReceivedSpan{
+      font-weight: 700;
+      font-size: 1.4em;
+  }
+
+  #calendar{
+    border: 1px solid rgba(176, 16, 43, 0.9);
+    margin: 10px;
+    margin-top: 0;
+    padding: 3px;
+  }
+
+  
+  .miniProgressDiv{
+      background-color: white;
+      width: 100%;
+      padding: 0px;
+      margin: 0px;
+      border-radius: 5px;
+  }
+  .ui.progress .bar {
+    height: 15px;
+  }
+  /* progressbgDiv{
+    border: 1px solid red;
+  } */
+
+  #full-container{
+    background: #ADA996;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to left, #EAEAEA, #DBDBDB, #F2F2F2, #ADA996);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to left, #EAEAEA, #DBDBDB, #F2F2F2, #ADA996); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    padding: 0px;
+  }
+  
+  #svgChart svg{
+      width: 100%;
+      height: 100%;
+      margin: 0px;
+      padding: 0px;
+  }
+  #svgChart{
+      margin: 0px;
+      height: 100%;
+  }
+
+
+
+
+  
+
+  .messageContainer {
+    border: 2px solid #dedede;
+    background-color: #f1f1f1;
+    border-radius: 10px 40px 10px;
+    padding: 10px;
+    margin: 10px 0;
+    width: 70%;
+  }
+
+  .darker {
+    border-color: #ccc;
+    background-color: #ddd;
+    float: right;
+    border-radius: 40px 10px 40px;
+  }
+  
+  .container::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+  
+  .container img {
+    float: left;
+    max-width: 60px;
+    width: 100%;
+    margin-right: 20px;
+    border-radius: 50%;
+  }
+  
+  .container img.right {
+    float: right;
+    margin-left: 20px;
+    margin-right:0;
+  }
+  
+  .time-right {
+    float: right;
+    color: #aaa;
+  }
+  
+  .time-left {
+    float: left;
+    color: #999;
+  }
+
+  .messageContainer p {
+    white-space: pre-wrap;
+  }
+
+/* Mail css*/
+/* Mail css*/
+/* Mail css*/
+/* Mail css*/
+  
+  .CharacterHeader{
+    font-size: 2em;
+    color: #87081e;
+  }
+  .contactsIcons{
+    font-size: 1.4em;
+    color: black;
+    background-color: transparent;
+    border: none;
+  }
+  .contactsIcons:hover{
+    color: #87081e;
+  }
+  .inputStyleClone{
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+    margin: 0;
+    outline: 0;
+    -webkit-appearance: none;
+    line-height: 1.21428571em;
+    padding: .67857143em 1em;
+    font-size: 1em;
+    background: #fff;
+    border: 1px solid rgba(34,36,38,.15);
+    color: rgba(0,0,0,.87);
+    border-radius: .28571429rem;
+    box-shadow: 0 0 0 0 transparent inset;
+    transition: color .1s ease,border-color .1s ease;
+    width: 100%;
+  }
+
+  .fromAndAt{
+    width: 170px;
+  }
+/* Project css */
+/* Project css */
+/* Project css */
+/* Project css */
+#progressUpdateInfoIcon{
+  color: orange;
+  border: 2px solid orange;
+  padding-top: 1.5px;
+  padding-bottom: 2px;
+  padding-right: 5px;
+  padding-left: 5px;
+  border-radius: 5px;
+  margin-left: 7px;
+}
+
+
+/* event css*/
+/* event css*/
+/* event css*/
+/* event css*/

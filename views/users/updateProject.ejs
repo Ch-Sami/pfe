@@ -1,0 +1,84 @@
+<%- include('../partials/profilHeader')%>
+    <div class="ui orange three item menu" style="border-top: none; border-right: none; border-left: none;">
+        <a id="projectDetailLink" class="active item" href="/users/<%= user._id%>/projects/sent/<%= project._id%>/detail">
+            <span class="sentReceivedSpan"><i class="fas fa-clipboard"></i></span>
+        </a>
+        <a id="projectDiscussionLink" class="item" href="/users/<%= user._id%>/projects/sent/<%= project._id%>/discussion">
+            <span class="sentReceivedSpan"><i class="fas fa-comments"></i></span>
+        </a>
+        <a id="projectTreeLink" class="item" href="/users/<%= user._id%>/projects/sent/<%= project._id%>/tree">
+            <span class="sentReceivedSpan"><i class="fas fa-tree"></i></span>
+        </a>
+    </div>
+    <div class="container py-4">
+        <form id="updateSentProjectFrm" class="ui form" action="/users/<%= user.id%>/projects/sent/<%= project._id%>?_method=PUT" method="post">
+            <div class="two fields">
+                <div class="field m-3">
+                    <label>
+                        <span class="inputsTitles">Title</span>
+                       <input id="projectTitle" type="text" name="project[title]" placeholder="Title" value="<%= project.title%>">
+                    </label>
+                </div>
+                <div class="field m-3">
+                    <label>
+                        <span class="inputsTitles">Type</span>
+                        <input id="projectType" type="text" name="project[type]" value="project" disabled>
+                    </label>
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="field m-3">
+                    <label>
+                        <span id="start" class="inputsTitles">Start</span>
+                        <input id="startDate" type="text" name="project[start]" placeholder="Start date" value="<%= project.start%>"/>
+                    </label>
+                </div>
+                <div class="field m-3">
+                    <label>
+                        <span class="inputsTitles">End</span>
+                        <input id="endDate" type="text" name="project[end]" placeholder="End date" value="<%= project.end%>"/>
+                    </label>
+                </div>
+            </div>
+
+            <div id="progressContainer" class="container my-5">
+                <label for="progress">
+                    <span class="inputsTitles">Progress</span>
+                    <%if(project.lastUpdateBy !== undefined){%>
+                        <span id="progressUpdateInfo">
+                            <i id="progressUpdateInfoIcon" class="fas fa-exclamation"></i>
+                        </span>
+                        <div id="progressUpdateInfoPopup" class="ui popup">
+                            <span>last update by : </span><span class=" bitraf"><%= project.lastUpdateBy.username%></span>
+                            <span class="ml-3">at : </span><span class="bitraf"><%= project.lastUpdateAt%></span>
+                        </div>
+                    <%}%>
+                </label>
+                <div class="ui indicating progress" id="progress" >
+                    <div class="bar"></div>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <div class="ui input d-none">
+                        <input  id="projectProgress" type="text" name="project[progress]"  value="<%= project.progress%>">
+                    </div>  
+                </div>
+            </div>
+            
+            
+            <div class="field my-1 d-none">
+                <textarea id="projectDoc" name="project[detail]"> <%= project.detail%> </textarea>
+            </div>
+
+            <label for="editorHugeContainer"><span class="inputsTitles">Documentation</span></label>
+            <div id="editorHugeContainer" class="ce-example">
+                <div class="ce-example__content _ce-example__content--small">
+                    <div id="newProjectEditorjs" class="editorjs"></div>
+                </div>
+            </div>
+
+            <div class="my-4">
+                <button class="standardBtnStyle">Apply update</button>
+                <a id="goBackBtn" href="/users/<%= user._id%>/projects/sent/<%= project._id%>" class="goBackBtn float-right py-3 px-5">Cancel</a>
+            </div>
+    </div>
+<%- include('../partials/projectsFooter')%>

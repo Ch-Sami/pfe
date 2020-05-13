@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/stylesheets/lib/bootstrap.css">
+    <link rel="stylesheet" href="/stylesheets/lib/semantic.min.css">
+    <link rel="stylesheet" href="/stylesheets/forms.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row d-flex justify-content-center align-items-center">
+            <dev class="column col-md-8">
+                <h1 class="ui header">Register</h1>
+                <form id="register-form" class="ui form" action="/register" method="POST">
+                    <div class="field">
+                      <label>Username</label>
+                      <input type="text" name="username" placeholder="Username">
+                    </div>
+                    <div class="field">
+                        <label>Name</label>
+                        <div class="two fields">
+                          <div class="field">
+                            <input type="text" name="firstName" placeholder="First Name">
+                          </div>
+                          <div class="field">
+                            <input type="text" name="lastName" placeholder="Last Name">
+                          </div>
+                        </div>
+                      </div>
+                    <div class="field">
+                        <label>Unit</label>
+                        <select class="ui search dropdown" name="unit">
+                          <option value="">Unit</option>
+                          <% units.forEach(function(unit){ %>
+                              <option value="<%= unit._id%>"><%= unit.value%></option>
+                          <% }) %>
+                        </select>
+                    </div>      
+                    <div class="field">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="Password">
+                    </div>
+                    <div class="field">
+                      <div class="ui checkbox">
+                        <input type="checkbox" tabindex="0" class="hidden">
+                        <label>I agree to the Terms and Conditions</label>
+                      </div>
+                    </div>
+                    <button class="btn btn-outline-success" type="submit">Submit</button>
+                  </form>
+            </dev>
+        </div>
+    </div>
+    <script src="/scripts/lib/jquery-3.4.1.min.js"></script>
+</body>
+</html>

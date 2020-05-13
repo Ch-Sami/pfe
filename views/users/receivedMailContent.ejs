@@ -1,0 +1,60 @@
+<%- include('../partials/profilHeader')%>
+    <div class="ui red two item menu" style="border-top: none; border-right: none; border-left: none;">
+        <a class="active item" href="/users/<%= user._id%>/mails/received/<%= mail._id%>/content">
+          <span class="sentReceivedSpan"><i class="fas fa-envelope-open-text"></i></span>
+        </a>
+        <a class="item" href="/users/<%= user._id%>/mails/received/<%= mail._id%>/replies">
+          <span class="sentReceivedSpan"><i class="fas fa-reply"></i></span>
+        </a>
+    </div>
+    <div class="container py-4">
+        <form id="receivedMailFrm" class="ui form" action="/users/<%= user._id%>/mails/received/<%= mail._id%>/replies/new" method="get">
+            <div class="field mx-4 mt-4">
+                <label><span class="inputsTitles">Title</span>
+                  <input type="text" name="title" placeholder="Mail title" value="<%= mail.title%>" disabled>
+                </label>
+            </div>
+            
+            <div class="two fields mx-3 mb-4">
+                <div class="field">
+                    <label for="sentAtInput"><span class="inputsTitles">Received at</span></label>
+                    <input id="sentAtInput" type="text" name="title" value="<%= mail.received_at%>" disabled>
+                </div>
+                <div class="field ml-3">
+                    <label for="sentByInput"><span class="inputsTitles">Sent by</span></label>
+                    <div id="sentByInput" class="ui inline dropdown inputStyleClone">
+                        <div class="text" style="width: 100%;">
+                            <img class="ui avatar image" src="<%= mail.sent_by.imageUrl%>">
+                            <span class="bitraf"><%= mail.sent_by.username%></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="field my-1 d-none">
+                <textarea id="showMailText" name="text"><%= mail.text%></textarea>
+            </div>
+            <div class="mx-4">
+                <label for="editorHugeContainer"><span class="inputsTitles">Text</span></label>
+                <div id="editorHugeContainer" class="ce-example">
+                    <div class="ce-example__content _ce-example__content--small">
+                        <div id="showMailEditorjs" class="editorjs"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3 mt-5">
+                <% if(mail.sending_type == 'send'){%>
+                    <button id="reply" class="standardBtnStyle">Reply</button>
+                <%}%>
+                <input
+                        action="action"
+                        onclick="window.history.go(-1); return false;"
+                        type="submit"
+                        value="Go Back"
+                        class="goBackBtn float-right py-3 px-5"
+                    />
+            </div>
+        </form>
+    </div>
+<%- include('../partials/mailsFooter')%>

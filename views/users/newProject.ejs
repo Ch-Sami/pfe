@@ -1,0 +1,108 @@
+<%- include('../partials/profilHeader')%>
+    <div class="container py-4">
+        <form id="newProjectFrm" class="ui form" action="/users/<%= user._id%>/projects/sent" method="post">
+            <div class="two fields">
+                <div class="field m-3">
+                    <label>
+                        <span class="inputsTitles">Title</span>
+                        <input id="projectTitle" type="text" name="project[title]" placeholder="Title">
+                    </label>
+                </div>
+                <div class="field m-3">
+                    <label>
+                        <span class="inputsTitles">Type</span>
+                        <input id="projectType" type="text" name="project[type]" value="project" disabled>
+                    </label>
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="field m-3">
+                    <label>
+                        <span class="inputsTitles">Start</span>
+                        <input id="startDate" type="text" name="project[start]" placeholder="Start date"/>
+                    </label>
+                </div>
+                <div class="field m-3">
+                    <label>
+                        <span class="inputsTitles">End</span>
+                        <input id="endDate" type="text" name="project[end]" placeholder="End date"/>
+                    </label>
+                </div>
+            </div>
+
+            <div id="progressContainer" class="container my-5">
+                <label for="progress"><span class="inputsTitles">Progress</span></label>
+                <div class="ui indicating progress" id="progress" >
+                    <div class="bar"></div>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button id="progressDown" type="button" class="btn btn-outline-danger mr-2"><i class="fa fa-minus" aria-hidden="true"></i></button>
+                    <button id="progressUp" type="button" class="btn btn-outline-success ml-2"><i class="fa fa-plus" aria-hidden="true"></i></button>
+                    <div class="ui input d-none">
+                        <input  id="projectProgress" type="text" name="project[progress]" value="1">
+                    </div>  
+                </div>
+            </div>
+            
+            
+            <div class="field my-1 d-none">
+                <textarea id="projectDoc" name="project[detail]"></textarea>
+            </div>
+
+            <label for="editorHugeContainer"><span class="inputsTitles">Documentation</span></label>
+            <div id="editorHugeContainer" class="ce-example">
+                <div class="ce-example__content _ce-example__content--small">
+                    <div id="newProjectEditorjs" class="editorjs"></div>
+                </div>
+            </div>
+            <div class="container my-4 p-3 py-5">
+                <div class="row">
+                    <div class="column col-sm-6 text-center">
+                        <span class="inputsTitles d-block my-1">Send To</span>
+
+                        <div id="sendToList" class="ui multiple selection dropdown mt-2 mb-1 d-block">
+                            <input id="sentToInput" name="sentTo" type="hidden">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Send To</div>
+                            <div class="menu">
+                                <%user.children.forEach(function(child){%>
+                                    <div class="item" data-value="<%= child._id%>">
+                                        <img class="ui avatar image" src="<%= child.imageUrl%>">
+                                        <span class="bitraf"><%= child.username%></span>
+                                    </div>
+                                <%});%>
+                            </div>
+                        </div>
+                        <div id="clearSendToBtn" class="ui button my-2">Clear Filters</div>
+
+                    </div>
+                    <div class="column col-sm-6 text-center">
+                        <span class="inputsTitles d-block my-1">Assign To</span>
+
+                        <div id="assignToList" class="ui multiple selection dropdown mt-2 mb-1 d-block">
+                            <input id="assignedToInput" name="assignedTo" type="hidden">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Assign To</div>
+                            <div class="menu">
+                                <%user.children.forEach(function(child){%>
+                                    <div class="item" data-value="<%= child._id%>">
+                                        <img class="ui avatar image" src="<%= child.imageUrl%>">
+                                        <span class="bitraf"><%= child.username%></span>
+                                    </div>
+                                <%});%>  
+                            </div>
+                        </div>
+                        <div id="clearAssignToBtn" class="ui button my-2">Clear Filters</div>
+                    </div>
+                </div>
+            </div>
+            
+
+
+            <div class="my-2">
+                <button id="addProject" class="standardBtnStyle">Add Project</button>
+                <a id="anlProject" href="/users/<%= user._id%>/projects/sent" class="goBackBtn float-right py-3 px-5">Cancel</a>
+            </div>
+        </form>
+    </div>
+<%- include('../partials/projectsFooter')%>

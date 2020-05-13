@@ -1,0 +1,122 @@
+<%- include('../partials/profilHeader')%>
+
+<div class="container">
+    <form id="newEvtFrm" class="ui form" action="/users/<%= user._id%>/events" method="post">
+        <h1 class="bitraf">Adding new event</h1>
+        <div class="row mb-3">
+            <div class="column col-6">
+                <div class="field">
+                    <label><span class="inputsTitles">Title</span>
+                      <input type="text" name="event[title]" placeholder="Event title">
+                    </label>
+                  </div>
+                  <div class="field">
+                    <label for="typeSelector"><span class="inputsTitles">Type</span></label>
+                    <select id="typeSelector" class="ui dropdown" name="type" value="absence">
+                        <option value="absence"><span id="absenceType">Absence</span></option>
+                        <option value="other"><span id="otherType">Other</span></option>
+                    </select>
+                  </div>
+                <div class="field">
+                      <label for=""><span class="inputsTitles">Start and End</span>
+                        <input id="dateTimePicker" type="text" name="dateTime"/>
+                      </label>
+                  </div>
+                  <div class="field">
+                    <label>
+                            <span class="inputsTitles">Event color</span>
+                            <div class="d-flex">
+                                <div id="eventColor" class="defaultEventColor"></div>
+                                <input id="colorVal" type="text" name="event[backgroundColor]" class="d-none" value="#4289cf">
+                            </div>
+                    </label>
+                  </div>
+            </div>
+            <div class="column col-6 m-0 d-flex justify-content-center align-items-center p-0 mb-5">
+                <div id="color-picker" class="cp-default p-0"></div>
+            </div>
+        </div>
+        
+        <div class="field my-1 d-none">
+            <textarea id="evtDesc" name="event[detail]"></textarea>
+        </div>
+    
+        <label for="editorHugeContainer"><span class="inputsTitles">Details</span></label>
+        <div id="editorHugeContainer" class="ce-example">
+            <div class="ce-example__content _ce-example__content--small">
+                <div id="newEventEditorjs" class="editorjs"></div>
+            </div>
+        </div>
+
+
+
+        <div class="container my-4 p-3 py-5">
+            <div class="row">
+                <div class="column col-12 text-center">
+                    <!-- users list -->
+                    <textarea name="" id="itemsTextArea" cols="30" rows="10" class="d-none">
+                        <%= usersList%>
+                    </textarea>
+                    <!-- search -->
+                    <div class="d-flex justify-content-center">
+                        <div class="d-inline pb-0 mr-3">
+                            <span class="inputsTitles pb-0 d-inline">Add To</span>
+                        </div>
+                        <section id="search" class="ml-4" style="width: 70%;">
+                            <div class="form-group form-inline">
+                              <input type="text" class="form-control wide" id="searchTextbox" placeholder="Search">
+                            </div>
+                        </section>
+                    </div>
+                    <!-- results -->
+                    <textarea id="resultTextArea" class="nohighlight m-0 p-0 d-none"></textarea>
+                    <div class="form-group form-inline d-none">
+                        <label for="thresholdRange">Threshold</label>
+                        <input type="number" id="thresholdRange" min="0" step="0.1" max="1" value="0.6">
+                        <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
+                      </div>
+                    <!-- multiselect -->
+                    <div id="addToList" class="ui multiple selection dropdown" style="width: 70%;">
+                        <% if(addTo == 'self'){%>
+                            <input name="addTo" type="hidden" value="<%= user._id%>">
+                        <%}else{%>
+                            <input name="addTo" type="hidden" value="<%= addTo._id%>">
+                        <%}%>
+                        <i class="dropdown icon"></i>
+                        <div class="default text mr-2">Send To</div>
+                        <div id="usersList" class="menu d-block">
+                            <% if(addTo == 'self'){%>
+                                <div class="item" data-value="<%= user._id%>">
+                                    <img class="ui avatar image" src="<%= user.imageUrl%>">
+                                    <span class="bitraf mt-2">Myself</span>
+                                </div>
+                            <%}else{%>
+                                <div class="item" data-value="<%= addTo._id%>">
+                                    <img class="ui avatar image" src="<%= addTo.imageUrl%>">
+                                    <span class="bitraf mt-2"><%= addTo.username%></span>
+                                </div>
+                            <%}%>
+                        </div>
+                    </div>
+                    <div id="clearAddToBtn" class="ui button">Clear Filters</div>
+                </div>
+            </div>
+        </div>
+        <!-- planned_by -->
+        <input type="text" name="event[planner]" value="<%= user._id%>" class="d-none">
+
+        <% if(addTo == 'self'){%>
+            <input type="text" name="redirect" value="events" class="d-none">
+        <%}else{%>
+            <input type="text" name="redirect" value="contacts" class="d-none">
+        <%}%>
+        <div class="my-2">
+            <button id="addEvt" class="standardBtnStyle">Add Event</button>
+            <a id="anlEvt" href="/users/<%= user._id%>/events" class="goBackBtn float-right py-3 px-5">Cancel</a>
+        </div>
+
+    </form>
+</div>
+
+
+<%- include('../partials/eventsFooter')%>

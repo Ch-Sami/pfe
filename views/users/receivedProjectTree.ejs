@@ -1,0 +1,83 @@
+<%- include('../partials/profilHeader')%>
+
+    <link rel="stylesheet" href="/stylesheets/orgchart.css">
+
+    <div class="ui orange three item menu my-0" style="border-top: none; border-right: none; border-left: none;">
+        <a id="projectDetailLink" class="item" href="/users/<%= user._id%>/projects/received/<%= project._id%>/detail">
+            <span class="sentReceivedSpan"><i class="fas fa-clipboard"></i></span>
+        </a>
+        <a id="projectDiscussionLink" class="item" href="/users/<%= user._id%>/projects/received/<%= project._id%>/discussion">
+            <span class="sentReceivedSpan"><i class="fas fa-comments"></i></span>
+        </a>
+        <a id="projectTreeLink" class="active item" href="/users/<%= user._id%>/projects/received/<%= project._id%>/tree">
+            <span class="sentReceivedSpan"><i class="fas fa-tree"></i></span>
+        </a>
+    </div>
+    <div id="projectTree">
+        <p id="gg" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= tree%></p>
+    
+    
+  <div id="full-container">
+    <button class="btn-action btn-fullscreen mt-5" onclick="params.funcs.toggleFullScreen()">Fullscreen <span class='icon'/> <i class="fa fa-arrows-alt" aria-hidden="true"></i></span></button>
+    <button class="btn-action btn-show-my-self mt-5" onclick="params.funcs.showMySelf()"> Show myself <span class='icon'/> <i class="fa fa-user" aria-hidden="true"></i></span></button>
+
+    <button class=" btn-action btn-search mt-5" onclick="params.funcs.search()"> Search <span class='icon'/> <i class="fa fa-search" aria-hidden="true"></i></span></button>
+
+    <button class=" btn-action btn-back mt-5" onclick="params.funcs.back()"> Back <span class='icon'/> <i class="fa fa-arrow-left" aria-hidden="true"></i></span></button>
+
+    <div class="department-information">
+      <div class="dept-name">
+        dept name
+      </div>
+      <div class="dept-emp-count">
+        dept description test, this is department description
+      </div>
+       <div class="dept-description">
+        dept description test, this is department description
+      </div>
+    </div>
+    
+        <div class="user-search-box">
+            <div class="input-box">
+              <div class="close-button-wrapper"><i onclick="params.funcs.closeSearchBox()" class="fa fa-times" aria-hidden="true"></i></div>
+              <div class="input-wrapper">
+                <input type="text" class="search-input" placeholder="Search" />
+                <div class="input-bottom-placeholder">By Firstname, Lastname, Tags</div>
+              </div>
+              <div>
+              </div>
+            </div>
+            <div class="result-box">
+              <div class="result-header"> RESULTS </div>
+              <div class="result-list">
+      
+      
+                <div class="buffer"></div>
+              </div>
+            </div>
+          </div>
+          <div id="svgChart"></div>
+</div>
+    </div>
+
+    
+
+
+
+<!-- FOOTER FOOTER FOOTER FOOTER FOOTER FOOTER FOOTER FOOTER FOOTER FOOTER FOOTER FOOTER FOOTER-->
+            </div>
+        </div>
+    </div>
+</div>
+<!-- SCRIPTS -->
+<script type="text/javascript" src="/scripts/lib/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.13/dist/semantic.min.js"></script>
+<script>
+    $('.menuItem').removeClass('active menuItemColor');
+    $('#showProjects').addClass('active menuItemColor');
+</script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
+<script src="/scripts/projectTree.js"></script>
+
+</body>
+</html>

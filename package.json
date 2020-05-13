@@ -1,0 +1,30 @@
+{
+  "name": "orgpractice",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ChSami",
+  "license": "ISC",
+  "dependencies": {
+    "3d": "0.0.0",
+    "@fullcalendar/core": "^4.4.0",
+    "@fullcalendar/daygrid": "^4.4.0",
+    "@fullcalendar/interaction": "^4.4.0",
+    "@fullcalendar/list": "^4.4.0",
+    "@fullcalendar/timegrid": "^4.4.0",
+    "async": "^3.2.0",
+    "body-parser": "^1.19.0",
+    "ejs": "^3.0.1",
+    "express": "^4.17.1",
+    "express-session": "^1.17.0",
+    "method-override": "^3.0.0",
+    "mongoose": "^5.9.3",
+    "mongoose-materialized": "^0.2.0",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^6.0.1"
+  }
+}
