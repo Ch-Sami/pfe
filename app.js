@@ -43,7 +43,13 @@ passport.deserializeUser(User.deserializeUser());
 
 app.use((req ,res ,next)=>{
 	res.locals.currentUser = req.user;   //(adds {currentUser = req.user} to all render params);
-	next();
+	Unit.find({type: 'department'} ,'-desc' ,(err ,units)=>{
+		if(err){throw err;}
+		else{
+			res.locals.units = units;
+			next();
+		}
+	});
 });
 
 //use routes

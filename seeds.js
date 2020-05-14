@@ -41,7 +41,6 @@ function seed(){
         isLoggedUser: false,
         unit: {},
         positionName: "CTO ",
-        children:[],
         events: []
     });
     var user2 = new User({
@@ -57,7 +56,6 @@ function seed(){
         isLoggedUser: false,
         unit: {},
         positionName: "CTO ",
-        children:[],
         events: []
     });
     var user3 = new User({
@@ -73,7 +71,6 @@ function seed(){
         isLoggedUser: false,
         unit: {},
         positionName: "CTO ",
-        children:[],
         events: []
     });
     var manager = new User({
@@ -89,7 +86,6 @@ function seed(){
         isLoggedUser: false,
         unit: {},
         positionName: "Cheaf Executive Officer ",
-        children:[],
         events: []
     });
     var user4 = new User({
@@ -104,7 +100,6 @@ function seed(){
         isLoggedUser: false,
         unit: {},
         positionName: "CTO ",
-        children:[],
         events: []
     });
     var user5 = new User({
@@ -119,7 +114,6 @@ function seed(){
         isLoggedUser: false,
         unit: {},
         positionName: "CTO ",
-        children:[],
         events: []
     });
     var user6 = new User({
@@ -134,7 +128,6 @@ function seed(){
         isLoggedUser: false,
         unit: {},
         positionName: "CTO ",
-        children:[],
         events: []
     });
 
@@ -150,13 +143,21 @@ function seed(){
     user6.unit = unit1;
     manager.unit = unit0;
 
-    user2.children.push(user4);
-    user2.children.push(user5);
-    user1.children.push(user6);
-    user3.children.push(user1);
+    // user2.children.push(user4);
+    // user2.children.push(user5);
+    // user1.children.push(user6);
+    // user3.children.push(user1);
 
-    manager.children.push(user2);  
-    manager.children.push(user3); 
+    // manager.children.push(user2);  
+    // manager.children.push(user3); 
+
+    // user2.appendChild(user4);
+    // user2.appendChild(user5);
+    // user1.appendChild(user6);
+    // user3.appendChild(user1);
+
+    // manager.appendChild(user2);  
+    // manager.appendChild(user3); 
 
 
     unit0.save(function(){
@@ -165,20 +166,38 @@ function seed(){
             console.log("unit1 saved !");
             unit2.save(function(){
                 console.log("unit2 saved !");
-                user4.save(function(){
+                user4.save(function(err ,user4){
                     console.log("user4 saved !");
-                    user5.save(function(){
+                    user5.save(function(err ,user5){
                         console.log("user5 saved !");
-                        user6.save(function(){
+                        user6.save(function(err ,user6){
                             console.log("user6 saved !");
-                            user1.save(function(){
+                            user1.save(function(err ,user1){
                                 console.log("user1 saved !");
-                                user2.save(function(){
+                                user2.save(function(err ,user2){
                                     console.log("user2 saved !");
-                                    user3.save(function(){
+                                    user3.save(function(err ,user3){
                                         console.log("user3 saved !");
-                                        manager.save(function(){
+                                        manager.save(function(err ,manager){
                                             console.log("manager saved !");
+                                            user2.appendChild(user4 ,function(err){
+                                                console.log("appending child done");
+                                                user2.appendChild(user5 ,function(err){
+                                                    console.log("appending child done");
+                                                    user1.appendChild(user6 ,function(err){
+                                                        console.log("appending child done");
+                                                        user3.appendChild(user1 ,function(err){
+                                                            console.log("appending child done");
+                                                            manager.appendChild(user2 ,function(err){
+                                                                console.log("appending child done");
+                                                                manager.appendChild(user3 ,function(err){
+                                                                    console.log("everything is ready !!!");
+                                                                });
+                                                            });
+                                                        });
+                                                    });
+                                                });
+                                            });
                                         });
                                     });
                                 });

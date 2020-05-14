@@ -16,8 +16,8 @@
                         <div class="dropdown-content">
                             <a class="dropdown-item" href="/orgchart">All Departments</a>
                             <% units.forEach(function(unit){ %>
-                              <a class="dropdown-item" href="/orgchart/<%= unit.value%>"><%= unit.value%></a>
-                            <% }) %>
+                              <a class="dropdown-item" href="/orgchart/<%= unit.id%>"><%= unit.value%></a>
+                            <% }); %>
                         </div>
                       </div>
                  </ul>

@@ -9,43 +9,38 @@ const Message = require('../modules/message');
 const mongoose = require('mongoose');
 
 
-//CONTACTS ROUTES
+//show the user's contact list
 router.get("/users/:id/contacts" ,(req ,res)=>{
-    User.findById(req.params.id ,'-children -events -unit').populate({
+    User.findById(req.params.id ,'-events -unit').populate({
         path: 'contacts',
-        select: '-children -events -sentProjects -area -office -tags -firstName -lastName -isLoggedUser -receivedProjects -assignedProjects -sentMails -receivedMails -contacts -unit'
+        select: '-events -sentProjects -area -office -tags -firstName -lastName -isLoggedUser -receivedProjects -assignedProjects -sentMails -receivedMails -contacts -unit'
     }).exec((err ,user)=>{
         if(err){throw err;}
         else{
-            Unit.find().exec((err ,units)=>{
-                if(err){throw err;}
-                else{
-                    var contactsForSearch = user.contacts;
-                    var contacts = [];
-                    for (i = 0; i < 26; i++) {
-                        // console.log((i+10).toString(36));
-                        // console.log(String.fromCharCode(97 + i)); //(97 lowerCase) - (65 upperCase)
-                        var chrL = String.fromCharCode(97 + i);
-                        var chrU = String.fromCharCode(65 + i);
-                        var chrArray = [];
-                        user.contacts.forEach(function(contact){
-                            if(contact.username[0] == chrL || contact.username[0] == chrU){
-                                chrArray.push(contact);
-                            }
-                        });
-                        contacts.push(chrArray.sort());
+            var contactsForSearch = user.contacts;
+            var contacts = [];
+            for (i = 0; i < 26; i++) {
+                // console.log((i+10).toString(36));
+                // console.log(String.fromCharCode(97 + i)); //(97 lowerCase) - (65 upperCase)
+                var chrL = String.fromCharCode(97 + i);
+                var chrU = String.fromCharCode(65 + i);
+                var chrArray = [];
+                user.contacts.forEach(function(contact){
+                    if(contact.username[0] == chrL || contact.username[0] == chrU){
+                        chrArray.push(contact);
                     }
-                    User.find({} ,'-children -events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit' ,(err ,usersList)=>{
-                        if(err){throw err;}
-                        res.render("users/contacts" ,{user: user ,units: units ,contacts: contacts ,usersList: JSON.stringify(usersList) ,contactsForSearch: JSON.stringify(contactsForSearch)});
-                        // console.log(contacts);
-                    });
-                }
+                });
+                contacts.push(chrArray.sort());
+            }
+            User.find({} ,'-children -events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit' ,(err ,usersList)=>{
+                if(err){throw err;}
+                res.render("users/contacts" ,{user: user ,contacts: contacts ,usersList: JSON.stringify(usersList) ,contactsForSearch: JSON.stringify(contactsForSearch)});
             });
         }
     });
 });
 
+//add new contact
 router.post("/users/:id/contacts" ,(req ,res)=>{
     User.findById(req.params.id ,(err ,user)=>{
         if(err){throw err;}
@@ -59,6 +54,7 @@ router.post("/users/:id/contacts" ,(req ,res)=>{
     });
 });
 
+//delete a contact
 router.delete("/users/:id/contacts/:contactId" ,(req ,res)=>{
     User.findById(req.params.id ,(err ,user)=>{
         if(err){throw err;}
@@ -72,6 +68,7 @@ router.delete("/users/:id/contacts/:contactId" ,(req ,res)=>{
     });
 });
 
+//show chat
 router.get("/users/:id/contacts/:cnctId/chat" ,(req ,res)=>{
     // {
     //     path: 'sentMessages'
@@ -79,16 +76,11 @@ router.get("/users/:id/contacts/:cnctId/chat" ,(req ,res)=>{
     //     path: 'receivedMessages'
     // },{
     //     path: 'receivedMessages.sent_by',
-    //     select: '-children -events -sentProjects -area -office -tags -firstName -lastName -isLoggedUser -receivedProjects -assignedProjects -sentMails -receivedMails -contacts -unit'
+    //     select: '-events -sentProjects -area -office -tags -firstName -lastName -isLoggedUser -receivedProjects -assignedProjects -sentMails -receivedMails -contacts -unit'
     // }
 
     // User.findById(req.params.id ,(err ,user)=>{
     //     if(err){throw err;}
-        // bruuuuuuuuuuuuhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
-        // bruuuuuuuuuuuuhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
-        // bruuuuuuuuuuuuhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
-        // bruuuuuuuuuuuuhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
-
         // var ObjectId = require('mongoose').Types.ObjectId;
         // var paramsId = new ObjectId( (req.params.id.length < 12) ? "123456789012" : req.params.id);
         // var paramsCnctId = new ObjectId( (req.params.cnctId.length < 12) ? "123456789012" : req.params.cnctId);
@@ -116,36 +108,32 @@ router.get("/users/:id/contacts/:cnctId/chat" ,(req ,res)=>{
     //     });
     // });
 
-    User.findById(req.params.id ,'-children').populate('sentMessages receivedMessages').exec((err ,user)=>{
+    User.findById(req.params.id).populate('sentMessages receivedMessages').exec((err ,user)=>{
         if(err){throw err;}
         else{
-            Unit.find().exec((err ,units)=>{
-                if(err){throw err;}
-                else{
-                    var sentMessages = [];
-                    user.sentMessages.forEach(function(message){
-                        if(message.sent_to == req.params.cnctId){
-                            sentMessages.push(message);
-                        }
-                    });
-                    var receivedMessages = [];
-                    user.receivedMessages.forEach(function(message){
-                        if(message.sent_by == req.params.cnctId){
-                            receivedMessages.push(message);
-                        }
-                    });
-                    var chat = sentMessages.concat(receivedMessages);
-                    chat.sort((a, b) => a.sent_at.localeCompare(b.sent_at));
-                    User.findById(req.params.cnctId ,'-children -events -sentProjects -area -office -tags -firstName -lastName -isLoggedUser -receivedProjects -assignedProjects -sentMails -receivedMails -contacts -unit' ,(err ,contact)=>{
-                        if(err){throw err;}
-                        res.render("users/chat" ,{user: user ,units: units ,contact: contact ,chat: chat});
-                    });
+            var sentMessages = [];
+            user.sentMessages.forEach(function(message){
+                if(message.sent_to == req.params.cnctId){
+                    sentMessages.push(message);
                 }
+            });
+            var receivedMessages = [];
+            user.receivedMessages.forEach(function(message){
+                if(message.sent_by == req.params.cnctId){
+                    receivedMessages.push(message);
+                }
+            });
+            var chat = sentMessages.concat(receivedMessages);
+            chat.sort((a, b) => a.sent_at.localeCompare(b.sent_at));
+            User.findById(req.params.cnctId ,'-children -events -sentProjects -area -office -tags -firstName -lastName -isLoggedUser -receivedProjects -assignedProjects -sentMails -receivedMails -contacts -unit' ,(err ,contact)=>{
+                if(err){throw err;}
+                res.render("users/chat" ,{user: user ,contact: contact ,chat: chat});
             });
         }
     });
 });
 
+//sent new message
 router.post("/users/:id/contacts/:cnctId/chat" ,(req ,res)=>{
     var message = new Message({
         sent_by: req.params.id,

@@ -5,44 +5,29 @@ const Unit = require("../modules/unit");
 const User = require("../modules/user");
 
 
-router.get("/companystructure" ,(req ,res)=>{
-    res.render("charts/companystructure");
-});
-
+//get the company's full orgchart
 router.get("/orgchart" ,(req ,res)=>{
-    User.findOne({name: "Ian Devling"}).exec(function(err ,users){
+    User.GetFullArrayTree(function(err ,tree){
         if(err){throw err;}
         else{
-            Unit.find({type: 'department'} ,'-desc' ,(err ,units)=>{
-                if(err){throw err;}
-                else{
-                    var dataa = JSON.stringify(users);
-                    res.render("charts/orgchart" ,{dataa: dataa ,units: units});
-                }
-            });
+            var dataa = JSON.stringify(tree[0]);
+            res.render("charts/orgchart" ,{dataa: dataa});
         }
     });
 });
 
-
-router.get("/orgchart/:value" ,(req ,res)=>{
-    Unit.findOne({value: req.params.value}).exec(function(err ,unit){
+//get a specific department orgchart
+router.get("/orgchart/:departmentId" ,(req ,res)=>{
+    Unit.findById(req.params.departmentId ,(err ,unit)=>{
         if(err){throw err;}
         else{
-            User.findById(unit.currentHead, (err ,user)=>{
+            User.GetArrayTree(unit.currentHead, (err ,tree)=>{
                 if(err){throw err;}
                 else{
-                    Unit.find({type: 'department'} ,'-desc' ,(err ,units)=>{
-                        if(err){throw err;}
-                        else{
-                            var dataa =JSON.stringify(user);
-                            res.render("charts/orgchart" ,{dataa: dataa ,units: units});
-                        }
-                    });
+                    var dataa =JSON.stringify(tree[0]);
+                    res.render("charts/orgchart" ,{dataa: dataa});
                 }
             });
-            
-            // <a href="/orgchart/<%= infodepid%>">link to departement of info</a>
         }
     });
 });

@@ -4,13 +4,8 @@ const Project = require("./project");
 const Mail = require("./mail");
 const Message = require("./message");
 const eventSchema = require("./event");
-// const receivedMailsSchema = require('./receivedMails');
 const passportLocalMongoose = require("passport-local-mongoose");
-
-// const receivedMailsSchema =  mongoose.Schema({
-//   body: {type: mongoose.Schema.Types.ObjectId, ref:'Mail'},
-//   received_at: String
-// });
+materializedPlugin = require('mongoose-materialized');
 
 
 const userSchema = mongoose.Schema({
@@ -26,7 +21,6 @@ const userSchema = mongoose.Schema({
   isLoggedUser: {type: Boolean , default: false},
   unit: {type: mongoose.Schema.Types.ObjectId, ref:'Unit'},
   positionName: String,
-  children: [{ type: mongoose.Schema.Types.ObjectId, ref:'User'}],
 
   contacts: [{ type: mongoose.Schema.Types.ObjectId, ref:'User'}],
 
@@ -43,22 +37,22 @@ const userSchema = mongoose.Schema({
   receivedMessages: [{type: mongoose.Schema.Types.ObjectId, ref:'Message'}]
 });
 
-var autoPopulateChildren = function(next) {
-  this.populate('children');
-  next();
-};
-var autoPopulateUnits = function(next) {
-  this.populate('unit' ,'-desc');
-  next();
-};
+// var autoPopulateChildren = function(next) {
+//   this.populate('children');
+//   next();
+// };
+// var autoPopulateUnits = function(next) {
+//   this.populate('unit' ,'-desc');
+//   next();
+// };
 
-userSchema
-.pre('findOne', autoPopulateChildren)
-.pre('find', autoPopulateChildren)
-.pre('findOne', autoPopulateUnits)
-.pre('find', autoPopulateUnits);
+// userSchema
+// .pre('findOne', autoPopulateChildren)
+// .pre('find', autoPopulateChildren)
+// .pre('findOne', autoPopulateUnits)
+// .pre('find', autoPopulateUnits);
 
 userSchema.plugin(passportLocalMongoose);
-
+userSchema.plugin(materializedPlugin);
 
 module.exports = new mongoose.model('User' ,userSchema);

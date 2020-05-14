@@ -78,7 +78,7 @@
 
             <div class="container mt-4 px-3 pt-5">
                 <div class="row d-flex justify-content-center">
-                    <%if(user.children.length > 0){%>
+                    <%if(children.length > 0){%>
                         <div class="column col-sm-6 text-center">
                             <span class="inputsTitles d-block my-1">Send To</span>
     
@@ -87,7 +87,7 @@
                                 <i class="dropdown icon"></i>
                                 <div class="default text">Send To</div>
                                 <div class="menu">
-                                    <%user.children.forEach(function(child){%>
+                                    <%children.forEach(function(child){%>
                                         <div class="item" data-value="<%= child._id%>">
                                             <img class="ui avatar image" src="<%= child.imageUrl%>">
                                             <span class="bitraf"><%= child.username%></span>
@@ -111,7 +111,7 @@
                                     <img class="ui avatar image" src="<%= user.imageUrl%>">
                                     <span class="bitraf">Self</span>
                                 </div>
-                                <%user.children.forEach(function(child){%>
+                                <%children.forEach(function(child){%>
                                     <div class="item" data-value="<%= child._id%>">
                                         <img class="ui avatar image" src="<%= child.imageUrl%>">
                                         <span class="bitraf"><%= child.username%></span>
@@ -124,7 +124,9 @@
                 </div>
             </div>
             <div class="my-2 d-flex justify-content-between">
-                <button id="sendProject" class="standardBtnStyle">Send Project</button>
+                <%if(children.length > 0){%>
+                    <button id="sendProject" class="standardBtnStyle">Send Project</button>
+                <%}%>
                 <a href="/users/<%= user._id%>/projects/received" class="goBackBtn float-right py-3 px-5">Go Back</a>
             </div>
         </form>
