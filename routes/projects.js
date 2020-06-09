@@ -51,10 +51,16 @@ router.get("/users/:id/projects/assigned/:prjId/detail" ,(req ,res)=>{
         else{
             user.getChildren(function(err ,children){
                 if(err){throw err;}
-                Project.findById(req.params.prjId ,'-discussion -tree -sentTo -assignedTo -createdBy').populate({
+                Project.findById(req.params.prjId ,'-discussion -tree -sentTo -assignedTo -createdBy').populate([{
                     path: 'lastUpdateBy',
                     select: '-events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit'
-                }).exec((err ,project)=>{
+                },{
+                    path: 'history.actor',
+                    select: '-events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit'
+                },{
+                    path: 'history.receiver',
+                    select: '-events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit'
+                }]).exec((err ,project)=>{
                     if(err){throw err;}
                     res.render("users/assignedProjectDetail" ,{user: user ,children: children ,project: project});
                 });
@@ -130,21 +136,31 @@ router.delete("/users/:id/projects/assigned/:prjId" ,(req ,res)=>{
                     }
                 }
                 user.save(()=>{
-                    Tree.findOne({user :req.params.id ,project: req.params.prjId} ,(err ,treeNode)=>{
+                    Project.findById(req.params.prjId ,(err ,project)=>{
                         if(err){throw err;}
-                        if(treeNode.sentTo == false){
-                            Tree.findByIdAndRemove(treeNode._id ,(err)=>{
+                        project.history.push({
+                            action: 'unassign',
+                            actor: req.params.id,
+                            at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                        });
+                        project.save(()=>{
+                            Tree.findOne({user :req.params.id ,project: req.params.prjId} ,(err ,treeNode)=>{
                                 if(err){throw err;}
-                                res.redirect("/users/"+req.params.id+"/projects/assigned");
+                                if(treeNode.sentTo == false){
+                                    Tree.findByIdAndRemove(treeNode._id ,(err)=>{
+                                        if(err){throw err;}
+                                        res.redirect("/users/"+req.params.id+"/projects/assigned");
+                                    });
+                                }
+                                else{
+                                    treeNode.assigned = false;
+                                    treeNode.save((err)=>{
+                                        if(err){throw err;}
+                                        res.redirect("/users/"+req.params.id+"/projects/assigned");
+                                    });
+                                }
                             });
-                        }
-                        else{
-                            treeNode.assigned = false;
-                            treeNode.save((err)=>{
-                                if(err){throw err;}
-                                res.redirect("/users/"+req.params.id+"/projects/assigned");
-                            });
-                        }
+                        });
                     });
                 });
             }
@@ -181,10 +197,16 @@ router.get("/users/:id/projects/received/:prjId/detail" ,(req ,res)=>{
         else{
             user.getChildren(function(err ,children){
                 if(err){throw err;}
-                Project.findById(req.params.prjId ,'-discussion -tree -sentTo -assignedTo -createdBy').populate({
+                Project.findById(req.params.prjId ,'-discussion -tree -sentTo -assignedTo -createdBy').populate([{
                     path: 'lastUpdateBy',
                     select: '-events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit'
-                }).exec((err ,project)=>{
+                },{
+                    path: 'history.actor',
+                    select: '-events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit'
+                },{
+                    path: 'history.receiver',
+                    select: '-events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit'
+                }]).exec((err ,project)=>{
                     if(err){throw err;}
                     res.render("users/receivedProjectDetail" ,{user: user ,children: children ,project: project});
                 });  
@@ -284,10 +306,16 @@ router.get("/users/:id/projects/sent/:prjId/detail" ,(req ,res)=>{
         else{
             user.getChildren(function(err ,children){
                 if(err){throw err;}
-                Project.findById(req.params.prjId ,'-discussion -tree -sentTo -assignedTo -createdBy').populate({
+                Project.findById(req.params.prjId ,'-discussion -tree -sentTo -assignedTo -createdBy').populate([{
                     path: 'lastUpdateBy',
                     select: '-events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit'
-                }).exec((err ,project)=>{
+                },{
+                    path: 'history.actor',
+                    select: '-events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit'
+                },{
+                    path: 'history.receiver',
+                    select: '-events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit'
+                }]).exec((err ,project)=>{
                     if(err){throw err;}
                     res.render("users/sentProjectDetail" ,{user: user ,children: children ,project: project});
                 });
@@ -429,15 +457,36 @@ router.post("/users/:id/projects/sent" ,(req ,res)=>{
     project.start = project.start.replace(/\//g, "-");
     project.end = project.end.replace(/\//g, "-");
     project.createdBy = req.params.id;
+    project.history.push({
+        action: 'create',
+        actor: req.params.id,
+        at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+    });
     if(req.body.sentTo !== undefined){
         var sentTo = req.body.sentTo.split(",");
         project.sentTo = sentTo;
         project.sentToList = project.sentToList.concat(sentTo).unique();
+        sentTo.forEach(function(st){
+            project.history.push({
+                action: 'send',
+                actor: req.params.id,
+                receiver: st,
+                at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+            });
+        });  
     }
     if(req.body.assignedTo !== undefined){
         var assignedTo = req.body.assignedTo.split(",");
         project.assignedTo = assignedTo;
         project.assignedToList = project.assignedToList.concat(assignedTo).unique();
+        assignedTo.forEach(function(at){
+            project.history.push({
+                action: 'assign',
+                actor: req.params.id,
+                receiver: at,
+                at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+            });
+        });  
     }
     project.save((err ,project)=>{
         if(err){throw err;}
@@ -564,18 +613,34 @@ router.post("/users/:id/projects/sent" ,(req ,res)=>{
 });
 
 //re-sending a sent project
-router.post("/users/:id/projects/sent/:prjId/reSend" ,(req ,res)=>{
+router.post("/users/:id/projects/:prjId/send" ,(req ,res)=>{
     Project.findById(req.params.prjId ,(err ,project)=>{
         if(err){throw err;}
         if(req.body.sentTo !== undefined){
             var sentTo = req.body.sentTo.split(",");
             project.sentTo = sentTo;
             project.sentToList = project.sentToList.concat(sentTo).unique();
+            sentTo.forEach(function(st){
+                project.history.push({
+                    action: 'send',
+                    actor: req.params.id,
+                    receiver: st,
+                    at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                });
+            });
         }
         if(req.body.assignedTo !== undefined){
             var assignedTo = req.body.assignedTo.split(",");
             project.assignedTo = assignedTo;
             project.assignedToList = project.assignedToList.concat(assignedTo).unique();
+            assignedTo.forEach(function(at){
+                project.history.push({
+                    action: 'assign',
+                    actor: req.params.id,
+                    receiver: at,
+                    at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                });
+            });
         }
         project.save((err ,project)=>{
             if(err){throw err;}
@@ -611,6 +676,7 @@ router.post("/users/:id/projects/sent/:prjId/reSend" ,(req ,res)=>{
                                             user.save();
                                         });
                                     }else {
+                                        //sending history
                                         if(trv.sentTo == false){
                                             User.findById(st._id ,(err ,user)=>{
                                                 if(err){throw err;}
@@ -709,7 +775,6 @@ router.post("/users/:id/projects/sent/:prjId/reSend" ,(req ,res)=>{
         });
     });
 });
-
 
 
 module.exports = router;

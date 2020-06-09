@@ -7,57 +7,158 @@
         <span class="sentReceivedSpan">Sent Mails</span>
       </a>
     </div>
-    <div id="sentMailsContainer">
-      <div class="container">
-        <a href="/users/<%= user._id%>/mails/sent/new" class="d-block standardBtnStyle mt-2 mb-3" style="padding: 7px; width: 100%;">New Mail</a>  
+    <!-- some infos -->
+    <p id="userId" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= user._id%></p>
+    <input type="text" id="mailsType" value="sent" class="d-none">
+    <!-- Mails list -->
+    <textarea name="" id="itemsTextArea" cols="100" rows="10" class="d-none">
+      <%= JSON.stringify(sentMails)%>
+    </textarea>
+
+    <div class="row my-4">
+      <div class="column col-sm-6 d-flex justify-content-center">
+        <!-- search -->
+        <div id="search" class="ui search text-center">
+          <div class="ui icon input form-group form-inline">
+            <input id="searchTextbox" class="prompt" type="text" placeholder="Search sent mail...">
+            <i class="search icon"></i>
+          </div>
+        </div>
       </div>
-        <div id="sentMailsList" class="container scrollDiv mt-4 p-4">
-          <% const sentMails = user.sentMails;%>
+      <div class="column col-sm-6 d-flex justify-content-center">
+        <a href="/users/<%= user._id%>/mails/sent/new" class="d-block standardBtnStyle" style="padding: 7px; width: 60%; height: 37.67px;">New Mail</a>    
+      </div>
+    </div>
+
+    <!-- results -->
+    <textarea id="resultTextArea" cols="100" rows="5" class="nohighlight m-0 p-0 d-none"></textarea>
+    <div class="form-group d-none">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" id="sortCheckbox" checked="checked">Sort
+        </label>
+        <span id="helpBlock" class="help-block">Whether to sort the result list, by score.</span>
+      </div>
+    </div>
+    <div class="form-group form-inline d-none">
+        <label for="thresholdRange">Threshold</label>
+        <input type="number" id="thresholdRange" min="0" step="0.1" max="1" value="0.0">
+        <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
+    </div>
+
+    
+
+    <div id="sentMailsContainer">
+      
+        <div id="mailsList" class="container scrollDiv mt-4 p-4">
           <%var i = 0;%>
-          <input type="text" name="" id="sentMailsLength" value="<%= sentMails.length%>" class="d-none">
+          <input type="text" name="" id="mailsLength" value="<%= sentMails.length%>" class="d-none">
           <%sentMails.forEach(function(sentMail){%>
-            <div onclick='location.href="/users/<%= user._id%>/mails/sent/<%= sentMail._id%>/content"' class="hoverableDiv row d-flex justify-content-between py-2 px-5 m-2">
-              <span class="bitraf" style="font-size: 1.2em;">
-                Title :
-                <%if(sentMail.title == ''){%>
-                  None
-                <%}else{%>
-                  <%= sentMail.title%>
-                <%}%>
-              </span>
-              <!-- <div id="sendingHistory" class="ui inline dropdown"> -->
-              <div id="sendingHistory<%=i%>" class="sendingHistory ui top right pointing dropdown link item">
-                <span id="sendingHistoryHeader<%=i%>" class="sendingHistoryHeader">
-                  <i class="fas fa-history"></i> Sending History
-                </span>
-                <i class="dropdown icon"></i>
-                <div id="sendingHistoryMenu<%=i%>" class="sendingHistoryMenu menu">
-                  <% sentMail.sending_history.forEach(function(elt){%>
-                      <div class="item">
-                            <%if(elt.sending_type == 'send'){%>
-                              <span style="white-space:pre;">sent to : </span>
-                            <%}else{%>
-                              <span style="white-space:pre;">  CC      : </span>
-                            <%}%>
-                            <img class="ui avatar image mr-0 pr-0" src="<%= elt.sent_to.imageUrl%>">
-                            <span class="bitraf ml-0 pl-0 mr-5"><%= elt.sent_to.username%></span>
-                            <% if(elt.read == false){%>
-                              <!-- <span class="bitraf">not yet</span> -->
-                              <span class="float-right bitraf">not yet</span>
-                            <%}else{%>
-                              <!-- <span class="bitraf">done</span> -->
-                              <span class="float-right" style="color: #09ed1c; white-space:pre;">done   </span>
-                            <%}%>
-                            <span class="float-right">read :</span>
-                            <span class="bitraf float-right mr-5"> <%= elt.sent_at%></span>
-                            <span class="float-right">at :</span>
-                      </div>
-                  <%});%>
+            <div id="sentMailContainer<%=i%>" >
+              <input type="text" id="mail<%=i%>Id" value="<%= sentMail._id%>" class="d-none">
+              <div  onclick='location.href="/users/<%= user._id%>/mails/sent/<%= sentMail._id%>/content"' class="hoverableDiv row d-flex justify-content-between py-2 px-5 m-2">
+                <div>
+                  <span class="bitraf mr-2" style="font-size: 1.3em;">
+                    <i class="fas fa-paper-plane"></i>
+                  </span>
+                  <span class="bitraf" style="font-size: 1.2em;">
+                    Title :
+                    <%if(sentMail.title == ''){%>
+                      None
+                    <%}else{%>
+                      <%= sentMail.title%>
+                    <%}%>
+                  </span>
                 </div>
+                <div class="d-flex justify-content-between text-align-center">
+                  <div id="replies<%=i%>" class="ui top right pointing dropdown link item mr-4">
+                    <span id="repliesHeader<%=i%>" class="repliesHeader">
+                      <i class="fas fa-history"></i> Replies
+                      <div class="floating ui red label">22</div>
+                    </span>
+                    <i class="dropdown icon"></i>
+                    <div id="repliesMenu<%=i%>" class="repliesMenu menu">
+                      <% sentMail.replies.forEach(function(reply){%>
+                          <div class="item">
+                            <div class="row">
+                              <div class="column col-6 d-flex align-items-center">
+                                <span class="bitraf mr-4" style="font-size: 1.5em;">
+                                  <%if(reply.read == false){%>
+                                    <i class="fas fa-envelope"></i>
+                                  <%}else{%>
+                                    <i class="fas fa-envelope-open"></i>
+                                  <%}%>
+                                </span>
+                                <span>From: </span>
+                                <img class="ui avatar image mr-1 ml-2 pr-0" src="<%= reply.senderImage%>">
+                                <span class="bitraf ml-0 pl-0 mr-4"><%= reply.senderUsername%></span>
+                              </div>
+
+                              <div class="column col-6 d-flex align-items-center justify-content-end">
+                                <span>at :</span>
+                                <span class="bitraf"> <%= reply.created_at%></span>
+                              </div>
+                            </div>
+                              
+
+                              
+                          </div>
+                      <%});%>
+                    </div>
+                  </div>
+
+                  <div id="sendingHistory<%=i%>" class="sendingHistory ui top right pointing dropdown link item">
+                    <span id="sendingHistoryHeader<%=i%>" class="sendingHistoryHeader">
+                      <i class="fas fa-history"></i> Sending History
+                    </span>
+                    <i class="dropdown icon"></i>
+                    <div id="sendingHistoryMenu<%=i%>" class="sendingHistoryMenu menu">
+                      <% sentMail.sending_history.forEach(function(elt){%>
+                          <div class="item">
+                                <%if(elt.sending_type == 'send'){%>
+                                  <span style="white-space:pre;">sent to    : </span>
+                                <%}else if(elt.sending_type == 'visible'){%>
+                                  <span style="white-space:pre;">visible to : </span>
+                                <%}else{%>
+                                  <span style="white-space:pre;">  CC       : </span>
+                                <%}%>
+                                <img class="ui avatar image mr-0 pr-0" src="<%= elt.sent_to.imageUrl%>">
+                                <span class="bitraf ml-0 pl-0 mr-5"><%= elt.sent_to.username%></span>
+                                <% if(elt.read == false){%>
+                                  <span class="float-right bitraf">not yet</span>
+                                <%}else{%>
+                                  <span class="float-right" style="color: #09ed1c; white-space:pre;">done   </span>
+                                <%}%>
+                                <span class="float-right">read :</span>
+                                <span class="bitraf float-right mr-5"> <%= elt.sent_at%></span>
+                                <span class="float-right">at :</span>
+                          </div>
+                      <%});%>
+                    </div>
+                  </div>
+
+
+
+                  <div class="float-right d-flex justify-content-between text-align-center ml-3">
+                    <form action="/users/<%= user._id%>/mails/sent/<%= sentMail._id%>/archive" method="POST">
+                      <button  class="contactsIcons" data-inverted="" data-tooltip="Archive" data-position="top center"><i class="fas fa-archive"></i></button>
+                    </form>
+                    <form action="/users/<%= user._id%>/mails/sent/<%= sentMail._id%>?_method=DELETE" method="POST">
+                      <button  class="contactsIcons" data-inverted="" data-tooltip="Delete" data-position="top center"><i class="fas fa-trash-alt"></i></button>
+                    </form>
+                  </div>
+                </div>
+
               </div>
             </div>
+            
             <% i++%>
           <%});%>
         </div>
+
+        <input type="text" id="iValue" value="<%=i%>" class="d-none">
+        <!--Search results-->
+        <div id="mailSearchResults" class="container scrollDiv mt-4 p-4 d-none"></div>
+
     </div>
 <%- include('../partials/mailsFooter')%>

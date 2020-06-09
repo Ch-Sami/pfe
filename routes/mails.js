@@ -17,7 +17,7 @@ router.get("/users/:id/mails/sent/new" ,(req ,res)=>{
             User.find({} ,'-events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl' ,(err ,usersList)=>{
                 if(err){throw err;}
                 if(req.query.sendTo == undefined){
-                    res.render("users/newMail" ,{user: user ,units: units ,sendTo: undefined,usersList: JSON.stringify(usersList)});
+                    res.render("users/newMail" ,{user: user ,sendTo: undefined,usersList: JSON.stringify(usersList)});
                 }else{
                     User.findById(req.query.sendTo ,(err ,sendTo)=>{
                         if(err){throw err}
@@ -59,6 +59,7 @@ router.get("/users/:id/mails/received" ,(req ,res)=>{
                 });
                 receivedMails.push(receivedMail);
             });
+            user.depopulate('receivedMails');
             res.render("users/receivedMails" ,{user: user ,receivedMails: receivedMails});
         }
     });
@@ -70,15 +71,50 @@ router.get("/users/:id/mails/sent" ,(req ,res)=>{
     .populate({
         path: 'sentMails',
         select: '-text',
-        populate: {
+        populate: [{
             path: 'sending_history.sent_to',
-            select: '-events -sentMessages -receivedMessages -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
-        }
+            select: '-events -sentMessages -receivedMessages -tags -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
+        },{
+            path: 'replies',
+            select: '-title -text -replies',
+            populate: {
+                path: 'sent_by',
+                select: '-events -sentMessages -receivedMessages -tags -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
+            }
+        }]
     })
     .exec((err ,user)=>{
         if(err){throw err;}
         else{
-            res.render("users/sentMails" ,{user: user});
+            var sentMails = [];
+
+
+            user.sentMails.forEach(function(sm){
+                var sentMail = {
+                    _id: sm._id,
+                    title: sm.title,
+                    sending_history: sm.sending_history,
+                    replies: []
+                }
+                sm.replies.forEach(function(r){
+                    var reply = {
+                        _id: r._id,
+                        created_at: r.created_at,
+                        senderUsername: r.sent_by.username,
+                        senderImage: r.sent_by.imageUrl
+                    }
+                    r.sending_history.forEach(function(elt){
+                        if(elt.sent_to == user.id){
+                            reply.read = elt.read;
+                        }
+                    });
+                    sentMail.replies.push(reply);
+                });
+                sentMails.push(sentMail);
+            });
+
+            user.depopulate('sentMails');
+            res.render("users/sentMails" ,{user: user ,sentMails: sentMails});
         }
     });
 });
@@ -98,7 +134,7 @@ router.get("/users/:id/mails/sent/:mailId/content" ,(req ,res)=>{
                         if(err){throw err;}
                         User.find({} ,'-children -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl' ,(err ,usersList)=>{
                             if(err){throw err;}
-                            res.render("users/sentMailContent" ,{user: user ,units: units ,mail: mail ,usersList: JSON.stringify(usersList)});
+                            res.render("users/sentMailContent" ,{user: user ,mail: mail ,usersList: JSON.stringify(usersList)});
                         });
                         // console.log(mail);
                     });
@@ -109,7 +145,7 @@ router.get("/users/:id/mails/sent/:mailId/content" ,(req ,res)=>{
 });
 
 //show a received mail's content
-router.get("/users/:id/mails/received/:mailId" ,(req ,res)=>{
+router.get("/users/:id/mails/received/:mailId/content" ,(req ,res)=>{
     User.findById(req.params.id ,(err ,user)=>{
         if(err){throw err;}
         else{
@@ -154,8 +190,10 @@ router.post("/users/:id/mails/sent" ,(req ,res)=>{
         sent_by: req.params.id,
         title: req.body.title,
         text: req.body.text,
-        created_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+        created_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+        usersThatDidNotDelete: []
     });
+    mail.usersThatDidNotDelete.push(req.params.id);
     receivers.forEach(function(receiver){
         var elt = {
             sending_type: 'send',
@@ -164,6 +202,7 @@ router.post("/users/:id/mails/sent" ,(req ,res)=>{
             read: false
         }
         mail.sending_history.push(elt);
+        mail.usersThatDidNotDelete.push(receiver);
     });
     if(req.body.CCs !== undefined){
         CCs.forEach(function(CC){
@@ -174,6 +213,7 @@ router.post("/users/:id/mails/sent" ,(req ,res)=>{
                 read: false
             }
             mail.sending_history.push(elt);
+            mail.usersThatDidNotDelete.push(CC);
         });
     }
     mail.save((err ,mail)=>{
@@ -221,6 +261,7 @@ router.post("/users/:id/mails/sent/:mailId/reSent" ,(req ,res)=>{
                 read: false
             }
             mail.sending_history.push(elt);
+            mail.usersThatDidNotDelete.push(receiver);
             User.findById(receiver ,(err ,receiver)=>{
                 if(err){throw err;}
                 receiver.receivedMails.push(mail);
@@ -236,6 +277,7 @@ router.post("/users/:id/mails/sent/:mailId/reSent" ,(req ,res)=>{
                     read: false
                 }
                 mail.sending_history.push(elt);
+                mail.usersThatDidNotDelete.push(CC);
                 User.findById(CC ,(err ,CC)=>{
                     if(err){throw err;}
                     CC.receivedMails.push(mail);
@@ -279,7 +321,39 @@ router.get("/users/:id/mails/received/:mailId/replies/new" ,(req ,res)=>{
                         });
                     }
                 }
-                res.render("users/newMailReply" ,{user: user ,mail: mail});
+                res.render("users/newMailReply" ,{user: user ,mail: mail ,type: 'received'});
+            });
+        }
+    });
+});
+router.get("/users/:id/mails/sent/:mailId/replies/new" ,(req ,res)=>{
+    User.findById(req.params.id ,'-children' ,(err ,user)=>{
+        if(err){throw err;}
+        else{
+            Mail.findById(req.params.mailId).populate([{
+                path: 'sent_by',
+                select: '-children -sentMessages -receivedMessages -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
+            },{
+                path: 'sending_history.sent_to',
+                select: '-children -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
+            }]).exec((err , receivedMail)=>{
+                if(err){throw err;}
+                var mail = {
+                    _id: receivedMail._id,
+                    title: receivedMail.title,
+                    sent_by: receivedMail.sent_by,
+                    receivers: []
+                }
+                for(var i = 0 ;i < receivedMail.sending_history.length ;i++){
+                    if(receivedMail.sending_history[i].sent_to._id != req.params.id){
+                        mail.receivers.push({
+                            _id: receivedMail.sending_history[i].sent_to._id,
+                            username: receivedMail.sending_history[i].sent_to.username,
+                            imageUrl: receivedMail.sending_history[i].sent_to.imageUrl
+                        });
+                    }
+                }
+                res.render("users/newMailReply" ,{user: user ,mail: mail ,type: 'sent'});
             });
         }
     });
@@ -306,17 +380,17 @@ router.post("/users/:id/mails/received/:mailId/replies" ,(req ,res)=>{
                 read: false
             }
             mail.sending_history.push(elt);
+            mail.usersThatDidNotDelete.push(vt);
         });
     }
+    mail.usersThatDidNotDelete.push(req.params.id);
     mail.save((err ,mail)=>{
         if(err){throw err}
         if(req.body.visibleTo !== undefined){
-            visibleTo.forEach(function(vtId){
-                User.findById(vtId ,(err ,vt)=>{
-                    if(err){throw err}
-                    vt.receivedMails.push(mail);
-                    vt.save();
-                });
+            User.findById(visibleTo[0] ,(err ,vt)=>{
+                if(err){throw err}
+                vt.receivedMails.push(mail);
+                vt.save();
             });
         }
         User.findById(req.params.id ,(err ,sender)=>{
@@ -327,7 +401,48 @@ router.post("/users/:id/mails/received/:mailId/replies" ,(req ,res)=>{
                     if(err){throw err;}
                     parentMail.replies.push(mail);
                     parentMail.save(()=>{
-                        res.redirect("/users/"+req.params.id+"/mails/sent");
+                        res.redirect("/users/"+req.params.id+"/mails/received/"+req.params.mailId+"/replies");
+                    });
+                });
+            });
+        });
+    });
+});
+router.post("/users/:id/mails/sent/:mailId/replies" ,(req ,res)=>{
+    if(req.body.visibleTo !== undefined){
+        var visibleTo = req.body.visibleTo.split(",");
+    }
+
+    var mail = new Mail({
+        sent_by: req.params.id,
+        title: req.body.title,
+        text: req.body.text,
+        created_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+    });
+    if(req.body.visibleTo !== undefined){
+        for(var i = 1 ; i < visibleTo.length ;i++){
+            var elt = {
+                sending_type: 'visible',
+                sent_to: visibleTo[i],
+                sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                read: false
+            }
+            mail.sending_history.push(elt);
+            mail.usersThatDidNotDelete.push(visibleTo[i]);
+        }
+    }
+    mail.usersThatDidNotDelete.push(req.params.id);
+    mail.save((err ,mail)=>{
+        if(err){throw err}
+        User.findById(req.params.id ,(err ,sender)=>{
+            if(err){throw err}
+            sender.sentMails.push(mail);
+            sender.save(()=>{
+                Mail.findById(req.params.mailId ,(err ,parentMail)=>{
+                    if(err){throw err;}
+                    parentMail.replies.push(mail);
+                    parentMail.save(()=>{
+                        res.redirect("/users/"+req.params.id+"/mails/sent/"+req.params.mailId+"/replies");
                     });
                 });
             });
@@ -346,36 +461,240 @@ router.get("/users/:id/mails/sent/:mailId/replies" ,(req ,res)=>{
                 path: 'replies',
                 populate: [{
                     path: 'sent_by',
-                    select: '-children -sentMessages -receivedMessages -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
+                    select: '-sentMessages -receivedMessages -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
                 },{
                     path: 'sending_history.sent_to',
-                    select: '-children -sentMessages -receivedMessages -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
+                    select: '-sentMessages -receivedMessages -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
                 }]
             })
             .exec((err , mail)=>{
                 if(err){throw err;}
                 var replies = [];
                 mail.replies.forEach(function(mr){
-                    var reply = {
-                        _id: mr._id,
-                        title: mr.title,
-                        sent_by: mr.sent_by.username,
-                        senderImage: mr.sent_by.imageUrl
-                    }
-                    mr.sending_history.forEach(function(elt){
-                        if(elt.sent_to._id == req.params.id){
-                            reply.received_at = elt.sent_at;
-                            reply.read = elt.read;
+                    if(mr.usersThatDidNotDelete.indexOf(user.id) > -1){
+                        var reply = {
+                            _id: mr._id,
+                            title: mr.title,
+                            senderId : mr.sent_by.id,
+                            sent_by: mr.sent_by.username,
+                            senderImage: mr.sent_by.imageUrl
                         }
-                    });
-                    replies.push(reply);
+                        if(reply.senderId == user._id){
+                            reply.sending_history = mr.sending_history;
+                        }else{
+                            mr.sending_history.forEach(function(elt){
+                                if(elt.sent_to._id == req.params.id){
+                                    reply.received_at = elt.sent_at;
+                                    reply.read = elt.read;
+                                }
+                            });
+                        }
+                        replies.push(reply);
+                    }
                 });
+                // console.log(replies);
                 res.render("users/sentMailReplies" ,{user: user ,mailId: req.params.mailId ,replies: replies});
             });
         }
     });
 });
 
+//show a received mail's replies
+router.get("/users/:id/mails/received/:mailId/replies" ,(req ,res)=>{
+    User.findById(req.params.id ,'-events' ,(err ,user)=>{
+        if(err){throw err;}
+        else{
+            Mail.findById(req.params.mailId)
+            .populate({
+                path: 'replies',
+                populate: [{
+                    path: 'sent_by',
+                    select: '-sentMessages -receivedMessages -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
+                },{
+                    path: 'sending_history.sent_to',
+                    select: '-sentMessages -receivedMessages -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
+                }]
+            })
+            .exec((err , mail)=>{
+                if(err){throw err;}
+                var replies = [];
+                mail.replies.forEach(function(mr){
+                    if(mr.usersThatDidNotDelete.indexOf(user.id) > -1){
+                        var reply = {
+                            _id: mr._id,
+                            title: mr.title,
+                            senderId : mr.sent_by.id,
+                            sent_by: mr.sent_by.username,
+                            senderImage: mr.sent_by.imageUrl
+                        }
+                        if(reply.senderId == user.id){
+                            reply.sending_history = mr.sending_history;
+                        }else{
+                            mr.sending_history.forEach(function(elt){
+                                if(elt.sent_to._id == req.params.id){
+                                    reply.received_at = elt.sent_at;
+                                    reply.read = elt.read;
+                                }
+                            });
+                        }
+                        replies.push(reply);
+                    }
+                });
+                res.render("users/receivedMailReplies" ,{user: user ,mailId: req.params.mailId ,replies: replies});
+            });
+        }
+    });
+});
+
+//delete sent Mail
+router.delete("/users/:id/mails/sent/:mailId" ,(req ,res)=>{
+    User.findById(req.params.id ,(err ,user)=>{
+        if(err){throw err;}
+        var index = user.sentMails.indexOf(req.params.mailId);
+        if (index > -1) {
+            user.sentMails.splice(index, 1);
+            user.save();
+        }
+        Mail.findById(req.params.mailId ,(err ,mail)=>{
+            if(err){throw err;}
+            var index = mail.usersThatDidNotDelete.indexOf(req.params.id);
+            if (index > -1) {
+                mail.usersThatDidNotDelete.splice(index, 1);
+                if(mail.usersThatDidNotDelete.length  == 0){
+                    Mail.findByIdAndRemove(req.params.mailId ,(err)=>{
+                        if(err){throw err;}
+                        res.redirect("/users/"+req.params.id+"/mails/sent/");
+                    });
+                }else{
+                    mail.save(()=>{
+                        res.redirect("/users/"+req.params.id+"/mails/sent/");
+                    });
+                }
+            }
+        });
+    });
+});
+
+//delete received mail
+router.delete("/users/:id/mails/received/:mailId" ,(req ,res)=>{
+    User.findById(req.params.id ,(err ,user)=>{
+        if(err){throw err;}
+        var index = user.receivedMails.indexOf(req.params.mailId);
+        if (index > -1) {
+            user.receivedMails.splice(index, 1);
+            user.save();
+        }
+        Mail.findById(req.params.mailId ,(err ,mail)=>{
+            if(err){throw err;}
+            var index = mail.usersThatDidNotDelete.indexOf(req.params.id);
+            if (index > -1) {
+                mail.usersThatDidNotDelete.splice(index, 1);
+                //deleting replies of the deleted received mail
+                var repliesIds = mail.replies;
+                repliesIds.forEach(function(replyId){
+                    Mail.findById(replyId ,(err ,reply)=>{
+                        if(err){throw err;}
+                        if(reply.sent_by == req.params.id){
+                            var index2 = reply.usersThatDidNotDelete.indexOf(req.params.id);
+                            if(index2 > -1){
+                                reply.usersThatDidNotDelete.splice(index, 1);
+                                if(reply.usersThatDidNotDelete.length == 0){
+                                    Mail.findByIdAndRemove(reply._id);
+                                }else{
+                                    reply.save();
+                                }
+                            }
+                        }
+                    });
+                });
+                //if all users deleted the mail , then delete it from database
+                if(mail.usersThatDidNotDelete.length  == 0){
+                    Mail.findByIdAndRemove(req.params.mailId ,(err)=>{
+                        if(err){throw err;}
+                        res.redirect("/users/"+req.params.id+"/mails/received/");
+                    });
+                }else{
+                    mail.save(()=>{
+                        res.redirect("/users/"+req.params.id+"/mails/received/");
+                    });
+                }
+            }
+        });
+    });
+});
+
+//delete sent mail reply
+router.delete("/users/:id/mails/sent/:mailId/replies/:replyId" ,(req ,res)=>{
+    Mail.findById(req.params.replyId ,(err ,mail)=>{
+        if(err){throw err;}
+        var index = mail.usersThatDidNotDelete.indexOf(req.params.id);
+        if (index > -1) {
+            mail.usersThatDidNotDelete.splice(index, 1);
+            if(mail.usersThatDidNotDelete.length  == 0){
+                Mail.findByIdAndRemove(req.params.replyId ,(err)=>{
+                    if(err){throw err;}
+                    res.redirect("/users/"+req.params.id+"/mails/sent/"+req.params.mailId+"/replies");
+                });
+            }else{
+                mail.save(()=>{
+                    User.findById(req.params.id ,(err ,user)=>{
+                        if(err){throw err;}
+                        if(req.body.replyType == 'sentReply'){
+                            var index = user.sentMails.indexOf(req.params.replyId);
+                            if (index > -1) {
+                                user.sentMails.splice(index, 1);
+                            }
+                        }else if(req.body.replyType == 'receivedReply'){
+                            var index = user.receivedMails.indexOf(req.params.replyId);
+                            if (index > -1) {
+                                user.receivedMails.splice(index, 1);
+                            }
+                        }
+                        user.save(()=>{
+                            res.redirect("/users/"+req.params.id+"/mails/sent/"+req.params.mailId+"/replies");
+                        })
+                    });
+                });
+            }
+        }
+    });
+});
+
+
+//delete received mail reply
+router.delete("/users/:id/mails/received/:mailId/replies/:replyId" ,(req ,res)=>{
+    Mail.findById(req.params.replyId ,(err ,mail)=>{
+        if(err){throw err;}
+        var index = mail.usersThatDidNotDelete.indexOf(req.params.id);
+        if (index > -1) {
+            mail.usersThatDidNotDelete.splice(index, 1);
+            if(mail.usersThatDidNotDelete.length == 0){
+                Mail.findByIdAndRemove(req.params.replyId ,(err)=>{
+                    if(err){throw err;}
+                    res.redirect("/users/"+req.params.id+"/mails/received/"+req.params.mailId+"/replies");
+                });
+            }else{
+                mail.save(()=>{
+                    if(req.body.replyType == 'sentReply'){
+                        User.findById(req.params.id ,(err ,user)=>{
+                            if(err){throw err;}
+                            var index = user.sentMails.indexOf(req.params.replyId);
+                            if (index > -1) {
+                                user.sentMails.splice(index, 1);
+                            }
+                            user.save();
+                        });
+                    }
+                    res.redirect("/users/"+req.params.id+"/mails/received/"+req.params.mailId+"/replies");
+                });
+            }
+        }
+    });
+});
+
+
+//remove user from all usersThatDidNotDelete of replies that he deleted their
+//      parent mail (only if he didnt receive the reply)(the parent mail was not sent by him)
 
 
 module.exports = router;

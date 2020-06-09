@@ -13,7 +13,8 @@ const mailSchema = mongoose.Schema({
         sent_at: String,
         read: Boolean
     }],
-    replies: [{type: mongoose.Schema.Types.ObjectId ,ref: 'Mail'}]
+    replies: [{type: mongoose.Schema.Types.ObjectId ,ref: 'Mail'}],
+    usersThatDidNotDelete: [{type: mongoose.Schema.Types.ObjectId ,ref: 'User'}]
 });
 // mailSchema.plugin(materializedPlugin);
 module.exports = new mongoose.model('Mail' ,mailSchema);

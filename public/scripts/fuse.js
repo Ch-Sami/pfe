@@ -192,7 +192,7 @@ $(function (window) {
         },
         setupKeys: function (trigger) {
           var text = this.$keysTextbox.val();
-          this.data.keys = ['username', 'firstName', 'lastName'];
+          this.data.keys = ['username', 'firstName', 'lastName' ,'title'];
           if (trigger) {
             this.trigger('change')
           }

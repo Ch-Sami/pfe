@@ -51,6 +51,8 @@
                                 <div class="item">
                                       <%if(elt.sending_type == 'send'){%>
                                         <span style="white-space:pre;">sent to :  </span>
+                                      <%}else if(elt.sending_type == 'visible'){%>
+                                        <span style="white-space:pre;">visible to :  </span>
                                       <%}else{%>
                                         <span style="white-space:pre;">  CC       :  </span>
                                       <%}%>

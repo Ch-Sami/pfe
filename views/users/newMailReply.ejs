@@ -1,10 +1,11 @@
 <%- include('../partials/profilHeader')%>
 <div class="container py-4">
-    <form id="newMailReplyFrm" class="ui form" action="/users/<%= user._id%>/mails/received/<%= mail._id%>/replies" method="post">
- 
+    
+        <form id="newMailReplyFrm" class="ui form" action="/users/<%= user._id%>/mails/<%=type%>/<%= mail._id%>/replies" method="post">
+    
         <div class="field mx-4 mt-4">
             <label><span class="inputsTitles">Title</span>
-              <input type="text" name="title" placeholder="Mail title">
+              <input id="reTitle" type="text" name="title" value="RE: <%= mail.title%>" placeholder="Mail title" disabled >
             </label>
         </div>
 

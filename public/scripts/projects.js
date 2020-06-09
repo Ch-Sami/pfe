@@ -182,6 +182,65 @@ $('#deleteProjectBtn').on('click' ,function(){
   $('#deleteProjectFrm').submit();
 });
 
+$('#searchTextbox').on('input' ,function(){
+  if($(this).val() == ''){
+    setTimeout(function(){
+      $('#projectsSearchResults').text('');
+      $('#projectsSearchResults').addClass('d-none');
+      $('#ProjectsContainer').removeClass('d-none');
+    } ,300);
+  }else{
+      setTimeout(function(){
+        $('#ProjectsContainer').addClass('d-none');
+        $('#projectsSearchResults').text('');
+        $('#projectsSearchResults').removeClass('d-none');
+        var results = JSON.parse($('#resultTextArea').text());
+        var userId = $('#userId').text();
+        var projectType = $('#projectType').val();
+        var i = 0;
+        results.forEach(function(result){
+          $('#projectsSearchResults').append([
+            '<div onclick=\'location.href="/users/'+userId+'/projects/'+projectType+'/'+result._id+'/detail"\' class="hoverableDiv py-2 px-5 m-2">',
+            '      <p class="mb-2"><span class="inputsTitles">'+result.title+'</span></p>',
+            '      <div class="row">',
+            '          <div class="column col-sm-5"><p class="mb-0">Start : '+result.start+'</p></div>',
+            '          <div class="column col-sm-7"><p class="mb-0">End : '+result.end+'</p></div>',
+            '      </div>',
+            '      <div class="row">',
+            '          <div class="column col-sm-2"><p class="mb-0">Progress :</p></div>',
+            '          <div class="column col-sm-10">',
+            '              <div class="miniProgressDiv">',
+            '                  <div class="ui indicating progress d-inline" id="miniProgress'+i+'S">',
+            '                      <div class="bar"></div>',
+            '                  </div>',
+            '              </div>',
+            '              <div class="ui input d-none">',
+            '                  <input  id="projectProgress'+i+'S" type="text" value="'+result.progress+'">',
+            '              </div>  ',
+            '          </div>',
+            '      </div>',
+            '  </div>'
+          ].join('\n'));
+          $('#miniProgress'+i+'S').progress({
+            percent: $('#projectProgress'+i+'S').attr('value'),
+            limitValues: true
+          });
+          i++;
+        });
+      } ,300);
+    }
+});
+
+$('#projectHistory').dropdown();
+$('#projectHistory').on('mouseover' ,function(){
+  $('#projectHistoryMenu').addClass('d-block');
+  $('#projectHistoryHeader').addClass('bitraf');
+});
+$('#projectHistory').on('mouseout' ,function(){
+  $('#projectHistoryMenu').removeClass('d-block');
+  $('#projectHistoryHeader').removeClass('bitraf');
+});
+
 //Project date Picker
 $(function() {
   $('#startDate,#endDate').daterangepicker({

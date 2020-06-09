@@ -10,9 +10,46 @@
             <span class="sentReceivedSpan">Sent Projects</span>
         </a>
     </div>
-    <div class="container">
-        <a href="/users/<%= user._id%>/projects/new" class="d-block standardBtnStyle mt-2 mb-3" style="padding: 7px; width: 100%;">New Project</a>  
+    
+
+
+    <!-- some infos -->
+    <p id="userId" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= user._id%></p>
+    <input type="text" id="projectType" class="d-none" value="sent">
+    <!-- Mails list -->
+    <textarea name="" id="itemsTextArea" cols="100" rows="10" class="d-none">
+      <%= JSON.stringify(user.sentProjects)%>
+    </textarea>
+    <div class="row my-4">
+        <div class="column col-sm-6 d-flex justify-content-center">
+            <!-- search -->
+            <div id="search" class="ui search text-center">
+            <div class="ui icon input form-group form-inline">
+              <input id="searchTextbox" class="prompt" type="text" placeholder="Search sent projects...">
+              <i class="search icon"></i>
+            </div>
+        </div>
+        </div>
+        <div class="column col-sm-6 d-flex justify-content-center">
+            <a href="/users/<%= user._id%>/projects/new" class="d-block standardBtnStyle" style="padding: 7px; width: 60% ;height: 37.67px;">New Project</a>  
+        </div>
     </div>
+    <!-- results -->
+    <textarea id="resultTextArea" cols="100" rows="10" class="nohighlight m-0 p-0 d-none"></textarea>
+    <div class="form-group d-none">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" id="sortCheckbox" checked="checked">Sort
+        </label>
+        <span id="helpBlock" class="help-block">Whether to sort the result list, by score.</span>
+      </div>
+    </div>
+    <div class="form-group form-inline d-none">
+        <label for="thresholdRange">Threshold</label>
+        <input type="number" id="thresholdRange" min="0" step="0.1" max="1" value="0.6">
+        <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
+    </div>
+
     <div id="ProjectsContainer" class="scrollDiv container mb-4">
         <input type="text" id="arrayLength" class="d-none" value="<%= user.sentProjects.length%>">
         <!------------------------------------------------------------------>
@@ -44,5 +81,8 @@
         <!------------------------------------------------------------------>
         <!------------------------------------------------------------------>
     </div>
+
+    <!--Search results-->
+    <div id="projectsSearchResults" class="container scrollDiv mt-4 p-4 d-none"></div>
     
 <%- include('../partials/projectsFooter')%>

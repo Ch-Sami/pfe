@@ -7,12 +7,44 @@
         <span class="sentReceivedSpan">Sent Mails</span>
       </a>
     </div>
+    <!-- some infos -->
+    <p id="userId" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= user._id%></p>
+    <input type="text" id="mailsType" value="received" class="d-none">
+    <!-- Mails list -->
+    <textarea name="" id="itemsTextArea" cols="100" rows="10" class="d-none">
+      <%= JSON.stringify(receivedMails)%>
+    </textarea>
+    <!-- search -->
+    <div id="search" class="ui search text-center mt-5">
+      <div class="ui icon input form-group form-inline">
+        <input id="searchTextbox" class="prompt" type="text" placeholder="Search received mail...">
+        <i class="search icon"></i>
+      </div>
+    </div>
+    <!-- results -->
+    <textarea id="resultTextArea" cols="100" rows="10" class="nohighlight m-0 p-0 d-none"></textarea>
+    <div class="form-group d-none">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" id="sortCheckbox" checked="checked">Sort
+        </label>
+        <span id="helpBlock" class="help-block">Whether to sort the result list, by score.</span>
+      </div>
+    </div>
+    <div class="form-group form-inline d-none">
+        <label for="thresholdRange">Threshold</label>
+        <input type="number" id="thresholdRange" min="0" step="0.1" max="1" value="0.6">
+        <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
+    </div>
+
+
+
     <div id="receivedMailsContainer">
-      <div id="receivedMailsList" class="container scrollDiv mt-4 p-4">
+      <div id="mailsList" class="container scrollDiv mt-4 p-4">
         <%receivedMails.forEach(function(receivedMail){%>
-          <div onclick='location.href="/users/<%= user._id%>/mails/received/<%= receivedMail._id%>"' class="hoverableDiv row d-flex py-2 px-5 m-2">
-            <div class="column col-6 d-flex align-items-center px-0">
-              <span class="bitraf mr-2" style="font-size: 1.8em;">
+          <div onclick='location.href="/users/<%= user._id%>/mails/received/<%= receivedMail._id%>/content"' class="hoverableDiv row d-flex py-2 px-5 m-2">
+            <div class="column col-5 d-flex align-items-center px-0">
+              <span class="bitraf mr-2" style="font-size: 1.5em;">
                 <%if(receivedMail.read == false){%>
                   <i class="fas fa-envelope"></i>
                 <%}else{%>
@@ -29,11 +61,18 @@
                 <%}%>
               </span>
             </div>
-            <div class="column col-6 px-0">
+            <div class="column col-7 px-0">
+              <div class="float-right d-flex justify-content-between text-align-center">
+                <form action="/users/<%= user._id%>/mails/received/<%= receivedMail._id%>/archive" method="POST">
+                  <button  class="contactsIcons" data-inverted="" data-tooltip="Archive" data-position="top center"><i class="fas fa-archive"></i></button>
+                </form>
+                <form action="/users/<%= user._id%>/mails/received/<%= receivedMail._id%>?_method=DELETE" method="POST">
+                  <button  class="contactsIcons" data-inverted="" data-tooltip="Delete" data-position="top center"><i class="fas fa-trash-alt"></i></button>
+                </form>
+              </div>
               <div class="fromAndAt float-right">
                 <span>At : <span class="bitraf"><%= receivedMail.received_at%></span></span>
               </div>
-              
               <div class="fromAndAt float-right"> 
                 <div class="d-flex">
                   <div class="mr-1">From :</div> 
@@ -42,11 +81,15 @@
                     <span class="bitraf"><%= receivedMail.sent_by%></span>
                   </div>
                 </div>
-                
               </div>
+
             </div>
           </div>
         <%});%>
       </div>
+
+    <!--Search results-->
+    <div id="mailSearchResults" class="container scrollDiv mt-4 p-4 d-none"></div>
+
     </div>
 <%- include('../partials/mailsFooter')%>

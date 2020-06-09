@@ -26,7 +26,13 @@ const projectSchema = mongoose.Schema({
     assignedToList: [{type: mongoose.Schema.Types.ObjectId ,ref: 'User'}],
     sentTo: [{type: mongoose.Schema.Types.ObjectId ,ref: 'User'}],
     assignedTo: [{type: mongoose.Schema.Types.ObjectId ,ref: 'User'}],
-    tree: {type: mongoose.Schema.Types.ObjectId ,ref: 'Tree'}
+    tree: {type: mongoose.Schema.Types.ObjectId ,ref: 'Tree'},
+    history: [{
+      action: String,
+      actor: {type: mongoose.Schema.Types.ObjectId ,ref: 'User'},
+      receiver: {type: mongoose.Schema.Types.ObjectId ,ref: 'User'},
+      at: String
+    }]
   });
 
   var autoPopulateCreatedBy = function(next) {

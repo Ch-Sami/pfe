@@ -36,12 +36,12 @@ $('#searchTextbox').on('input' ,function(){
     }else{
       if($('#withinContacts').checkbox('is checked')){
         //search within the user's contacts
-        $('#contactsList').addClass('d-none');
-        $('#resultsWithinContacts').text('');
-        $('#resultsWithinContacts').removeClass('d-none');
-        $('#resultsOutsideContacts').text('');
-        $('#resultsOutsideContacts').addClass('d-none');
         setTimeout(function(){
+          $('#contactsList').addClass('d-none');
+          $('#resultsWithinContacts').text('');
+          $('#resultsWithinContacts').removeClass('d-none');
+          $('#resultsOutsideContacts').text('');
+          $('#resultsOutsideContacts').addClass('d-none');
           var results = JSON.parse($('#resultTextArea').text());
           var userId = $('#userId').text();
           results.forEach(function(result){
@@ -74,12 +74,12 @@ $('#searchTextbox').on('input' ,function(){
            <i class="far fa-calendar-alt"></i> */
       }else if($('#outsideContacts').checkbox('is checked')){
         //search within all users
-        $('#contactsList').addClass('d-none');
-        $('#resultsOutsideContacts').text('');
-        $('#resultsOutsideContacts').removeClass('d-none');
-        $('#resultsWithinContacts').text('');
-        $('#resultsWithinContacts').addClass('d-none');
         setTimeout(function(){
+          $('#contactsList').addClass('d-none');
+          $('#resultsOutsideContacts').text('');
+          $('#resultsOutsideContacts').removeClass('d-none');
+          $('#resultsWithinContacts').text('');
+          $('#resultsWithinContacts').addClass('d-none');
           var results = JSON.parse($('#resultTextArea').text());
           results.forEach(function(result){
             //checking if the searched user is already in the searcher's contacts
