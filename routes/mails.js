@@ -8,6 +8,154 @@ const Mail = require('../modules/mail');
 const Message = require('../modules/message');
 const mongoose = require('mongoose');
 
+const conn = require('../modules/connection');
+const path = require('path');
+// const crypto = require('crypto');
+const multer = require('multer');
+const GridFsStorage = require('multer-gridfs-storage');
+const Grid = require('gridfs-stream');
+
+
+
+
+
+// init gfs
+let gfsMail;
+conn.once('open', () => {
+  // init stream
+  gfsMail = Grid(conn.db ,mongoose.mongo);
+  gfsMail.collection('mailFiles');    //gfsMail is now like a mongoose model
+});
+
+// Storage
+const mailFilesStorage = new GridFsStorage({
+	url: "mongodb://localhost:27017/companydb",
+    file: (req, file) => {
+        return new Promise((resolve, reject) => {
+            const fileInfo = {
+                filename: file.originalname,
+                bucketName: "mailFiles"
+              };
+              resolve(fileInfo);
+        });
+      }
+});
+
+//init upload
+const mailFilesUpload = multer({
+    storage: mailFilesStorage
+});
+//upload array of files midware
+const arrUpload = mailFilesUpload.array('files', 12); // 'files' is the name of the input[type="file"] that contains the file
+// multer({
+// 	storage: storage,
+// 	//limits: {fileSize: [size in bytes]},      //sets the max size , if larger than that ,upload func will throw an error.
+// 	fileFilter: function(req ,file ,cb){        //to allow only a certaine type of files/images
+// 		checkFileType(file ,cb);
+// 	}
+// });
+
+
+//check file type
+function checkFileType(file ,cb){;
+	//allowed extentions
+	const filetypes = /txt|webm|mpg|mp2|mpeg|mpe|mpv|ogg|mp4|m4p|m4v|avi|wmv|mov|qt|flv|swf|avchd|tif|tiff|bmp|jpg|jpeg|gif|png|eps|raw|cr2|nef|orf|sr2|flac|m4a|mp3|wav|wma|aac|pptx|ppsx|ppt|pps|pptm|potm|ppa|mpotx|ppsm|doc|dot|docx|dotx|docm|dotm|rtf|wpd|xls|xlsx|xlsm|xlsb|xlt|xltx|xltm|csv|ppt|pptx|pptm|pps|ppsx|ppsm|pot|potx|potm|vsd|vsdx|vsdm|svg|pub|msg|vcf|ics|mpp|odt|odp|ods/;
+	//check extention
+	const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+	//check mime type
+	const mimetype = filetypes.test(file.mimetype);
+	//returning
+	if(extname && mimetype){
+		return cb(null ,true);
+	}else{
+		cb('ERROR : file extention not allowed !');
+	}
+}
+
+
+//Read file
+router.get('/mails/:mailId/files/:fileId' ,(req ,res)=>{
+    const fileIdObj = new mongoose.mongo.ObjectId(req.params.fileId);
+	gfsMail.exist({_id: fileIdObj ,root: 'mailFiles'} ,(err ,found)=>{
+		if(err){throw err;}
+		if(found){
+            const readstream = gfsMail.createReadStream(fileIdObj);
+			readstream.pipe(res);
+		}else{
+			console.log('file not found ............ ' + req.params.fileId);
+		}
+	});
+});
+//this one is for audios only cuz 'howl->src' must end with an extention ,and the audio name has an extention attached to it in the end.
+router.get('/mails/:mailId/files/:fileId/:audioName' ,(req ,res)=>{
+    const fileIdObj = new mongoose.mongo.ObjectId(req.params.fileId);
+	gfsMail.exist({_id: fileIdObj ,root: 'mailFiles'} ,(err ,found)=>{
+		if(err){throw err;}
+		if(found){
+            const readstream = gfsMail.createReadStream(fileIdObj);
+			readstream.pipe(res);
+		}else{
+			console.log('file not found ............ ' + req.params.fileId);
+		}
+	});
+});
+
+// router.get('/mails/:mailId/files/:filename' ,(req ,res)=>{
+//     gfsMail.files.findOne({filename: req.params.filename} ,(err ,file)=>{
+//         if(err){throw err;}
+//         if(file){
+//             const readstream = gfsMail.createReadStream(req.params.filename);
+//             readstream.pipe(res);
+//         }else{
+//             console.log('file not found ............ ' + req.params.fileId);
+//             throw err;
+//         }
+//     });
+// });
+
+
+
+
+
+//play video
+router.get("/mails/:mailId/files/videos/:fileId/play" ,(req ,res)=>{
+	res.render("users/videoPlayer" ,{iddd: req.params.mailId ,offf: 'mails' ,fileId: req.params.fileId ,filename: req.query.videoName});
+});
+
+//play audio
+router.get("/mails/:mailId/files/audios/:fileId/play" ,(req ,res)=>{
+	res.render("users/audioPlayer" ,{iddd: req.params.mailId ,offf: 'mails' ,fileId: req.params.fileId ,filename: req.query.audioName});
+});
+
+//preview images and texts
+// router.get("/mails/:mailId/files/:fileId/preview" ,(req ,res)=>{
+// 	res.render("users/filePreview" ,{fileId: req.params.fileId});
+// });
+
+
+//delete mail files
+function deleteMailFiles(filesToDelete){
+    filesToDelete.forEach(function(fileId){
+        const fileIdObj = new mongoose.mongo.ObjectId(fileId);
+        gfsMail.remove({_id: fileIdObj ,root:'mailFiles'}, function (err) {
+            if (err) {throw err;}
+          });
+    });
+}   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //show the templet of sending new mail
 router.get("/users/:id/mails/sent/new" ,(req ,res)=>{
@@ -44,12 +192,14 @@ router.get("/users/:id/mails/received" ,(req ,res)=>{
         if(err){throw err;}
         else{
             var receivedMails = [];
+            var totalMailsSize = 0;
             user.receivedMails.forEach(function(rm){
                 var receivedMail = {
                     _id: rm._id,
                     title: rm.title,
                     sent_by: rm.sent_by.username,
-                    senderImage: rm.sent_by.imageUrl
+                    senderImage: rm.sent_by.imageUrl,
+                    size: rm.mailSize
                 }
                 rm.sending_history.forEach(function(elt){
                     if(elt.sent_to == user.id){
@@ -57,10 +207,15 @@ router.get("/users/:id/mails/received" ,(req ,res)=>{
                         receivedMail.read = elt.read;
                     }
                 });
+                totalMailsSize += rm.mailSize;
                 receivedMails.push(receivedMail);
             });
             user.depopulate('receivedMails');
-            res.render("users/receivedMails" ,{user: user ,receivedMails: receivedMails});
+            var storagePer = ((totalMailsSize * 100) / 50000000000).toFixed(2);;
+            // if(storagePer < 0.5){
+            //     storagePer = 0.5;
+            // }
+            res.render("users/receivedMails" ,{user: user ,receivedMails: receivedMails ,storagePer: storagePer});
         }
     });
 });
@@ -87,14 +242,14 @@ router.get("/users/:id/mails/sent" ,(req ,res)=>{
         if(err){throw err;}
         else{
             var sentMails = [];
-
-
+            var totalMailsSize = 0;
             user.sentMails.forEach(function(sm){
                 var sentMail = {
                     _id: sm._id,
                     title: sm.title,
                     sending_history: sm.sending_history,
-                    replies: []
+                    replies: [],
+                    size: sm.mailSize
                 }
                 sm.replies.forEach(function(r){
                     var reply = {
@@ -110,36 +265,117 @@ router.get("/users/:id/mails/sent" ,(req ,res)=>{
                     });
                     sentMail.replies.push(reply);
                 });
+                totalMailsSize += sm.mailSize;
                 sentMails.push(sentMail);
             });
 
             user.depopulate('sentMails');
-            res.render("users/sentMails" ,{user: user ,sentMails: sentMails});
+            var storagePer = ((totalMailsSize * 100) / 50000000000).toFixed(2);
+            // if(storagePer < 0.5){
+            //     storagePer = 0.5;
+            // }
+            res.render("users/sentMails" ,{user: user ,sentMails: sentMails ,storagePer: storagePer});
         }
     });
 });
+
+
+
+//////////////manipulating files
+//files extentions
+const pdfExt = /pdf/;
+const txtExt = /txt/;
+const imageExt = /tif|tiff|bmp|jpg|jpeg|gif|png|eps|raw|cr2|nef|orf|sr2/;
+const videoExt = /webm|mpg|mp2|mpeg|mpe|mpv|ogg|mp4|m4p|m4v|avi|wmv|mov|qt|flv|swf|avchd/;
+const audioExt = /flac|mpa|mp3|wav|wma|aac/;
+const powerPointExt = /pptx|ppsx|ppt|pps|pptm|potm|ppa|mpotx|ppsm|odp/;
+const wordExt = /doc|dot|docx|dotx|docm|dotm|rtf|wpd|odt/;
+const excelExt = /xls|xlsx|xlsm|xlsb|xlt|xltx|xltm|csv|ods/;
+const visioExt = /vsd|vsdx|vsdm|svg/;
+const publisherExt = /pub/;
+//get file and determine its extention
+function getMailFile(fileId){
+    return new Promise((resolve ,reject) => {
+        const fileIdObj = new mongoose.mongo.ObjectId(fileId);
+        gfsMail.files.findOne({_id: fileIdObj} ,(err ,file)=>{
+            if(err){reject(err);}
+            if(file){
+                switch(true){
+                    case pdfExt.test(path.extname(file.filename).toLowerCase()):
+                        file.fileType = 'pdf';
+                        break;
+                    case txtExt.test(path.extname(file.filename).toLowerCase()):
+                        file.fileType = 'text';
+                        break;
+                    case imageExt.test(path.extname(file.filename).toLowerCase()):
+                        file.fileType = 'image';
+                        break;
+                    case videoExt.test(path.extname(file.filename).toLowerCase()):
+                        file.fileType = 'video';
+                        break;
+                    case audioExt.test(path.extname(file.filename).toLowerCase()):
+                        file.fileType = 'audio';
+                        break;
+                    case powerPointExt.test(path.extname(file.filename).toLowerCase()):
+                        file.fileType = 'powerPoint';
+                        break;
+                    case wordExt.test(path.extname(file.filename).toLowerCase()):
+                        file.fileType = 'word';
+                        break;
+                    case excelExt.test(path.extname(file.filename).toLowerCase()):
+                        file.fileType = 'excel';
+                        break;
+                    case visioExt.test(path.extname(file.filename).toLowerCase()):
+                        file.fileType = 'visio';
+                        break;
+                    case publisherExt.test(path.extname(file.filename).toLowerCase()):
+                        file.fileType = 'publisher';
+                        break;
+                    default:
+                        file.fileType = 'other';
+                        break;
+                }
+                resolve(file);
+            }
+        });
+    });
+}
+//populate files array
+async function populateMailFiles(mailFiles){
+    try{
+        var files = [];
+        const n = mailFiles.length;
+        for(var i = 0 ; i < n ; i++){
+            file = await getMailFile(mailFiles[i]);
+            files.push(file);
+        };
+        return files;
+    }catch(err){
+        throw err;
+    }
+}
 
 //show a sent mail's content
 router.get("/users/:id/mails/sent/:mailId/content" ,(req ,res)=>{
     User.findById(req.params.id ,'-children -events' ,(err ,user)=>{
         if(err){throw err;}
         else{
-            Unit.find().exec((err ,units)=>{
+            Mail.findById(req.params.mailId).populate({
+                path: 'sending_history.sent_to',
+                select: '-children -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
+            }).exec((err , mail)=>{
                 if(err){throw err;}
-                else{
-                    Mail.findById(req.params.mailId).populate({
-                        path: 'sending_history.sent_to',
-                        select: '-children -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
-                    }).exec((err , mail)=>{
-                        if(err){throw err;}
-                        User.find({} ,'-children -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl' ,(err ,usersList)=>{
-                            if(err){throw err;}
-                            res.render("users/sentMailContent" ,{user: user ,mail: mail ,usersList: JSON.stringify(usersList)});
-                        });
-                        // console.log(mail);
+                User.find({} ,'-children -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl' ,(err ,usersList)=>{
+                    if(err){throw err;}
+
+                    populateMailFiles(mail.files)
+                    .then(files => {
+                        res.render("users/sentMailContent" ,{user: user ,mail: mail ,files: files ,usersList: JSON.stringify(usersList)});
                     });
-                }
+                    
+                });
             });
+            
         }
     });
 });
@@ -173,7 +409,10 @@ router.get("/users/:id/mails/received/:mailId/content" ,(req ,res)=>{
                             break;
                         }
                     }
-                    res.render("users/receivedMailContent" ,{user: user ,mail: mail ,usersList: JSON.stringify(usersList)});
+                    populateMailFiles(receivedMail.files)
+                    .then(files => {
+                        res.render("users/receivedMailContent" ,{user: user ,mail: mail ,files: files ,usersList: JSON.stringify(usersList)});
+                    });
                 });
             });
         }
@@ -181,7 +420,7 @@ router.get("/users/:id/mails/received/:mailId/content" ,(req ,res)=>{
 });
 
 //sending new mail
-router.post("/users/:id/mails/sent" ,(req ,res)=>{
+router.post("/users/:id/mails/sent"  ,arrUpload ,(req ,res)=>{
     var receivers = req.body.sentTo.split(",");
     if(req.body.CCs !== undefined){
         var CCs = req.body.CCs.split(",");
@@ -191,9 +430,17 @@ router.post("/users/:id/mails/sent" ,(req ,res)=>{
         title: req.body.title,
         text: req.body.text,
         created_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-        usersThatDidNotDelete: []
+        usersThatDidNotDelete: [],
+        mailSize: 0
     });
     mail.usersThatDidNotDelete.push(req.params.id);
+    var textSize = Buffer.byteLength(req.body.text);
+    var filesSize = 0;
+    req.files.forEach(function(file){
+        mail.files.push(file.id);
+        filesSize += file.size;
+    });
+    mail.mailSize = textSize + filesSize;
     receivers.forEach(function(receiver){
         var elt = {
             sending_type: 'send',
@@ -361,7 +608,7 @@ router.get("/users/:id/mails/sent/:mailId/replies/new" ,(req ,res)=>{
 
 
 //sending a reply
-router.post("/users/:id/mails/received/:mailId/replies" ,(req ,res)=>{
+router.post("/users/:id/mails/received/:mailId/replies" ,arrUpload ,(req ,res)=>{
     if(req.body.visibleTo !== undefined){
         var visibleTo = req.body.visibleTo.split(",");
     }
@@ -369,8 +616,17 @@ router.post("/users/:id/mails/received/:mailId/replies" ,(req ,res)=>{
         sent_by: req.params.id,
         title: req.body.title,
         text: req.body.text,
-        created_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+        created_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+        usersThatDidNotDelete: [],
+        mailSize: 0
     });
+    var textSize = Buffer.byteLength(req.body.text);
+    var filesSize = 0;
+    req.files.forEach(function(file){
+        mail.files.push(file.id);
+        filesSize += file.size;
+    });
+    mail.mailSize = textSize + filesSize;
     if(req.body.visibleTo !== undefined){
         visibleTo.forEach(function(vt){
             var elt = {
@@ -546,6 +802,8 @@ router.get("/users/:id/mails/received/:mailId/replies" ,(req ,res)=>{
     });
 });
 
+       
+    
 //delete sent Mail
 router.delete("/users/:id/mails/sent/:mailId" ,(req ,res)=>{
     User.findById(req.params.id ,(err ,user)=>{
@@ -560,7 +818,9 @@ router.delete("/users/:id/mails/sent/:mailId" ,(req ,res)=>{
             var index = mail.usersThatDidNotDelete.indexOf(req.params.id);
             if (index > -1) {
                 mail.usersThatDidNotDelete.splice(index, 1);
-                if(mail.usersThatDidNotDelete.length  == 0){
+                if(mail.usersThatDidNotDelete.length == 0){
+                    const filesToDelete = mail.files;
+                    deleteMailFiles(filesToDelete);
                     Mail.findByIdAndRemove(req.params.mailId ,(err)=>{
                         if(err){throw err;}
                         res.redirect("/users/"+req.params.id+"/mails/sent/");
@@ -594,11 +854,13 @@ router.delete("/users/:id/mails/received/:mailId" ,(req ,res)=>{
                 repliesIds.forEach(function(replyId){
                     Mail.findById(replyId ,(err ,reply)=>{
                         if(err){throw err;}
-                        if(reply.sent_by == req.params.id){
+                        if(reply.sent_by != req.params.id){
                             var index2 = reply.usersThatDidNotDelete.indexOf(req.params.id);
                             if(index2 > -1){
                                 reply.usersThatDidNotDelete.splice(index, 1);
                                 if(reply.usersThatDidNotDelete.length == 0){
+                                    const filesToDelete = reply.files;
+                                    deleteMailFiles(filesToDelete);
                                     Mail.findByIdAndRemove(reply._id);
                                 }else{
                                     reply.save();
@@ -608,7 +870,9 @@ router.delete("/users/:id/mails/received/:mailId" ,(req ,res)=>{
                     });
                 });
                 //if all users deleted the mail , then delete it from database
-                if(mail.usersThatDidNotDelete.length  == 0){
+                if(mail.usersThatDidNotDelete.length == 0){
+                    const filesToDelete = mail.files;
+                    deleteMailFiles(filesToDelete);
                     Mail.findByIdAndRemove(req.params.mailId ,(err)=>{
                         if(err){throw err;}
                         res.redirect("/users/"+req.params.id+"/mails/received/");
@@ -631,6 +895,8 @@ router.delete("/users/:id/mails/sent/:mailId/replies/:replyId" ,(req ,res)=>{
         if (index > -1) {
             mail.usersThatDidNotDelete.splice(index, 1);
             if(mail.usersThatDidNotDelete.length  == 0){
+                const filesToDelete = mail.files;
+                deleteMailFiles(filesToDelete);
                 Mail.findByIdAndRemove(req.params.replyId ,(err)=>{
                     if(err){throw err;}
                     res.redirect("/users/"+req.params.id+"/mails/sent/"+req.params.mailId+"/replies");
@@ -669,6 +935,8 @@ router.delete("/users/:id/mails/received/:mailId/replies/:replyId" ,(req ,res)=>
         if (index > -1) {
             mail.usersThatDidNotDelete.splice(index, 1);
             if(mail.usersThatDidNotDelete.length == 0){
+                const filesToDelete = mail.files;
+                deleteMailFiles(filesToDelete);
                 Mail.findByIdAndRemove(req.params.replyId ,(err)=>{
                     if(err){throw err;}
                     res.redirect("/users/"+req.params.id+"/mails/received/"+req.params.mailId+"/replies");
@@ -693,8 +961,11 @@ router.delete("/users/:id/mails/received/:mailId/replies/:replyId" ,(req ,res)=>
 });
 
 
-//remove user from all usersThatDidNotDelete of replies that he deleted their
-//      parent mail (only if he didnt receive the reply)(the parent mail was not sent by him)
+
+
+
+
+
 
 
 module.exports = router;

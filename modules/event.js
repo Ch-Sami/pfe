@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const User = require('./user');
-
 const eventSchema = mongoose.Schema({
     title: String,
     type: String,
@@ -9,11 +8,7 @@ const eventSchema = mongoose.Schema({
     backgroundColor: String,
     detail: String,
     url: String,
-    planner: {type: mongoose.Schema.Types.ObjectId ,ref: 'User'},
-    comments : [{
-      userName : String,
-      comment : String
-    }]
+    planner: {type: mongoose.Schema.Types.ObjectId ,ref: 'User'}
   });
 
   

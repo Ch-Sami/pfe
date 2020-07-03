@@ -8,21 +8,17 @@
     </a>
 </div>
 <div class="container py-4">
-    <form id="reSentMailFrm" class="ui form" action="/users/<%= user._id%>/mails/sent/<%= mail._id%>/reSent" method="post">
-        <div class="field mx-4 mt-4">
-            <label><span class="inputsTitles">Title</span>
-              <input type="text" name="title" value="<%= mail.title%>" disabled>
-            </label>
+        <div class="my-4">
+            <label for="mailTitle"><span class="inputsTitles">Title</span></label>
+            <input id="mailTitle" type="text" name="title" class="inputStyleClone" value="<%= mail.title%>" disabled>
         </div>
        
-        <div class="two fields mx-3 mb-4">
-            <div class="field mr-3">
-                <label><span class="inputsTitles">Created at</span>
-                    <input type="text" value="<%= mail.created_at%>" disabled>
-                </label>
+        <div class="row mb-4">
+            <div class="column col-sm-6">
+                <label for="createdAt"><span class="inputsTitles">Created at</span></label>
+                <input id="createdAt" type="text" class="inputStyleClone" value="<%= mail.created_at%>" disabled>
             </div>
-            <div class="field ml-3">
-
+            <div class="column col-sm-6">
                 <label for="typeSelector"><span class="inputsTitles">Sent to</span></label>
                 <div class="ui simple top right pointing dropdown item inputStyleClone">
                     <%if(mail.sending_history.length == 1){%>
@@ -75,12 +71,89 @@
                 </div>
             </div>
         </div>
+
         
+        <!-- mail files -->
+        <%if(files.length > 0){%>
+            <div class="mb-4">
+                <label for="filesContainer"><span class="inputsTitles">Files</span></label>
+                <div id="filesContainer">
+                    <%files.forEach(function(file){%>
+                        <div class="row">
+                            <div class="column col-10">
+                                <%if(file.fileType == 'pdf'){%>
+                                    <i class="far fa-file-pdf  fileIcone"></i>
+                                    <!-- <img class="ui mini right spaced image" src=""> -->
+                                <%}else if(file.fileType == 'text'){%>
+                                    <i class="far fa-file-alt  fileIcone"></i>
+                                    <!-- <img class="ui mini right spaced image" src="/public/icons/text.PNG"> -->
+                                <%}else if(file.fileType == 'image'){%>
+                                    <!-- <i class="far fa-file-image  fileIcone"></i> -->
+                                    <img class="ui mini right spaced image" src="/mails/<%=mail._id%>/files/<%=file._id%>">
+                                <%}else if(file.fileType == 'video'){%>
+                                    <i class="far fa-file-video  fileIcone"></i>
+                                    <!-- <img class="ui mini right spaced image" src="/public/icons/video.PNG"> -->
+                                <%}else if(file.fileType == 'audio'){%>
+                                    <i class="far fa-file-audio  fileIcone"></i>
+                                    <!-- <img class="ui mini right spaced image" src="/public/icons/audio.PNG"> -->
+                                <%}else if(file.fileType == 'word'){%>
+                                    <i class="far fa-file-word  fileIcone"></i>
+                                    <!-- <img class="ui mini right spaced image" src="/public/icons/word.PNG"> -->
+                                <%}else if(file.fileType == 'excel'){%>
+                                    <i class="far fa-file-excel  fileIcone"></i>
+                                    <!-- <img class="ui mini right spaced image" src="/public/icons/excel.PNG"> -->
+                                <%}else if(file.fileType == 'powerPoint'){%>
+                                    <i class="far fa-file-pdf  fileIcone"></i>
+                                    <!-- <img class="ui mini right spaced image" src="/public/icons/powerPoint.PNG"> -->
+                                <%}else if(file.fileType == 'visio'){%>
+                                    <i class="far fa-file  fileIcone"></i>
+                                    <!-- <img class="ui mini right spaced image" src="/public/icons/visio.PNG"> -->
+                                <%}else if(file.fileType == 'publisher'){%>
+                                    <i class="far fa-file  fileIcone"></i>
+                                    <!-- <img class="ui mini right spaced image" src="/public/icons/publisher.PNG"> -->
+                                <%}else if(file.fileType == 'other'){%>
+                                    <i class="far fa-file  fileIcone"></i>
+                                    <!-- <img class="ui mini right spaced image" src="/public/icons/other.PNG"> -->
+                                <%}%>
+                                <span><%= file.filename%></span>
+                            </div>
+                            <div class="column col-1 d-flex align-items-center justify-content-end p-0">
+                                <%if(file.fileType == 'pdf' || file.fileType == 'text' || file.fileType == 'image'){%>
+                                    <a class="filesOptionsIcons" href="/mails/<%=mail._id%>/files/<%=file._id%>" data-inverted="" data-tooltip="Preview" data-position="top center" class="float-right">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                <%}else if(file.fileType == 'video'){%>
+                                    <form action="/mails/<%= mail._id%>/files/videos/<%=file._id%>/play" method="GET" class="float-right">
+                                        <input type="hidden" name="videoName" value="<%file.filename%>">
+                                        <button class="filesOptionsIcons" data-inverted="" data-tooltip="play" data-position="top center">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    </form>
+                                <%}else if(file.fileType == 'audio'){%>
+                                    <form action="/mails/<%= mail._id%>/files/audios/<%=file._id%>/play" method="GET" class="float-right">
+                                        <input type="hidden" name="audioName" value="<%file.filename%>">
+                                        <button class="filesOptionsIcons" data-inverted="" data-tooltip="play" data-position="top center">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    </form>
+                                <%}%>  
+                            </div>
+                            <div class="column col-1 d-flex align-items-center justify-content-center pr-0">
+                                <a class="filesOptionsIcons" href="/mails/<%=mail._id%>/files/<%=file._id%>" data-inverted="" data-tooltip="Download" data-position="top center" download>
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    <%});%>
+                </div>
+            </div>
+        <%}%>
         
+        <!-- mail text -->
         <div class="field my-1 d-none">
             <textarea id="showMailText" name="text"><%= mail.text%></textarea>
         </div>
-        <div class="mx-4">
+        <div>
             <label for="editorHugeContainer"><span class="inputsTitles">Text</span></label>
             <div id="editorHugeContainer" class="ce-example">
                 <div class="ce-example__content _ce-example__content--small">
@@ -91,9 +164,7 @@
         
         <div class="container my-4 p-3 py-5">
             <div class="row">
-
-
-                <div class="column col-6 pl-0 text-center">
+                <div class="column col-12 col-sm-6 pl-0 text-center">
                     <!-- users list -->
                     <textarea name="" id="itemsTextArea" cols="30" rows="10" class="d-none">
                         <%= usersList%>
@@ -105,7 +176,7 @@
                     <div class="d-flex justify-content-center">
                         <section id="search" style="width: 100%;">
                             <div class="form-group form-inline">
-                              <input type="text" class="form-control wide" id="searchTextbox" placeholder="Search">
+                              <input type="text" class="form-control wide inputStyleClone" style="width: 100%;" id="searchTextbox" placeholder="Search">
                             </div>
                         </section>
                     </div>
@@ -119,7 +190,7 @@
                     <!-- multiselect -->
                     <div class="d-flex">
                         <div id="sendToList" class=" ui multiple selection dropdown" style="width: 90%;">
-                            <input name="sentTo" type="hidden">
+                            <input id="sentTo" name="sentTo" type="hidden">
                             <i class="dropdown icon"></i>
                             <div class="default text mr-2">Send To</div>
                             <div id="usersList" class="menu d-block"></div>
@@ -131,7 +202,7 @@
 
 
 
-                <div class="column col-6 pr-0 text-center">
+                <div class="column col-12 col-sm-6 pr-0 text-center">
                     <!-- users list -->
                     <textarea name="" id="itemsTextArea1" cols="30" rows="10" class="d-none">
                         <%= usersList%>
@@ -143,7 +214,7 @@
                     <div class="d-flex justify-content-center">
                         <section id="search2" style="width: 100%;">
                             <div class="form-group form-inline">
-                              <input type="text" class="form-control wide" id="searchTextbox1" placeholder="Search">
+                              <input type="text" class="form-control wide" style="width: 100%;" id="searchTextbox1" placeholder="Search">
                             </div>
                         </section>
                     </div>
@@ -157,7 +228,7 @@
                     <!-- multiselect -->
                     <div class="d-flex">
                         <div id="ccList" class="ui multiple selection dropdown" style="width: 90%;">
-                            <input name="CCs" type="hidden">
+                            <input id="CCs" name="CCs" type="hidden">
                             <i class="dropdown icon"></i>
                             <div class="default text mr-2">CCs</div>
                             <div id="ccMenu" class="menu d-block"></div>
@@ -170,18 +241,25 @@
             </div>
         </div>
 
-        
-
-        <div class="my-2">
-            <button id="sendMail" class="standardBtnStyle">Send</button>
-            <input
+        <div class="row my-2">
+            <div class="column col-12 col-md-2">
+                <form id="reSentMailFrm" class="ui form text-center" action="/users/<%= user._id%>/mails/sent/<%= mail._id%>/reSent" method="post">
+                    <button id="sendMail" class="standardBtnStyle">Send</button>
+                </form>
+            </div>
+            <div class="column col-0 col-md-8"></div>
+            <div class="column col-12 col-md-2">
+                <div class="d-flex justify-content-center">
+                    <input
                     action="action"
                     onclick="window.history.go(-1); return false;"
                     type="submit"
                     value="Go Back"
-                    class="goBackBtn float-right py-3 px-5"
+                    class="goBackBtn mx-0"
                 />
+                </div>
+            </div>
         </div>
-    </form>
 </div>
 <%- include('../partials/mailsFooter')%>
+

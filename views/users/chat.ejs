@@ -1,5 +1,5 @@
 <%- include('../partials/profilHeader')%>
-    <div id="projectDiscussion" class="scrollDiv px-4">
+    <div id="chatContainer" class="scrollDiv px-4">
         <% chat.forEach(function(message){%>
             <% if(message.sent_by == user.id){%>
                 <div class="row justify-content-end">

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const User = require('./user');
 const Tree = require('./projectTree');
 // const treeSchema = require('./projectTree');
+const conn = require('./connection');
 
 const projectSchema = mongoose.Schema({
     title: String,
@@ -21,6 +22,7 @@ const projectSchema = mongoose.Schema({
       created_at: String,
       text : String
     }],
+    files: [{type: mongoose.Schema.Types.ObjectId, ref: 'gfsProject' }],
     createdBy: {type: mongoose.Schema.Types.ObjectId ,ref: 'User'},
     sentToList: [{type: mongoose.Schema.Types.ObjectId ,ref: 'User'}],
     assignedToList: [{type: mongoose.Schema.Types.ObjectId ,ref: 'User'}],
@@ -57,4 +59,4 @@ const projectSchema = mongoose.Schema({
   .pre('findOne', autoPopulateAssignedTo)
   .pre('find', autoPopulateAssignedTo);
 
-  module.exports = new mongoose.model('Project' ,projectSchema);
+  module.exports = conn.model('Project' ,projectSchema);

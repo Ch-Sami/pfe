@@ -84,19 +84,19 @@
     display: table;
   }
   
-  .container img {
+  /* .container img {
     float: left;
     max-width: 60px;
     width: 100%;
     margin-right: 20px;
     border-radius: 50%;
-  }
+  } */
   
-  .container img.right {
+  /* .container img.right {
     float: right;
     margin-left: 20px;
     margin-right:0;
-  }
+  } */
   
   .time-right {
     float: right;
@@ -150,6 +150,84 @@
   .fromAndAt{
     width: 170px;
   }
+
+  #upload {
+    position: absolute;
+    right: -9999px;
+    visibility: hidden;
+    opacity: 0;
+  }
+   
+  #uploadLable {
+    position: relative;
+    padding: 1rem 3rem;
+    background: #eee;
+    display: inline-block;
+    text-align: center;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+  #uploadLable:hover {
+    background: #0c8fda;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s all;
+  }
+
+  .files {
+    background: #eee;
+    padding: 1rem;
+    margin:1rem 0;
+    border-radius:10px;
+  }
+
+  .files_ul{
+    list-style:none;
+    padding:0;
+    max-height:150px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .file_li{
+    padding:0.5rem 0;
+    padding-right:2rem;
+    position:relative;
+  }
+
+  .file_delete_i{
+    cursor:pointer;
+    transform:translatey(-50%);
+  }
+  .file_delete_i:hover{
+    color: #87081e;
+  }
+  span.file-size {
+    color: #999;
+    padding-left: 0.5rem;
+  }
+  #filesContailner{
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+    border: 1px solid rgba(34,36,38,.15);
+    color: rgba(0,0,0,.87);
+    border-radius: .28571429rem;
+    /* border: 1px solid rgba(176, 16, 43, 0.7); */
+    padding: 4px;
+    /* border-radius: 3px; */
+  }
+  .fileIcone{
+    margin-left: 11px;
+    margin-right: 13px;
+    font-size: 1.6em;
+  }
+  .filesOptionsIcons{
+    color: black;
+    background-color: transparent;
+    border: none;
+  }
+  .filesOptionsIcons:hover{
+    color: #87081e;
+  }
 /* Project css */
 /* Project css */
 /* Project css */
@@ -170,3 +248,16 @@
 /* event css*/
 /* event css*/
 /* event css*/
+
+
+
+
+/* filePreveiw */
+/* filePreveiw */
+/* filePreveiw */
+/* filePreveiw */
+
+#videoId {
+  background-color: black !important;
+}
+

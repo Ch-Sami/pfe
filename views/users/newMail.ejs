@@ -1,6 +1,6 @@
 <%- include('../partials/profilHeader')%>
 <div class="container py-4">
-    <form id="newMailFrm" class="ui form" action="/users/<%= user._id%>/mails/sent" method="post">
+    <form id="newMailFrm" class="ui form" action="/users/<%= user._id%>/mails/sent" method="post" enctype="multipart/form-data">
  
         <div class="field mx-4 mt-4">
             <label><span class="inputsTitles">Title</span>
@@ -8,6 +8,21 @@
             </label>
         </div>
 
+        <!-- files Upload -->
+        <div id="filesUploadContainer" class="container " style="border: 1px solid crimson;;">
+            <div>
+                <label id="uploadLable" for="upload">
+                    <input type="file" class="fileInput" id="upload" name="files" multiple>
+                    Upload Files
+                </label>
+            </div>
+            <div class="files">
+                <h2>Files Selected</h2>
+                <ul class="files_ul"></ul>
+            </div>
+        </div>
+
+        <!-- mail text -->
         <div class="field my-1 d-none">
             <textarea id="mailText" name="text"></textarea>
         </div>
@@ -26,7 +41,7 @@
         <div class="container my-4 p-3 py-5">
             <div class="row">
 
-                <div class="column col-6 pl-0 text-center">
+                <div class="column col-12 col-sm-6 pl-0 text-center">
                     <!-- users list -->
                     <textarea name="" id="itemsTextArea" cols="30" rows="10" class="d-none">
                         <%= usersList%>
@@ -81,13 +96,7 @@
                 </div>
 
 
-
-
-
-
-
-
-                <div class="column col-6 pr-0 text-center">
+                <div class="column col-12 col-sm-6 pr-0 text-center">
                     <!-- users list -->
                     <textarea name="" id="itemsTextArea1" cols="30" rows="10" class="d-none">
                         <%= usersList%>

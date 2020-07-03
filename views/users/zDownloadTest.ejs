@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://kit.fontawesome.com/495f0538c0.js" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Test</title>
+    <link rel="stylesheet" href="/stylesheets/lib/bootstrap.css">
+    <link rel="stylesheet" href="/stylesheets/lib/semantic.min.css">
+    <style>
+        * {
+	        box-sizing: border-box;
+        }
+
+        input[type="file"] {
+        	position: absolute;
+        	right: -9999px;
+        	visibility: hidden;
+        	opacity: 0;
+        }
+        input[type="submit"] {
+        	position: relative;
+        	padding: 1rem 3rem;
+        	background: #0c8fda;
+        	display: inline-block;
+        	text-align: center;
+        	overflow: hidden;
+        	border-radius: 10px;
+        	border: 0;
+            color:#fff;
+        }
+        input[type="submit"]:hover {
+        	background: darken(#0c8fda, 5);
+        	color: #fff;
+        	cursor: pointer;
+        	transition: 0.2s all;
+        }
+        #uploadLable {
+        	position: relative;
+        	padding: 1rem 3rem;
+        	background: #eee;
+        	display: inline-block;
+        	text-align: center;
+        	overflow: hidden;
+        	border-radius: 10px;
+        }
+        #uploadLable:hover {
+        	background: #0c8fda;
+        	color: #fff;
+        	cursor: pointer;
+        	transition: 0.2s all;
+        }
+
+        .files {
+        	background: #eee;
+        	padding: 1rem;
+        	margin:1rem 0;
+        	border-radius:10px;
+        }
+
+        ul{
+        	list-style:none;
+        	padding:0;
+        	max-height:150px;
+        	overflow:auto;
+        }
+
+        li{
+        	padding:0.5rem 0;
+        	padding-right:2rem;
+        	position:relative;
+        }
+
+        i{
+        	cursor:pointer;
+        	position:absolute;
+        	top:50%;
+        	right:0;
+        	transform:translatey(-50%);
+        }
+
+        .container {
+        	width: 100%;
+        	padding: 0 2rem;
+        }
+
+        span.file-size {
+        	color: #999;
+        	padding-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="margin: 100px; border: 2px solid crimson; width: 70%;">
+        <div class="container">
+            <h1>Multiple File Upload Viewer</h1>
+        </div>
+        <div class="container">
+            <form action="/files/upload" method="POST" enctype="multipart/form-data">
+                <div>
+                    <label id="uploadLable" for="upload">
+                        <input type="file" class="fileInput" id="upload" name="files" multiple>
+                        Upload Files
+                    </label>
+                </div>
+                <div class="files">
+                    <h2>Files Selected</h2>
+                    <ul></ul>
+                </div>
+                <button>submit</button>
+            </form>
+        </div>
+        <div class="container">
+            <%files.forEach(function(file){%>
+                <div class="row">
+                    <div class="column col-10">
+                        <%if(file.fileType == 'pdf'){%>
+                            <img class="ui mini right spaced image" src="">
+                        <%}else if(file.fileType == 'text'){%>
+                            <img class="ui mini right spaced image" src="/public/icons/text.PNG">
+                        <%}else if(file.fileType == 'image'){%>
+                            <img class="ui mini right spaced image" src="/files/<%=file.filename%>">
+                        <%}else if(file.fileType == 'video'){%>
+                            <img class="ui mini right spaced image" src="/public/icons/video.PNG">
+                        <%}else if(file.fileType == 'audio'){%>
+                            <img class="ui mini right spaced image" src="/public/icons/audio.PNG">
+                        <%}else if(file.fileType == 'word'){%>
+                            <img class="ui mini right spaced image" src="/public/icons/word.PNG">
+                        <%}else if(file.fileType == 'excel'){%>
+                            <img class="ui mini right spaced image" src="/public/icons/excel.PNG">
+                        <%}else if(file.fileType == 'powerPoint'){%>
+                            <img class="ui mini right spaced image" src="/public/icons/powerPoint.PNG">
+                        <%}else if(file.fileType == 'visio'){%>
+                            <img class="ui mini right spaced image" src="/public/icons/visio.PNG">
+                        <%}else if(file.fileType == 'publisher'){%>
+                            <img class="ui mini right spaced image" src="/public/icons/publisher.PNG">
+                        <%}else if(file.fileType == 'other'){%>
+                            <img class="ui mini right spaced image" src="/public/icons/other.PNG">
+                        <%}%>
+                        <span><%= file.filename%></span>
+                    </div>
+                    <div class="column col-1 d-flex align-items-center justify-content-end p-0">
+                        <%if(file.fileType == 'pdf' || file.fileType == 'text' || file.fileType == 'image'){%>
+                            <a href="/files/<%=file.filename%>" data-inverted="" data-tooltip="Preview" data-position="top center" class="float-right">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        <%}else if(file.fileType == 'video'){%>
+                            <a href="/files/videos/<%=file.filename%>/play" data-inverted="" data-tooltip="play" data-position="top center" class="float-right">
+                                <i class="fas fa-play"></i>
+                            </a>
+                        <%}else if(file.fileType == 'audio'){%>
+                            <a href="/files/audios/<%=file.filename%>/play" data-inverted="" data-tooltip="play" data-position="top center" class="float-right">
+                                <i class="fas fa-play"></i>
+                            </a>
+                        <%}%>  
+                    </div>
+                    <div class="column col-1 d-flex align-items-center justify-content-center pr-0">
+                        <a href="/files/<%=file.filename%>" data-inverted="" data-tooltip="Download" data-position="top center" download>
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </div>
+                </div>
+            <%});%>
+        </div>
+          <br>
+          <br>
+          <br>
+        <button id="GG" type="button">GG</button>
+    </div>
+
+
+
+    <script type="text/javascript" src="/scripts/lib/jquery-3.4.1.min.js"></script>
+    <script>
+        $('#GG').on('click' ,function(){
+            alert($('#upload').val());
+            // alert('gg');
+        });
+        // no react or anything
+        let state = {};
+
+        // state management
+        function updateState(newState) {
+        	state = { ...state, ...newState };
+        	console.log(state);
+        }
+
+        // event handlers
+        $("input").change(function(e) {
+        	let files = document.getElementsByClassName("fileInput")[0].files;
+        	let filesArr = Array.from(files);
+        	updateState({ files: files, filesArr: filesArr });
+        
+        	renderFileList();
+        });
+
+        $(".files").on("click", "li > i", function(e) {
+        	let key = $(this)
+        		.parent()
+        		.attr("key");
+        	let curArr = state.filesArr;
+        	curArr.splice(key, 1);
+        	updateState({ filesArr: curArr });
+        	renderFileList();
+        });
+
+        // render functions
+        function renderFileList() {
+        	let fileMap = state.filesArr.map((file, index) => {
+        		let suffix = "bytes";
+        		let size = file.size;
+        		if (size >= 1024 && size < 1024000) {
+        			suffix = "KB";
+        			size = Math.round(size / 1024 * 100) / 100;
+        		} else if (size >= 1024000) {
+        			suffix = "MB";
+        			size = Math.round(size / 1024000 * 100) / 100;
+        		}
+            
+        		return `<li key="${index}">${
+        			file.name
+        		} <span class="file-size">${size} ${suffix}</span><i class="material-icons md-48">delete</i></li>`;
+        	});
+        	$("ul").html(fileMap);
+        }
+
+    </script>
+</body>
+</html>

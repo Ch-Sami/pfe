@@ -1,6 +1,6 @@
 <%- include('../partials/profilHeader')%>
     <div class="container py-4">
-        <form id="newProjectFrm" class="ui form" action="/users/<%= user._id%>/projects/sent" method="post">
+        <form id="newProjectFrm" class="ui form" action="/users/<%= user._id%>/projects/sent" method="post" enctype="multipart/form-data">
             <div class="two fields">
                 <div class="field m-3">
                     <label>
@@ -44,7 +44,21 @@
                 </div>
             </div>
             
-            
+            <!-- files Upload -->
+            <div id="filesUploadContainer" class="container " style="border: 1px solid crimson;">
+                <div>
+                    <label id="uploadLable" for="upload">
+                        <input type="file" class="fileInput" id="upload" name="files" multiple>
+                        Upload Files
+                    </label>
+                </div>
+                <div class="files">
+                    <h2>Files Selected</h2>
+                    <ul class="files_ul"></ul>
+                </div>
+            </div>
+
+            <!-- text -->
             <div class="field my-1 d-none">
                 <textarea id="projectDoc" name="project[detail]"></textarea>
             </div>

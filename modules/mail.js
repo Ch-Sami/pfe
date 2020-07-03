@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const User = require('./user');
 // materializedPlugin = require('mongoose-materialized');
+const conn = require('./connection');
+
 
 const mailSchema = mongoose.Schema({
     title: String,
@@ -14,7 +16,9 @@ const mailSchema = mongoose.Schema({
         read: Boolean
     }],
     replies: [{type: mongoose.Schema.Types.ObjectId ,ref: 'Mail'}],
-    usersThatDidNotDelete: [{type: mongoose.Schema.Types.ObjectId ,ref: 'User'}]
+    usersThatDidNotDelete: [{type: mongoose.Schema.Types.ObjectId ,ref: 'User'}],
+    files: [{type: mongoose.Schema.Types.ObjectId, ref: 'gfsMail' }],
+    mailSize: Number
 });
 // mailSchema.plugin(materializedPlugin);
-module.exports = new mongoose.model('Mail' ,mailSchema);
+module.exports = conn.model('Mail' ,mailSchema);

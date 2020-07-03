@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://kit.fontawesome.com/495f0538c0.js" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>display file</title>
+    <link rel="stylesheet" href="/stylesheets/lib/bootstrap.css">
+    <link rel="stylesheet" href="/stylesheets/lib/semantic.min.css">
+
+    <link href="../node_modules/video.js/dist/video-js.min.css" rel="stylesheet" />
+    <script src="../node_modules/video.js/dist/video.min.js"></script>
+    <link rel="stylesheet" href="/stylesheets/videoPlayer.css">
+    <!-- <link href="https://vjs.zencdn.net/5.4.6/video-js.css" rel="stylesheet">
+    <script src="https://vjs.zencdn.net/5.4.6/video.js"></script> -->
+
+</head>
+<body>
+  <!-- /files/43e284b86616e4013b3de39ead428123.jpg -->
+  <div class="d-flex flex-column align-items-center">
+    <h1 id="videoHeader"><%=filename%></h1>
+    <video id="videoId" class="video-js" controls preload="auto" width="640" height="264" poster="https://images.frandroid.com/wp-content/uploads/2018/08/guide-apps-video-android.jpg" data-setup="{}">
+      <source src="/<%=offf%>/<%=iddd%>/files/<%=fileId%>" type="video/mp4"/>
+      <source src="/<%=offf%>/<%=iddd%>/files/<%=fileId%>" type="video/webm">
+      <source src="/<%=offf%>/<%=iddd%>/files/<%=fileId%>" type="video/ogg">
+    </video>
+  </div>
+  
+
+</body>
+</html>
+
+
+
+
+
+
+<!-- <button id="seek_btn">Seek</button>
+<div id="events"></div> -->

@@ -1,13 +1,28 @@
 <%- include('../partials/profilHeader')%>
 <div class="container py-4">
     
-        <form id="newMailReplyFrm" class="ui form" action="/users/<%= user._id%>/mails/<%=type%>/<%= mail._id%>/replies" method="post">
+    <form id="newMailReplyFrm" class="ui form" action="/users/<%= user._id%>/mails/<%=type%>/<%= mail._id%>/replies" method="post">
     
         <div class="field mx-4 mt-4">
             <label><span class="inputsTitles">Title</span>
               <input id="reTitle" type="text" name="title" value="RE: <%= mail.title%>" placeholder="Mail title" disabled >
             </label>
         </div>
+
+        <!-- files upload -->
+        <div id="filesUploadContainer" class="container " style="border: 1px solid crimson;;">
+            <div>
+                <label id="uploadLable" for="upload">
+                    <input type="file" class="fileInput" id="upload" name="files" multiple>
+                    Upload Files
+                </label>
+            </div>
+            <div class="files">
+                <h2>Files Selected</h2>
+                <ul class="files_ul"></ul>
+            </div>
+        </div>
+
 
         <div class="field my-1 d-none">
             <textarea id="mailText" name="text"></textarea>

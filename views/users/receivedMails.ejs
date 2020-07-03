@@ -7,6 +7,23 @@
         <span class="sentReceivedSpan">Sent Mails</span>
       </a>
     </div>
+    <!-- storage -->
+    
+    <div class="container">
+      <label for="progress" class="bitraf" style="font-size: small;">storage: (<%= storagePer%> %)</label>
+      <span id="storageWarning" class="bitraf float-right d-none" style="font-size: small;">
+        <i class="fas fa-exclamation-triangle"></i>
+        please delete some mails
+      </span>
+      <%var storagePer2 = storagePer%>
+      <%if(storagePer2 < 0.5){%>
+      <%  storagePer2 = 0.5;%>
+      <%}%>
+      <div class="ui progress" id="progress" >
+        <div id="storageUsedBar" class="bar"></div>
+      </div>
+      <input id="storagePer" type="hidden" value="<%=storagePer2%>">
+    </div>
     <!-- some infos -->
     <p id="userId" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= user._id%></p>
     <input type="text" id="mailsType" value="received" class="d-none">
@@ -15,7 +32,7 @@
       <%= JSON.stringify(receivedMails)%>
     </textarea>
     <!-- search -->
-    <div id="search" class="ui search text-center mt-5">
+    <div id="search" class="ui search text-center mt-3">
       <div class="ui icon input form-group form-inline">
         <input id="searchTextbox" class="prompt" type="text" placeholder="Search received mail...">
         <i class="search icon"></i>
@@ -40,7 +57,7 @@
 
 
     <div id="receivedMailsContainer">
-      <div id="mailsList" class="container scrollDiv mt-4 p-4">
+      <div id="mailsList" class="container scrollDiv p-4">
         <%receivedMails.forEach(function(receivedMail){%>
           <div onclick='location.href="/users/<%= user._id%>/mails/received/<%= receivedMail._id%>/content"' class="hoverableDiv row d-flex py-2 px-5 m-2">
             <div class="column col-5 d-flex align-items-center px-0">

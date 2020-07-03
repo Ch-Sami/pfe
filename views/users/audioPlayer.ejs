@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="user-scalable=no">
+  <title>Howler.js Audio Player</title>
+  <link rel="stylesheet" href="/stylesheets/audioPlayer.css">
+</head>
+<body>
+  <!-- url info -->
+  <input id="audioUrl" type="hidden" value="/<%=offf%>/<%=iddd%>/files/<%=fileId%>/<%=filename%>">
+  <input id="filename" type="hidden" value="<%=filename%>">
+  <!-- Top Info -->
+  <div id="title">
+    <span id="track"></span>
+    <div id="timer">0:00</div>
+    <div id="duration">0:00</div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controlsOuter">
+    <div class="controlsInner">
+      <div id="loading"></div>
+      <div class="btn" id="playBtn"></div>
+      <div class="btn" id="pauseBtn"></div>
+    </div>
+    <div class="btn" id="volumeBtn"></div>
+  </div>
+
+  <!-- Progress -->
+  <div id="progressContainer">
+    <div id="waveContainer">
+      <div id="waveform"></div>
+    </div>
+    <div id="bar"></div>
+    <div id="progress"></div>
+  </div>
+  
+
+  <!-- Volume -->
+  <div id="volume" >
+    <div id="barFull" class="bar"></div>
+    <div id="barEmpty" class="bar"></div>
+    <div id="sliderBtn"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="text/javascript" src="/scripts/lib/jquery-3.4.1.min.js"></script>
+  <script src="/scripts/howler.core.js"></script>
+  <script src="/scripts/siriwave.js"></script>
+  <script src="/scripts/audioPlayer.js"></script>
+</body>
+</html>

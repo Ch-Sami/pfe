@@ -31,6 +31,14 @@
                                     <img class="ui avatar image mr-2 pr-0" src="<%= elt.actor.imageUrl%>">
                                     <span class="bitraf ml-0 pl-0 mr-5"><%= elt.actor.username%></span>
                                 </div> 
+                            <%}else if(elt.action == 'update'){%>
+                                <div class="column col-2 d-flex align-items-center">
+                                    <span style="white-space:pre;">updated by     : </span>
+                                </div>
+                                <div class="column col-6 d-flex align-items-center">
+                                    <img class="ui avatar image mr-2 pr-0" src="<%= elt.actor.imageUrl%>">
+                                    <span class="bitraf ml-0 pl-0 mr-5"><%= elt.actor.username%></span>
+                                </div> 
                             <%}else if(elt.action == 'unassign'){%>
                                 <div class="column col-2 d-flex align-items-center">
                                     <span style="white-space:pre;">unAssigned to : </span>
@@ -68,37 +76,29 @@
               </div>
         </div>
 
-        <form id="showAssignedProjectFrm" class="ui form" action="/users/<%= user.id%>/projects/<%= project._id%>/send" method="post">
-            <div class="two fields">
-                <div class="field m-3">
-                    <label>
-                        <span class="inputsTitles">Title</span>
-                        <input id="projectTitle" type="text" name="project[title]" placeholder="Title" value="<%= project.title%>" disabled>
-                    </label>
+        <div id="showAssignedProjectFrm">
+            <div class="row">
+                <div class="column col-12 col-sm-6 mb-3">
+                    <label for="projectTitle"><span class="inputsTitles">Title</span></label>
+                    <input id="projectTitle" class="inputStyleClone" type="text" name="project[title]" placeholder="Title" value="<%= project.title%>" disabled>
                 </div>
-                <div class="field m-3">
-                    <label>
-                        <span class="inputsTitles">Type</span>
-                        <input id="projectType" type="text" name="project[type]" value="project" disabled>
-                    </label>
+                <div class="column col-12 col-sm-6 mb-3">
+                    <label for="projectType"><span class="inputsTitles">Type</span></label>
+                    <input id="projectType" class="inputStyleClone" type="text" name="project[type]" value="project" disabled>
                 </div>
             </div>
-            <div class="two fields">
-                <div class="field m-3">
-                    <label>
-                        <span id="start" class="inputsTitles">Start</span>
-                        <input id="startDate" type="text" name="project[start]" placeholder="Start date" value="<%= project.start%>" disabled/>
-                    </label>
+            <div class="row">
+                <div class="column col-12 col-sm-6 mb-3">
+                    <label for="startDate"><span id="start" class="inputsTitles">Start</span></label>
+                    <input id="startDate" class="inputStyleClone" type="text" name="project[start]" placeholder="Start date" value="<%= project.start%>" disabled/>
                 </div>
-                <div class="field m-3">
-                    <label>
-                        <span class="inputsTitles">End</span>
-                        <input id="endDate" type="text" name="project[end]" placeholder="End date" value="<%= project.end%>" disabled/>
-                    </label>
+                <div class="column col-12 col-sm-6 mb-3">
+                    <label for="endDate"><span class="inputsTitles">End</span></label>
+                    <input id="endDate" class="inputStyleClone" type="text" name="project[end]" placeholder="End date" value="<%= project.end%>" disabled/>
                 </div>
             </div>
             
-            <div id="progressContainer" class="container my-5">
+            <div id="progressContainer" class="my-5">
                 <label for="progress">
                     <span class="inputsTitles">Progress</span>
                     <%if(project.lastUpdateBy !== undefined){%>
@@ -123,6 +123,87 @@
                     <button id="progressUp" type="button" class="btn btn-outline-success ml-2"><i class="fa fa-plus" aria-hidden="true"></i></button>
                 </div>
             </div>
+
+
+            <!-- project files -->
+            <%if(files.length > 0){%>
+                <div class="mb-4">
+                    <label for="filesContainer"><span class="inputsTitles">Files</span></label>
+                    <div id="filesContainer">
+                        <%files.forEach(function(file){%>
+                            <div class="row">
+                                <div class="column col-10">
+                                    <%if(file.fileType == 'pdf'){%>
+                                        <i class="far fa-file-pdf  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src=""> -->
+                                    <%}else if(file.fileType == 'text'){%>
+                                        <i class="far fa-file-alt  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/text.PNG"> -->
+                                    <%}else if(file.fileType == 'image'){%>
+                                        <!-- <i class="far fa-file-image  fileIcone"></i> -->
+                                        <img class="ui mini right spaced image" src="/projects/<%=project._id%>/files/<%=file._id%>">
+                                    <%}else if(file.fileType == 'video'){%>
+                                        <i class="far fa-file-video  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/video.PNG"> -->
+                                    <%}else if(file.fileType == 'audio'){%>
+                                        <i class="far fa-file-audio  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/audio.PNG"> -->
+                                    <%}else if(file.fileType == 'word'){%>
+                                        <i class="far fa-file-word  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/word.PNG"> -->
+                                    <%}else if(file.fileType == 'excel'){%>
+                                        <i class="far fa-file-excel  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/excel.PNG"> -->
+                                    <%}else if(file.fileType == 'powerPoint'){%>
+                                        <i class="far fa-file-pdf  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/powerPoint.PNG"> -->
+                                    <%}else if(file.fileType == 'visio'){%>
+                                        <i class="far fa-file  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/visio.PNG"> -->
+                                    <%}else if(file.fileType == 'publisher'){%>
+                                        <i class="far fa-file  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/publisher.PNG"> -->
+                                    <%}else if(file.fileType == 'other'){%>
+                                        <i class="far fa-file  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/other.PNG"> -->
+                                    <%}%>
+                                    <span><%= file.filename%></span>
+                                </div>
+                                <div class="column col-1 d-flex align-items-center justify-content-end p-0">
+                                    <%if(file.fileType == 'pdf' || file.fileType == 'text' || file.fileType == 'image'){%>
+                                        <a class="filesOptionsIcons" href="/projects/<%=project._id%>/files/<%=file._id%>" data-inverted="" data-tooltip="Preview" data-position="top center" class="float-right">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    <%}else if(file.fileType == 'video'){%>
+                                        <form action="/projects/<%=project._id%>/files/videos/<%=file._id%>/play" method="GET" class="float-right">
+                                            <input type="hidden" name="videoName" value="<%=file.filename%>">
+                                            <button class="filesOptionsIcons" data-inverted="" data-tooltip="play" data-position="top center">
+                                                <i class="fas fa-play"></i>
+                                            </button>
+                                        </form>
+
+                                    <%}else if(file.fileType == 'audio'){%>
+                                        <form action="/projects/<%=project._id%>/files/audios/<%=file._id%>/play" method="GET" class="float-right">
+                                            <input type="hidden" name="audioName" value="<%=file.filename%>">
+                                            <button class="filesOptionsIcons" data-inverted="" data-tooltip="play" data-position="top center">
+                                                <i class="fas fa-play"></i>
+                                            </button>
+                                        </form>
+                                    <%}%>
+                                </div>
+                                <div class="column col-1 d-flex align-items-center justify-content-center pr-0">
+                                    <a class="filesOptionsIcons" href="/projects/<%=project._id%>/files/<%=file._id%>" data-inverted="" data-tooltip="Download" data-position="top center" download>
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        <%});%>
+                    </div>
+                </div>
+            <%}%>
+
+
+            <!-- text -->
             <div class="field my-1 d-none">
                 <textarea id="projectDoc" name="project[detail]"> <%= project.detail%> </textarea>
             </div>
@@ -182,7 +263,7 @@
             <div class="my-2 d-flex justify-content-between">
                 <div>
                     <%if(children.length > 0){%>
-                        <button id="sendProject" class="standardBtnStyle">Send Project</button>
+                        <a id="sendProject" href="/users/<%= user.id%>/projects/<%= project._id%>/send" class="standardBtnStyle">Send Project</a>
                     <%}%>
                     <button id="unassignBtn" class="standardBtnStyle" type="button">Unassign</button>
                 </div>
@@ -194,7 +275,7 @@
                     class="goBackBtn float-right py-3 px-5"
                 />
             </div>
-        </form>
+        </div>
         <form id="saveProgressFrm" action="/users/<%= user.id%>/projects/<%= project._id%>/progress" method="post" class="d-none">
             <div class="ui input">
                 <input type="text" name="lastUpdateBy" value="<%= user._id%>">

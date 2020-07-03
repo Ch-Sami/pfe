@@ -145,6 +145,68 @@ $('#progressUpdateInfo')
   });
 
 
+  let state = {};
+
+  // state management
+  function updateState(newState) {
+    state = { ...state, ...newState };
+  }
+  function typeOf(obj) {
+    return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
+  }
+  // event handlers
+  $("#upload").change(function(e) {
+    let files = document.getElementsByClassName("fileInput")[0].files;
+    let filesArr = Array.from(files);
+    updateState({ files: files, filesArr: filesArr });
+  
+    renderFileList();
+  });
+  
+  
+  $(".files").on("click", "li > div > div > i", function(e) {
+    let key = $(this)
+      .parent()
+      .parent()
+      .parent()
+      .attr("key");
+    let curArr = state.filesArr;
+    curArr.splice(key, 1);
+    updateState({ filesArr: curArr });
+    renderFileList();
+  });
+  
+  // render functions
+  function renderFileList() {
+    let fileMap = state.filesArr.map((file, index) => {
+      let suffix = "bytes";
+      let size = file.size;
+      if (size >= 1024 && size < 1024000) {
+        suffix = "KB";
+        size = Math.round(size / 1024 * 100) / 100;
+      } else if (size >= 1024000) {
+        suffix = "MB";
+        size = Math.round(size / 1024000 * 100) / 100;
+      }
+      
+      return `<li class='.file_li' key="${index}">
+                <div class="row" >
+                  <div class="column col-11">
+                    ${file.name}
+                    <span class="file-size">${size} ${suffix}</span>
+                  </div>
+                  <div class="column col-1 px-0 d-flex justify-content-center align-items-end">
+                    <i class="fas fa-trash-alt file_delete_i"></i>
+                  </div>
+                </div>
+              </li>`;     
+    });
+    $(".files_ul").html(fileMap);
+  }
+  
+
+
+
 $('#sendToList').dropdown();
 $('#clearSendToBtn').on('click', function () {
 	$('#sendToList').dropdown('restore defaults')
@@ -155,7 +217,7 @@ $('#clearAssignToBtn').on('click', function () {
 	$('#assignToList').dropdown('restore defaults')
 });
 
-$('#newProjectFrm,#showSentProjectFrm,#showReceivedProjectFrm,#showAssignedProjectFrm').submit(function(){
+$('#resendProjectFrm,#newProjectFrm,#showSentProjectFrm,#showReceivedProjectFrm,#showAssignedProjectFrm').submit(function(){
   if($('#sentToInput').val() == ''){
     $('#sentToInput').attr('name' ,'');
   }
@@ -167,17 +229,14 @@ $('#newProjectFrm,#showSentProjectFrm,#showReceivedProjectFrm,#showAssignedProje
   });
   return true;
 });
-$('#updateSentProjectFrm').submit(function(){
-  newProjectEditor.save().then((savedData) => {
-    $('#projectDoc').text(JSON.stringify(savedData));
-  });
-  return true;
-});
+
 
 $('#unassignBtn').on('click' ,function(){
   $('#unassignFrm').submit();
 });
-
+// $('#resendProjectBtn').on('click' ,function(){
+//   $('#resentProjectFrm').submit();
+// });
 $('#deleteProjectBtn').on('click' ,function(){
   $('#deleteProjectFrm').submit();
 });
@@ -253,15 +312,6 @@ $(function() {
   }
   });
 });
-
-
-
-
-
-
-
-
-
 
 
 

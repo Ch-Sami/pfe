@@ -1,8 +1,8 @@
 const mongoose = require('mongoose'),
       materializedPlugin = require('mongoose-materialized'),
       User = require('./user'),
-      Project = require('./project');
-  
+      Project = require('./project'),
+      conn = require('./connection');
 var treeSchema = new mongoose.Schema({
     user: {type: mongoose.Schema.Types.ObjectId ,ref: 'User'},
     project: {type: mongoose.Schema.Types.ObjectId ,ref: 'Project'},
@@ -24,7 +24,7 @@ var treeSchema = new mongoose.Schema({
 
 treeSchema.plugin(materializedPlugin);
 
-module.exports = mongoose.model('Tree' ,treeSchema);
+module.exports = conn.model('Tree' ,treeSchema);
 // module.exports = treeSchema;
 
 

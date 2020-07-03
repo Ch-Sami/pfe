@@ -11,7 +11,7 @@
         </a>
     </div>
     <div class="container py-4">
-        <form id="updateSentProjectFrm" class="ui form" action="/users/<%= user.id%>/projects/sent/<%= project._id%>?_method=PUT" method="post">
+        <form id="updateSentProjectFrm" class="ui form" action="/users/<%= user.id%>/projects/sent/<%= project._id%>?_method=PUT" method="post" enctype="multipart/form-data">
             <div class="two fields">
                 <div class="field m-3">
                     <label>
@@ -63,6 +63,84 @@
                     </div>  
                 </div>
             </div>
+
+            <!-- files to delete -->
+            <%if(files.length > 0){%>
+                <div class="mb-4">
+                    <label><span class="inputsTitles">Files to delete</span></label>
+                    <div id="filesContailner">
+                        <% var i = 0; %>
+                        <%files.forEach(function(file){%>
+                            <div class="row">
+                                <div class="column col-11">
+                                    <%if(file.fileType == 'pdf'){%>
+                                        <i class="far fa-file-pdf  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src=""> -->
+                                    <%}else if(file.fileType == 'text'){%>
+                                        <i class="far fa-file-alt  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/text.PNG"> -->
+                                    <%}else if(file.fileType == 'image'){%>
+                                        <!-- <i class="far fa-file-image  fileIcone"></i> -->
+                                        <img class="ui mini right spaced image" src="/projects/<%=project._id%>/files/<%=file._id%>">
+                                    <%}else if(file.fileType == 'video'){%>
+                                        <i class="far fa-file-video  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/video.PNG"> -->
+                                    <%}else if(file.fileType == 'audio'){%>
+                                        <i class="far fa-file-audio  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/audio.PNG"> -->
+                                    <%}else if(file.fileType == 'word'){%>
+                                        <i class="far fa-file-word  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/word.PNG"> -->
+                                    <%}else if(file.fileType == 'excel'){%>
+                                        <i class="far fa-file-excel  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/excel.PNG"> -->
+                                    <%}else if(file.fileType == 'powerPoint'){%>
+                                        <i class="far fa-file-pdf  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/powerPoint.PNG"> -->
+                                    <%}else if(file.fileType == 'visio'){%>
+                                        <i class="far fa-file  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/visio.PNG"> -->
+                                    <%}else if(file.fileType == 'publisher'){%>
+                                        <i class="far fa-file  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/publisher.PNG"> -->
+                                    <%}else if(file.fileType == 'other'){%>
+                                        <i class="far fa-file  fileIcone"></i>
+                                        <!-- <img class="ui mini right spaced image" src="/public/icons/other.PNG"> -->
+                                    <%}%>
+                                    <span><%= file.filename%></span>
+                                </div>
+                                <div class="column col-1 d-flex align-items-center justify-content-center pr-0">
+                                    <button type="button" id="deleteFile<%=i%>" class="filesOptionsIcons" data-inverted="" data-tooltip="Delete" data-position="top center">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button type="button">
+                                    <button type="button" id="addFile<%=i%>" class="filesOptionsIcons d-none" data-inverted="" data-tooltip="Cancel delete" data-position="top center">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                
+                                <input type="hidden" id="fileToDelete<%=i%>" name="" value="<%=file._id%>">
+                            </div>
+                            <% i++; %>
+                        <%});%>
+                    </div>
+                </div>
+            <%}%>
+            <input type="hidden" id="filesArrayLength" value="<%= files.length%>">
+            
+            <!-- files to add -->
+            <label for="filesUploadContainer"><span class="inputsTitles">Add new files</span></label>
+            <div id="filesUploadContainer" class="container " style="border: 1px solid crimson;">
+                <div>
+                    <label id="uploadLable" for="upload">
+                        <input type="file" class="fileInput" id="upload" name="files" multiple>
+                        Upload Files
+                    </label>
+                </div>
+                <div class="files">
+                    <h2>Files Selected</h2>
+                    <ul class="files_ul"></ul>
+                </div>
+            </div>
             
             
             <div class="field my-1 d-none">
@@ -72,7 +150,7 @@
             <label for="editorHugeContainer"><span class="inputsTitles">Documentation</span></label>
             <div id="editorHugeContainer" class="ce-example">
                 <div class="ce-example__content _ce-example__content--small">
-                    <div id="newProjectEditorjs" class="editorjs"></div>
+                    <div id="showProjectEditorjs" class="editorjs"></div>
                 </div>
             </div>
 

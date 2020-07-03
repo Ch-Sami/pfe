@@ -6,7 +6,7 @@ const Message = require("./message");
 const eventSchema = require("./event");
 const passportLocalMongoose = require("passport-local-mongoose");
 materializedPlugin = require('mongoose-materialized');
-
+const conn = require('./connection');
 
 const userSchema = mongoose.Schema({
   username: String,
@@ -34,7 +34,9 @@ const userSchema = mongoose.Schema({
   receivedMails: [{type: mongoose.Schema.Types.ObjectId, ref:'Mail'}],
 
   sentMessages: [{ type: mongoose.Schema.Types.ObjectId, ref:'Message'}],
-  receivedMessages: [{type: mongoose.Schema.Types.ObjectId, ref:'Message'}]
+  receivedMessages: [{type: mongoose.Schema.Types.ObjectId, ref:'Message'}],
+
+  notifications: [String]
 });
 
 // var autoPopulateChildren = function(next) {
@@ -55,4 +57,4 @@ const userSchema = mongoose.Schema({
 userSchema.plugin(passportLocalMongoose);
 userSchema.plugin(materializedPlugin);
 
-module.exports = new mongoose.model('User' ,userSchema);
+module.exports = conn.model('User' ,userSchema);

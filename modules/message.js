@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const User = require('./user');
+const conn = require('./connection');
 
 const messageSchema = mongoose.Schema({
     text: String,
@@ -7,4 +8,4 @@ const messageSchema = mongoose.Schema({
     sent_to: {type: mongoose.Schema.Types.ObjectId ,ref: 'User'},
     sent_at: String
 });
-module.exports = new mongoose.model('Message' ,messageSchema);
+module.exports = conn.model('Message' ,messageSchema);

@@ -3,10 +3,13 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+
+
 const methodOverride = require("method-override");
+const connection = require('./modules/connection'); ///////////////////////////////////////////////////
 const Unit = require("./modules/unit");
 const User = require("./modules/user");
-const Project = require('./modules/project');
+const Project = require('./modules/project');//////////////////////////////////////////////////////////
 const seed = require("./seeds");
 const passport = require("passport");
 const localStrategy = require("passport-local");
@@ -29,6 +32,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine" ,"ejs");
 app.use(methodOverride("_method"));
 
+//authentification
 app.use(expressSession({
 	secret: "Achbek w nechbek ya lBekBek",
 	resave: false,
@@ -41,6 +45,7 @@ passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
+//midware
 app.use((req ,res ,next)=>{
 	res.locals.currentUser = req.user;   //(adds {currentUser = req.user} to all render params);
 	Unit.find({type: 'department'} ,'-desc' ,(err ,units)=>{
@@ -62,22 +67,6 @@ app.use(mailsRoutes);
 app.use(unitRoutes);
 app.use(chartsRoutes);
 
-//to get rid of the annoying deprecation warning
-mongoose.set('useNewUrlParser', true);
-mongoose.set('useFindAndModify', false);
-mongoose.set('useCreateIndex', true);
-//connecting to database
-mongoose.connect("mongodb://localhost:27017/companydb" ,{useNewUrlParser: true, useUnifiedTopology: true ,useFindAndModify: false} , ()=>{
-    console.log("connected to mongodb !");
-	// seed();
-});
-
-
-
-
-
-
-
 
 
 
@@ -92,3 +81,4 @@ mongoose.connect("mongodb://localhost:27017/companydb" ,{useNewUrlParser: true, 
 app.listen(3000 ,()=>{
     console.log("the server has started !");
 });
+

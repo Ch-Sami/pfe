@@ -7,6 +7,24 @@
         <span class="sentReceivedSpan">Sent Mails</span>
       </a>
     </div>
+
+    <!-- storage -->
+    <div class="container">
+      <label for="progress" class="bitraf" style="font-size: small;">storage: (<%= storagePer%> %)</label>
+      <span id="storageWarning" class="bitraf float-right d-none" style="font-size: small;">
+        <i class="fas fa-exclamation-triangle"></i>
+        please delete some mails
+      </span>
+      <%var storagePer2 = storagePer%>
+      <%if(storagePer2 < 0.5){%>
+      <%  storagePer2 = 0.5;%>
+      <%}%>
+      <div class="ui progress" id="progress" >
+        <div id="storageUsedBar" class="bar"></div>
+      </div>
+      <input id="storagePer" type="hidden" value="<%=storagePer2%>">
+    </div>
+
     <!-- some infos -->
     <p id="userId" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= user._id%></p>
     <input type="text" id="mailsType" value="sent" class="d-none">
@@ -99,9 +117,7 @@
                                 <span class="bitraf"> <%= reply.created_at%></span>
                               </div>
                             </div>
-                              
-
-                              
+                          
                           </div>
                       <%});%>
                     </div>

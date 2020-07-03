@@ -86,7 +86,94 @@ $('.menuItem').removeClass('active menuItemColor');
 $('#showMails').addClass('active menuItemColor');
 
 
+$('#progress').progress({
+  percent: $('#storagePer').val(),
+  limitValues: true
+});
+
+setBarColor($('#storagePer').val());
+
+function setBarColor(storagePer){
+  switch(true){
+    case (storagePer <= 15):
+      $('#storageUsedBar').css('background-color', '#00c21a');
+      break;
+    case (storagePer > 15 && storagePer <= 35):
+      $('#storageUsedBar').css('background-color', '#aaf200');
+      break;
+    case (storagePer > 35 && storagePer <= 65):
+      $('#storageUsedBar').css('background-color', '#f2de00');
+      break;
+    case (storagePer > 65 && storagePer < 90):
+      $('#storageUsedBar').css('background-color', '#f77c00');
+      break;
+    case (storagePer >= 90):
+      $('#storageUsedBar').css('background-color', '#c70000');
+      $('#storageWarning').removeClass('d-none');
+      break;
+  }
+}
+
 //new mail
+let state = {};
+
+// state management
+function updateState(newState) {
+	state = { ...state, ...newState };
+}
+function typeOf(obj) {
+  return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
+}
+// event handlers
+$("#upload").change(function(e) {
+  let files = document.getElementsByClassName("fileInput")[0].files;
+	let filesArr = Array.from(files);
+	updateState({ files: files, filesArr: filesArr });
+
+	renderFileList();
+});
+
+
+$(".files").on("click", "li > div > div > i", function(e) {
+	let key = $(this)
+    .parent()
+    .parent()
+    .parent()
+    .attr("key");
+	let curArr = state.filesArr;
+	curArr.splice(key, 1);
+	updateState({ filesArr: curArr });
+	renderFileList();
+});
+
+// render functions
+function renderFileList() {
+	let fileMap = state.filesArr.map((file, index) => {
+		let suffix = "bytes";
+    let size = file.size;
+		if (size >= 1024 && size < 1024000) {
+			suffix = "KB";
+			size = Math.round(size / 1024 * 100) / 100;
+		} else if (size >= 1024000) {
+			suffix = "MB";
+			size = Math.round(size / 1024000 * 100) / 100;
+		}
+    
+    return `<li class='.file_li' key="${index}">
+              <div class="row" >
+                <div class="column col-11">
+                  ${file.name}
+                  <span class="file-size">${size} ${suffix}</span>
+                </div>
+                <div class="column col-1 px-0 d-flex justify-content-center align-items-end">
+                  <i class="fas fa-trash-alt file_delete_i"></i>
+                </div>
+              </div>
+            </li>`;     
+  });
+	$(".files_ul").html(fileMap);
+}
+
 $('#sendToList').dropdown();
 $('#clearSendToBtn').on('click', function () {
 	$('#sendToList').dropdown('restore defaults')
@@ -334,12 +421,14 @@ $('#searchTextbox1').on('input' ,function(){
 });
 
 $('#newMailFrm').submit(function(){
-    if($('#CCs').val() == ''){
-      $('#CCs').attr('name' ,'');
-    }
-    newMailEditor.save().then((savedData) => {
-      $('#mailText').text(JSON.stringify(savedData));
-    });
+  $('#totalMailSize').val();
+  if($('#CCs').val() == ''){
+    $('#CCs').attr('name' ,'');
+  }
+  newMailEditor.save().then((savedData) => {
+    $('#mailText').text(JSON.stringify(savedData));
+    totalMailSize =+ JSON.stringify(savedData)
+  });
   return true;
 });
 

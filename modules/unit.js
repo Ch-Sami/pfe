@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const User = require("./user");
+const conn = require('./connection');
 
 const unitSchema = mongoose.Schema({
     type: String,
@@ -9,4 +10,4 @@ const unitSchema = mongoose.Schema({
 });
 
 
-module.exports = new mongoose.model('Unit',unitSchema);
+module.exports = conn.model('Unit',unitSchema);
