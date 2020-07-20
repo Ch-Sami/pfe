@@ -13,8 +13,15 @@ const projectSchema = mongoose.Schema({
     detail: String,
     url: String,
     progress: {type: Number ,default: 1},
-    lastUpdateBy: {type: mongoose.Schema.Types.ObjectId ,ref: 'User'},
-    lastUpdateAt: String,
+    // lastProgressUpdateBy: {type: mongoose.Schema.Types.ObjectId ,ref: 'User'},
+    // lastProgressUpdateAt: String,
+    progressHistory: [{
+      progressUpdateBy: String,
+      progressUpdateAt: String,
+      oldProgress: Number,
+      newProgress: Number
+    }],
+    lastProjectUpdateAt: String,
     discussion : [{
       userName : String,
       userId: String,

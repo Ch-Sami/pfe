@@ -4,8 +4,13 @@
           <span class="sentReceivedSpan"><i class="fas fa-envelope-open-text"></i></span>
         </a>
         <a class="item" href="/users/<%= user._id%>/mails/received/<%= mail._id%>/replies">
-          <span class="sentReceivedSpan"><i class="fas fa-reply"></i></span>
+          <span class="sentReceivedSpan"><i class="fas fa-reply-all"></i></span>
         </a>
+    </div>
+    <div class="container">
+        <% if(mail.sending_type == 'CC'){%>
+            <i class="far fa-closed-captioning float-right bitraf" style="font-size: 3em;"></i>
+        <%}%>
     </div>
     <div class="container py-4">
             <div class="mb-4">
@@ -47,7 +52,7 @@
                                         <!-- <img class="ui mini right spaced image" src="/public/icons/text.PNG"> -->
                                     <%}else if(file.fileType == 'image'){%>
                                         <!-- <i class="far fa-file-image  fileIcone"></i> -->
-                                        <img class="ui mini right spaced image" src="/mails/<%=mail._id%>/files/<%=file.filename%>">
+                                        <img class="ui mini right spaced image" src="/mails/<%=mail._id%>/files/<%=file._id%>">
                                     <%}else if(file.fileType == 'video'){%>
                                         <i class="far fa-file-video  fileIcone"></i>
                                         <!-- <img class="ui mini right spaced image" src="/public/icons/video.PNG"> -->

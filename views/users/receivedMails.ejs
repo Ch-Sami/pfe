@@ -7,23 +7,24 @@
         <span class="sentReceivedSpan">Sent Mails</span>
       </a>
     </div>
-    <!-- storage -->
+    <input type="hidden" id="currentPage" value="receivedMailsPage">
     
+    <!-- storage -->
+    <input type="hidden" id="totalMailsSize" value="<%= user.usedReceivedMailsStorage%>">
+    <input type="hidden" id="userStorage" value="<%= user.receivedMailsStorage%>">
     <div class="container">
-      <label for="progress" class="bitraf" style="font-size: small;">storage: (<%= storagePer%> %)</label>
+      <label for="progress" class="bitraf" style="font-size: small;">storage: (<span id="storagePerLable"></span> %)</label>
       <span id="storageWarning" class="bitraf float-right d-none" style="font-size: small;">
         <i class="fas fa-exclamation-triangle"></i>
         please delete some mails
       </span>
-      <%var storagePer2 = storagePer%>
-      <%if(storagePer2 < 0.5){%>
-      <%  storagePer2 = 0.5;%>
-      <%}%>
-      <div class="ui progress" id="progress" >
+      <div class="ui progress error" id="progress" >
         <div id="storageUsedBar" class="bar"></div>
       </div>
-      <input id="storagePer" type="hidden" value="<%=storagePer2%>">
+      <input id="storagePer" type="hidden">
     </div>
+
+
     <!-- some infos -->
     <p id="userId" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= user._id%></p>
     <input type="text" id="mailsType" value="received" class="d-none">
@@ -76,14 +77,15 @@
                 <%}else{%>
                   <%= receivedMail.title%>
                 <%}%>
+                <%if(receivedMail.sending_type == 'CC'){%>
+                  <i class="far fa-closed-captioning"></i>
+                <%}%>
               </span>
             </div>
             <div class="column col-7 px-0">
               <div class="float-right d-flex justify-content-between text-align-center">
-                <form action="/users/<%= user._id%>/mails/received/<%= receivedMail._id%>/archive" method="POST">
-                  <button  class="contactsIcons" data-inverted="" data-tooltip="Archive" data-position="top center"><i class="fas fa-archive"></i></button>
-                </form>
                 <form action="/users/<%= user._id%>/mails/received/<%= receivedMail._id%>?_method=DELETE" method="POST">
+                  <input type="hidden" name="mailSize" value="<%=receivedMail.size%>">
                   <button  class="contactsIcons" data-inverted="" data-tooltip="Delete" data-position="top center"><i class="fas fa-trash-alt"></i></button>
                 </form>
               </div>
@@ -105,8 +107,8 @@
         <%});%>
       </div>
 
-    <!--Search results-->
-    <div id="mailSearchResults" class="container scrollDiv mt-4 p-4 d-none"></div>
+      <!--Search results-->
+      <div id="mailSearchResults" class="container scrollDiv mt-4 p-4 d-none"></div>
 
     </div>
 <%- include('../partials/mailsFooter')%>

@@ -128,16 +128,15 @@
             <input type="hidden" id="filesArrayLength" value="<%= files.length%>">
             
             <!-- files to add -->
-            <label for="filesUploadContainer"><span class="inputsTitles">Add new files</span></label>
-            <div id="filesUploadContainer" class="container " style="border: 1px solid crimson;">
+            <div id="filesUploadContainer" class="mx-4">
                 <div>
                     <label id="uploadLable" for="upload">
                         <input type="file" class="fileInput" id="upload" name="files" multiple>
-                        Upload Files
+                        <span id="lableTextSpan">Add Files</span>
+                        <i class="fas fa-paperclip"></i>
                     </label>
                 </div>
                 <div class="files">
-                    <h2>Files Selected</h2>
                     <ul class="files_ul"></ul>
                 </div>
             </div>

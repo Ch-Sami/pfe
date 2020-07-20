@@ -7,22 +7,21 @@
         <span class="sentReceivedSpan">Sent Mails</span>
       </a>
     </div>
+    <input type="hidden" id="currentPage" value="sentMailsPage">
 
     <!-- storage -->
+    <input type="hidden" id="totalMailsSize" value="<%= user.usedSentMailsStorage%>">
+    <input type="hidden" id="userStorage" value="<%= user.sentMailsStorage%>">
     <div class="container">
-      <label for="progress" class="bitraf" style="font-size: small;">storage: (<%= storagePer%> %)</label>
+      <label for="progress" class="bitraf" style="font-size: small;">storage: (<span id="storagePerLable"></span> %)</label>
       <span id="storageWarning" class="bitraf float-right d-none" style="font-size: small;">
         <i class="fas fa-exclamation-triangle"></i>
         please delete some mails
       </span>
-      <%var storagePer2 = storagePer%>
-      <%if(storagePer2 < 0.5){%>
-      <%  storagePer2 = 0.5;%>
-      <%}%>
-      <div class="ui progress" id="progress" >
+      <div class="ui progress error" id="progress" >
         <div id="storageUsedBar" class="bar"></div>
       </div>
-      <input id="storagePer" type="hidden" value="<%=storagePer2%>">
+      <input id="storagePer" type="hidden">
     </div>
 
     <!-- some infos -->
@@ -95,7 +94,7 @@
                       <div class="floating ui red label">22</div>
                     </span>
                     <i class="dropdown icon"></i>
-                    <div id="repliesMenu<%=i%>" class="repliesMenu menu">
+                    <div replyMenuOf="<%= sentMail._id%>" id="repliesMenu<%=i%>" class="repliesMenu menu">
                       <% sentMail.replies.forEach(function(reply){%>
                           <div class="item">
                             <div class="row">
@@ -140,11 +139,13 @@
                                 <%}%>
                                 <img class="ui avatar image mr-0 pr-0" src="<%= elt.sent_to.imageUrl%>">
                                 <span class="bitraf ml-0 pl-0 mr-5"><%= elt.sent_to.username%></span>
-                                <% if(elt.read == false){%>
-                                  <span class="float-right bitraf">not yet</span>
-                                <%}else{%>
-                                  <span class="float-right" style="color: #09ed1c; white-space:pre;">done   </span>
-                                <%}%>
+                                <span sentToRead="<%= elt.sent_to._id%>">
+                                  <% if(elt.read == false){%>
+                                    <span class="float-right bitraf">not yet</span>
+                                  <%}else{%>
+                                    <span class="float-right" style="color: #09ed1c; white-space:pre;">done   </span>
+                                  <%}%>
+                                </span>
                                 <span class="float-right">read :</span>
                                 <span class="bitraf float-right mr-5"> <%= elt.sent_at%></span>
                                 <span class="float-right">at :</span>
@@ -153,13 +154,9 @@
                     </div>
                   </div>
 
-
-
                   <div class="float-right d-flex justify-content-between text-align-center ml-3">
-                    <form action="/users/<%= user._id%>/mails/sent/<%= sentMail._id%>/archive" method="POST">
-                      <button  class="contactsIcons" data-inverted="" data-tooltip="Archive" data-position="top center"><i class="fas fa-archive"></i></button>
-                    </form>
                     <form action="/users/<%= user._id%>/mails/sent/<%= sentMail._id%>?_method=DELETE" method="POST">
+                      <input type="hidden" name="mailSize" value="<%=sentMail.size%>">
                       <button  class="contactsIcons" data-inverted="" data-tooltip="Delete" data-position="top center"><i class="fas fa-trash-alt"></i></button>
                     </form>
                   </div>

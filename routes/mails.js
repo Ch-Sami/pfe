@@ -72,7 +72,6 @@ function checkFileType(file ,cb){;
 	}
 }
 
-
 //Read file
 router.get('/mails/:mailId/files/:fileId' ,(req ,res)=>{
     const fileIdObj = new mongoose.mongo.ObjectId(req.params.fileId);
@@ -165,11 +164,11 @@ router.get("/users/:id/mails/sent/new" ,(req ,res)=>{
             User.find({} ,'-events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl' ,(err ,usersList)=>{
                 if(err){throw err;}
                 if(req.query.sendTo == undefined){
-                    res.render("users/newMail" ,{user: user ,sendTo: undefined,usersList: JSON.stringify(usersList)});
+                    res.render("users/newMail" ,{user: user ,sendTo: undefined,usersList: usersList});//JSON.stringify(usersList)
                 }else{
                     User.findById(req.query.sendTo ,(err ,sendTo)=>{
                         if(err){throw err}
-                        res.render("users/newMail" ,{user: user ,sendTo: sendTo,usersList: JSON.stringify(usersList)});
+                        res.render("users/newMail" ,{user: user ,sendTo: sendTo,usersList: usersList});//JSON.stringify(usersList)
                     });
                 }
             });
@@ -192,7 +191,7 @@ router.get("/users/:id/mails/received" ,(req ,res)=>{
         if(err){throw err;}
         else{
             var receivedMails = [];
-            var totalMailsSize = 0;
+            // var totalMailsSize = 0;
             user.receivedMails.forEach(function(rm){
                 var receivedMail = {
                     _id: rm._id,
@@ -204,18 +203,48 @@ router.get("/users/:id/mails/received" ,(req ,res)=>{
                 rm.sending_history.forEach(function(elt){
                     if(elt.sent_to == user.id){
                         receivedMail.received_at = elt.sent_at;
+                        receivedMail.sending_type = elt.sending_type;
                         receivedMail.read = elt.read;
                     }
                 });
-                totalMailsSize += rm.mailSize;
+                // totalMailsSize += rm.mailSize;
                 receivedMails.push(receivedMail);
             });
+            //sort the mails from newest to oldest
+            var sortedReceivedMails = receivedMails.sort( (a ,b) => {
+                return (a.received_at < b.received_at) ? 1 : -1;
+            });
+
+            //depopulate user.receuvedMails
             user.depopulate('receivedMails');
-            var storagePer = ((totalMailsSize * 100) / 50000000000).toFixed(2);;
-            // if(storagePer < 0.5){
-            //     storagePer = 0.5;
-            // }
-            res.render("users/receivedMails" ,{user: user ,receivedMails: receivedMails ,storagePer: storagePer});
+
+            const promise = new Promise((resolve ,reject) => {
+                var removedCount = 0;
+                var updatedMailNotificationsArray = user.mailNotifications.array.filter(notification => {
+                    if(notification.notifType != 'newMail'){
+                        return true;
+                    }else{
+                        removedCount = removedCount + notification.count;
+                    }
+                });
+                var updatedMailNotificationsCount = user.mailNotifications.count;
+                if(user.mailNotifications.count >= removedCount){
+                    updatedMailNotificationsCount = updatedMailNotificationsCount - removedCount;
+                }
+                const updatedMailNotifications = {
+                    count: updatedMailNotificationsCount,
+                    array: updatedMailNotificationsArray
+                }
+                resolve(updatedMailNotifications);
+            });
+            
+            promise
+            .then(updatedMailNotifications => {
+                User.findByIdAndUpdate(user._id ,{$set:{mailNotifications:updatedMailNotifications}} ,{new: true} ,(err ,user) => {
+                    if(err){throw err;}
+                    res.render("users/receivedMails" ,{user: user ,receivedMails: sortedReceivedMails});// ,totalMailsSize: totalMailsSize
+                });
+            });
         }
     });
 });
@@ -242,7 +271,7 @@ router.get("/users/:id/mails/sent" ,(req ,res)=>{
         if(err){throw err;}
         else{
             var sentMails = [];
-            var totalMailsSize = 0;
+            // var totalMailsSize = 0;
             user.sentMails.forEach(function(sm){
                 var sentMail = {
                     _id: sm._id,
@@ -265,16 +294,18 @@ router.get("/users/:id/mails/sent" ,(req ,res)=>{
                     });
                     sentMail.replies.push(reply);
                 });
-                totalMailsSize += sm.mailSize;
+                // totalMailsSize += sm.mailSize;
                 sentMails.push(sentMail);
             });
 
+            //sort the mails from newest to oldest
+            var sortedSentMails = sentMails.sort( (a ,b) => {
+                return (a.created_at < b.created_at) ? 1 : -1;
+            });
+
+            //depopulate user.receuvedMails
             user.depopulate('sentMails');
-            var storagePer = ((totalMailsSize * 100) / 50000000000).toFixed(2);
-            // if(storagePer < 0.5){
-            //     storagePer = 0.5;
-            // }
-            res.render("users/sentMails" ,{user: user ,sentMails: sentMails ,storagePer: storagePer});
+            res.render("users/sentMails" ,{user: user ,sentMails: sortedSentMails});// ,totalMailsSize: totalMailsSize
         }
     });
 });
@@ -370,7 +401,7 @@ router.get("/users/:id/mails/sent/:mailId/content" ,(req ,res)=>{
 
                     populateMailFiles(mail.files)
                     .then(files => {
-                        res.render("users/sentMailContent" ,{user: user ,mail: mail ,files: files ,usersList: JSON.stringify(usersList)});
+                        res.render("users/sentMailContent" ,{user: user ,mail: mail ,files: files ,usersList: usersList});//JSON.stringify(usersList)
                     });
                     
                 });
@@ -382,6 +413,7 @@ router.get("/users/:id/mails/sent/:mailId/content" ,(req ,res)=>{
 
 //show a received mail's content
 router.get("/users/:id/mails/received/:mailId/content" ,(req ,res)=>{
+    var io = req.app.get('io');
     User.findById(req.params.id ,(err ,user)=>{
         if(err){throw err;}
         else{
@@ -404,14 +436,39 @@ router.get("/users/:id/mails/received/:mailId/content" ,(req ,res)=>{
                             mail.received_at = receivedMail.sending_history[i].sent_at;
                             if(receivedMail.sending_history[i].read == false){
                                 receivedMail.sending_history[i].read = true;
-                                receivedMail.save();
+                                receivedMail.save(() => {
+                                    io.to(receivedMail.sent_by._id).emit('mailRead' ,req.params.id);
+                                });
                             }
                             break;
                         }
                     }
                     populateMailFiles(receivedMail.files)
                     .then(files => {
-                        res.render("users/receivedMailContent" ,{user: user ,mail: mail ,files: files ,usersList: JSON.stringify(usersList)});
+                        const promise = new Promise((resolve ,reject) => {
+                            var updatedMailNotificationsArray = user.mailNotifications.array.filter(notification => {
+                                if(notification.mailId != req.params.mailId && notification.replyId != req.params.mailId){
+                                    return true;
+                                }
+                            });
+                            var updatedMailNotificationsCount = user.mailNotifications.count;
+                            if(user.mailNotifications.count > 0){
+                                updatedMailNotificationsCount = updatedMailNotificationsCount - 1;
+                            }
+                            const updatedMailNotifications = {
+                                count: updatedMailNotificationsCount,
+                                array: updatedMailNotificationsArray
+                            }
+                            resolve(updatedMailNotifications);
+                        });
+                        
+                        promise
+                        .then(updatedMailNotifications => {
+                            User.findByIdAndUpdate(user._id ,{$set:{mailNotifications:updatedMailNotifications}} ,{new: true} ,(err ,user) => {
+                                if(err){throw err;}
+                                res.render("users/receivedMailContent" ,{user: user ,mail: mail ,files: files ,usersList: JSON.stringify(usersList)});
+                            });
+                        });
                     });
                 });
             });
@@ -419,124 +476,432 @@ router.get("/users/:id/mails/received/:mailId/content" ,(req ,res)=>{
     });
 });
 
+function de_duplicate(array){
+    var a = array;
+    for(var i=0; i<a.length; ++i) {
+        for(var j=i+1; j<a.length; ++j) {
+            if(a[i] === a[j]){
+                a.splice(j--, 1);
+            }
+        }
+    }
+    return a;
+}
 //sending new mail
 router.post("/users/:id/mails/sent"  ,arrUpload ,(req ,res)=>{
-    var receivers = req.body.sentTo.split(",");
-    if(req.body.CCs !== undefined){
-        var CCs = req.body.CCs.split(",");
-    }
-    var mail = new Mail({
-        sent_by: req.params.id,
-        title: req.body.title,
-        text: req.body.text,
-        created_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-        usersThatDidNotDelete: [],
-        mailSize: 0
-    });
-    mail.usersThatDidNotDelete.push(req.params.id);
-    var textSize = Buffer.byteLength(req.body.text);
-    var filesSize = 0;
-    req.files.forEach(function(file){
-        mail.files.push(file.id);
-        filesSize += file.size;
-    });
-    mail.mailSize = textSize + filesSize;
-    receivers.forEach(function(receiver){
-        var elt = {
-            sending_type: 'send',
-            sent_to: receiver,
-            sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-            read: false
-        }
-        mail.sending_history.push(elt);
-        mail.usersThatDidNotDelete.push(receiver);
-    });
-    if(req.body.CCs !== undefined){
-        CCs.forEach(function(CC){
-            var elt = {
-                sending_type: 'CC',
-                sent_to: CC,
-                sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                read: false
-            }
-            mail.sending_history.push(elt);
-            mail.usersThatDidNotDelete.push(CC);
-        });
-    }
-    mail.save((err ,mail)=>{
+    var io = req.app.get('io');
+    User.findById(req.params.id ,(err ,sender)=>{
         if(err){throw err}
-        receivers.forEach(function(receiverId){
-            User.findById(receiverId ,(err ,receiver)=>{
-                if(err){throw err}
-                receiver.receivedMails.push(mail);
-                receiver.save();
-            });
-        });
+        var sentTo = [];
+        var CCs = [];
+        if(req.body.sentTo !== undefined){
+            sentTo = req.body.sentTo.split(",");
+        }
         if(req.body.CCs !== undefined){
-            CCs.forEach(function(ccId){
-                User.findById(ccId ,(err ,CC)=>{
-                    if(err){throw err}
-                    CC.receivedMails.push(mail);
-                    CC.save();
+            CCs = req.body.CCs.split(",");
+        }
+        var mail = new Mail({
+            sent_by: req.params.id,
+            title: req.body.title,
+            text: req.body.text,
+            created_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+            usersThatDidNotDelete: [],
+            mailSize: 0
+        });
+        mail.usersThatDidNotDelete.push(req.params.id);
+
+        //calculating mail size
+        var textSize = Buffer.byteLength(req.body.text);
+        var filesSize = 0;
+        req.files.forEach(function(file){
+            mail.files.push(file.id);
+            filesSize += file.size;
+        });
+        mail.mailSize = textSize + filesSize;
+
+        //checking the sender's sent mails storage
+        if(Number(sender.usedSentMailsStorage) + mail.mailSize < Number(sender.sentMailsStorage)){
+            //send mail
+            sentTo.forEach(function(stid){
+                var elt = {
+                    sending_type: 'send',
+                    sent_to: stid,
+                    sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                    read: false
+                }
+                mail.sending_history.push(elt);
+                mail.usersThatDidNotDelete.push(stid);
+            });
+            if(req.body.CCs !== undefined){
+                CCs.forEach(function(CC){
+                    var elt = {
+                        sending_type: 'CC',
+                        sent_to: CC,
+                        sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                        read: false
+                    }
+                    mail.sending_history.push(elt);
+                    mail.usersThatDidNotDelete.push(CC);
+                });
+            }
+            mail.save((err ,mail)=>{
+                if(err){throw err}
+                var newMailInfos ={
+                    notifType: 'newMail',
+                    mailId: mail._id,
+                    mailSize: mail.mailSize,
+                    mailType: '',
+                    senderId: sender.id,
+                    count: 1,
+                    senderUsername: sender.username,
+                    senderImage: sender.imageUrl,
+                    at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                }
+                if(mail.title == ''){
+                    newMailInfos.title = 'None';
+                }else{
+                    newMailInfos.title = mail.title;
+                }
+                sentTo.forEach(function(stId){
+                    User.findById(stId ,(err ,st)=>{
+                        if(err){throw err}
+                        if(Number(st.usedReceivedMailsStorage) + Number(mail.mailSize) < Number(st.receivedMailsStorage)){
+                            st.receivedMails.push(mail);
+                            st.usedReceivedMailsStorage = st.usedReceivedMailsStorage + mail.mailSize;
+                            //handle new received mail notification
+                            io.to(st._id).emit('newMail' ,newMailInfos);
+                            var count = 1;
+			                st.mailNotifications.array.forEach(notification => {
+			                	if(notification.senderId == newMailInfos.senderId && notification.notifType == 'newMail'){
+                                    count = notification.count + 1;
+			                		st.mailNotifications.array.splice(st.mailNotifications.array.indexOf(notification) ,1);
+			                	}
+                            });
+                            newMailInfos.count = count;
+                            st.mailNotifications.array.push(newMailInfos);
+			                st.mailNotifications.count = st.mailNotifications.count + 1;
+                            //handle almost full received mails storage notification
+                            const per = Number(st.usedReceivedMailsStorage) * 100 / Number(st.receivedMailsStorage);
+                            if(per > 95){
+                                io.to(st._id).emit('receivedMailsStorageAlmostFullNotification');
+                                const notification = {
+                                    notifType: 'almostFullReceivedMailsStorage'
+                                }
+                                st.mailNotifications.count = st.mailNotifications.count + 1;
+                                st.mailNotifications.array.push(notification);
+                            }
+                        }else{
+                            //creating notif
+                            const notification = {
+                                notifType : 'mailSendFailed',
+                                mailTitle: mail.title,
+                                at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                                senderId: sender.id,
+                                senderUsername: sender.username,
+                                userThatDidNotReceiveId: st.id,
+                                userThatDidNotReceiveUsername: st.username
+                            }
+                            //notifiying the sender
+                            var updatedMailNotifications = {
+                                count: sender.mailNotifications.count + 1,
+                                array: sender.mailNotifications.array,
+                            }
+                            updatedMailNotifications.array.push(notification);
+                            User.findByIdAndUpdate(sender._id ,{$set:{mailNotifications:updatedMailNotifications}} ,{new: true} ,(err ,user) => {if(err){throw err;}});
+
+                            //notifiying the user that did not receive
+                            io.to(st._id).emit('missedMailNotification' ,notification);
+                            st.mailNotifications.count = st.mailNotifications.count + 1;
+                            st.mailNotifications.array.push(notification);
+
+                            //edit usersThatDidNotDelete
+                            var index = mail.usersThatDidNotDelete.indexOf(st._id);
+                            if(index > -1){
+                                mail.usersThatDidNotDelete.splice(index ,1);
+                            }
+                            mail.save();
+
+                        }
+                        st.save();
+                    });
+                });
+                if(req.body.CCs !== undefined){
+                    CCs.forEach(function(ccId){
+                        User.findById(ccId ,(err ,CC)=>{
+                            if(err){throw err}
+                            if(Number(CC.usedReceivedMailsStorage) + Number(mail.mailSize) < Number(CC.receivedMailsStorage)){
+                                CC.receivedMails.push(mail);
+                                CC.usedReceivedMailsStorage = CC.usedReceivedMailsStorage + mail.mailSize;
+                                
+                                //handle new received mail notification
+                                newMailInfos.mailType = 'CC';
+                                io.to(CC._id).emit('newMail' ,newMailInfos);
+                                var count = 1;
+			                    CC.mailNotifications.array.forEach(notification => {
+			                    	if(notification.senderId == newMailInfos.senderId && notification.notifType == 'newMail'){
+                                        count = notification.count + 1;
+			                    		CC.mailNotifications.array.splice(CC.mailNotifications.array.indexOf(notification) ,1);
+			                    	}
+                                });
+                                newMailInfos.count = count;
+                                CC.mailNotifications.array.push(newMailInfos);
+			                    CC.mailNotifications.count = CC.mailNotifications.count + 1;
+                                //handle almost full received mails storage notification
+                                const per = Number(CC.usedReceivedMailsStorage) * 100 / Number(CC.receivedMailsStorage);
+                                if(per > 95){
+                                    io.to(CC._id).emit('receivedMailsStorageAlmostFullNotification');
+                                    const notification = {
+                                        notifType: 'almostFullReceivedMailsStorage'
+                                    }
+                                    CC.mailNotifications.count = CC.mailNotifications.count + 1;
+                                    CC.mailNotifications.array.push(notification);
+                                }     
+                            }else{
+                                //creating notif
+                                const notification = {
+                                    notifType : 'mailSendFailed',
+                                    mailTitle: mail.title,
+                                    at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                                    senderId: sender.id,
+                                    senderUsername: sender.username,
+                                    userThatDidNotReceiveId: CC.id,
+                                    userThatDidNotReceiveUsername: CC.username
+                                }
+
+                                //notifiying the sender
+                                var updatedMailNotifications = {
+                                    count: sender.mailNotifications.count + 1,
+                                    array: sender.mailNotifications.array,
+                                }
+                                updatedMailNotifications.array.push(notification);
+                                User.findByIdAndUpdate(sender._id ,{$set:{mailNotifications:updatedMailNotifications}} ,{new: true} ,(err ,user) => {if(err){throw err;}});
+                                
+                                //notifiying the user that did not receive
+                                io.to(CC._id).emit('missedMailNotification' ,notification);
+                                CC.mailNotifications.count = CC.mailNotifications.count + 1;
+                                CC.mailNotifications.array.push(notification);
+
+                                //edit usersThatDidNotDelete
+                                var index = mail.usersThatDidNotDelete.indexOf(CC._id);
+                                if(index > -1){
+                                    mail.usersThatDidNotDelete.splice(index ,1);
+                                }
+                                mail.save();
+                            }
+                            CC.save();
+                        });
+                    });
+                }
+                sender.sentMails.push(mail);
+                sender.usedSentMailsStorage = sender.usedSentMailsStorage + mail.mailSize;
+                //handle almost full sent mails storage notification
+                const per = Number(sender.usedSentMailsStorage) * 100 / Number(sender.sentMailsStorage);
+                if(per > 95){
+                    io.to(sender._id).emit('sentMailsStorageAlmostFullNotification');
+                    const notification = {
+                        notifType: 'almostFullSentMailsStorage'
+                    }
+                    sender.mailNotifications.count = sender.mailNotifications.count + 1;
+                    sender.mailNotifications.array.push(notification);
+                }
+                sender.save(()=>{
+                    res.redirect("/users/"+req.params.id+"/mails/sent");
                 });
             });
-        }
-        User.findById(req.params.id ,(err ,sender)=>{
-            if(err){throw err}
-            sender.sentMails.push(mail);
+        }else{
+            //handle not Able To Send Mail Cuz Full sent mails Storage Notification
+            const notification = {
+                notifType: 'notAbleToSendMailCuzFullSentMailsStorage',
+                mailTitle: mail.title
+            }
+            io.to(sender.id).emit('notAbleToSendMailCuzFullSentMailsStorageNotification' ,notification);
+            sender.mailNotifications.count = sender.mailNotifications.count + 1;
+            sender.mailNotifications.array.push(notification);
             sender.save(()=>{
                 res.redirect("/users/"+req.params.id+"/mails/sent");
             });
-        });
+        }
     });
 });
 
 
 // Re-Sending a sent mail
 router.post("/users/:id/mails/sent/:mailId/reSent" ,(req ,res)=>{
-    Mail.findById(req.params.mailId ,(err ,mail)=>{
-        if(err){throw err;}
-        var receivers = req.body.sentTo.split(",");
-        if(req.body.CCs !== undefined){
-            var CCs = req.body.CCs.split(",");
+    var io = req.app.get('io');
+    User.findById(req.params.id ,(err ,sender)=>{
+        if(err){throw err}
+        var sentTo = [];
+        var CCs = [];
+        if(req.body.sentTo !== undefined){
+            sentTo = req.body.sentTo.split(",");
         }
-        receivers.forEach(function(receiver){
-            var elt = {
-                sending_type: 'send',
-                sent_to: receiver,
-                sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                read: false
-            }
-            mail.sending_history.push(elt);
-            mail.usersThatDidNotDelete.push(receiver);
-            User.findById(receiver ,(err ,receiver)=>{
-                if(err){throw err;}
-                receiver.receivedMails.push(mail);
-                receiver.save();
-            });
-        });
         if(req.body.CCs !== undefined){
-            CCs.forEach(function(CC){
+            CCs = req.body.CCs.split(",");
+        }
+        Mail.findById(req.params.mailId ,(err ,mail)=>{
+            if(err){throw err;}
+            var newMailInfos = {
+                notifType: 'newMail',
+                mailId: mail._id,
+                mailSize: mail.mailSize,
+                mailType: '',
+                senderId: sender.id,
+                count: 1,
+                senderUsername: sender.username,
+                senderImage: sender.imageUrl,
+                at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+            }
+            if(mail.title == ''){
+                newMailInfos.title = 'None';
+            }else{
+                newMailInfos.title = mail.title;
+            }
+            sentTo.forEach(function(stid){
                 var elt = {
-                    sending_type: 'CC',
-                    sent_to: CC,
+                    sending_type: 'send',
+                    sent_to: stid,
                     sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
                     read: false
                 }
                 mail.sending_history.push(elt);
-                mail.usersThatDidNotDelete.push(CC);
-                User.findById(CC ,(err ,CC)=>{
+                mail.usersThatDidNotDelete.push(stid);
+                User.findById(stid ,(err ,st)=>{
                     if(err){throw err;}
-                    CC.receivedMails.push(mail);
-                    CC.save();
+                    if(Number(st.usedReceivedMailsStorage) + Number(mail.mailSize) < Number(st.receivedMailsStorage)){
+                        st.receivedMails.push(mail);
+                        st.usedReceivedMailsStorage = st.usedReceivedMailsStorage + mail.mailSize;
+                        //handle new received mail notification
+                        io.to(st._id).emit('newMail' ,newMailInfos);
+                        var count = 1;
+                        st.mailNotifications.array.forEach(notification => {
+                            if(notification.senderId == newMailInfos.senderId && notification.notifType == 'newMail'){
+                                count = notification.count + 1;
+                                st.mailNotifications.array.splice(st.mailNotifications.array.indexOf(notification) ,1);
+                            }
+                        });
+                        newMailInfos.count = count;
+                        st.mailNotifications.array.push(newMailInfos);
+                        st.mailNotifications.count = st.mailNotifications.count + 1;
+                        //handle almost full received mails storage notification
+                        const per = Number(st.usedReceivedMailsStorage) * 100 / Number(st.receivedMailsStorage);
+                        if(per > 95){
+                            io.to(st._id).emit('receivedMailsStorageAlmostFullNotification');
+                            const notification = {
+                                notifType: 'almostFullReceivedMailsStorage'
+                            }
+                            st.mailNotifications.count = st.mailNotifications.count + 1;
+                            st.mailNotifications.array.push(notification);
+                        }
+                    }else{
+                        //creating notif
+                        const notification = {
+                            notifType : 'mailSendFailed',
+                            mailTitle: mail.title,
+                            at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                            senderId: sender.id,
+                            senderUsername: sender.username,
+                            userThatDidNotReceiveId: st.id,
+                            userThatDidNotReceiveUsername: st.username
+                        }
+                        //notifiying the sender
+                        var updatedMailNotifications = {
+                            count: sender.mailNotifications.count + 1,
+                            array: sender.mailNotifications.array,
+                        }
+                        updatedMailNotifications.array.push(notification);
+                        User.findByIdAndUpdate(sender._id ,{$set:{mailNotifications:updatedMailNotifications}} ,{new: true} ,(err ,user) => {if(err){throw err;}});
+                        //notifiying the user that did not receive
+                        io.to(st._id).emit('missedMailNotification' ,notification);
+                        st.mailNotifications.count = st.mailNotifications.count + 1;
+                        st.mailNotifications.array.push(notification);
+
+                        //edit usersThatDidNotDelete
+                        var index = mail.usersThatDidNotDelete.indexOf(st._id);
+                        if(index > -1){
+                            mail.usersThatDidNotDelete.splice(index ,1);
+                        }
+                        
+                    }
+                    st.save();
                 });
             });
-        }
-        mail.save((err)=>{
-            if(err){throw err;}
-            res.redirect("/users/"+req.params.id+"/mails/sent");
-        })
-        
+            if(req.body.CCs !== undefined){
+                CCs.forEach(function(CC){
+                    var elt = {
+                        sending_type: 'CC',
+                        sent_to: CC,
+                        sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                        read: false
+                    }
+                    mail.sending_history.push(elt);
+                    mail.usersThatDidNotDelete.push(CC);
+                    User.findById(CC ,(err ,CC)=>{
+                        if(err){throw err;}
+                        if(Number(CC.usedReceivedMailsStorage) + Number(mail.mailSize) < Number(CC.receivedMailsStorage)){
+                            CC.receivedMails.push(mail);
+                            CC.usedReceivedMailsStorage = CC.usedReceivedMailsStorage + mail.mailSize;
+                            //handle new received mail notification
+                            newMailInfos.mailType = 'CC';
+                            io.to(CC._id).emit('newMail' ,newMailInfos);
+                            var count = 1;
+			                CC.mailNotifications.array.forEach(notification => {
+			                	if(notification.senderId == newMailInfos.senderId && notification.notifType == 'newMail'){
+                                    count = notification.count + 1;
+			                		CC.mailNotifications.array.splice(CC.mailNotifications.array.indexOf(notification) ,1);
+			                	}
+                            });
+                            newMailInfos.count = count;
+                            CC.mailNotifications.array.push(newMailInfos);
+			                CC.mailNotifications.count = CC.mailNotifications.count + 1;
+                            //handle almost full received mails storage notification
+                            const per = Number(CC.usedReceivedMailsStorage) * 100 / Number(CC.receivedMailsStorage);
+                            if(per > 95){
+                                io.to(CC._id).emit('receivedMailsStorageAlmostFullNotification');
+                                const notification = {
+                                    notifType: 'almostFullReceivedMailsStorage'
+                                }
+                                CC.mailNotifications.count = CC.mailNotifications.count + 1;
+                                CC.mailNotifications.array.push(notification);
+                            }
+                        }else{
+                            //creating notif
+                            const notification = {
+                                notifType : 'mailSendFailed',
+                                mailTitle: mail.title,
+                                at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                                senderId: sender.id,
+                                senderUsername: sender.username,
+                                userThatDidNotReceiveId: CC.id,
+                                userThatDidNotReceiveUsername: CC.username
+                            }
+                            //notifiying the sender
+                            var updatedMailNotifications = {
+                                count: sender.mailNotifications.count + 1,
+                                array: sender.mailNotifications.array,
+                            }
+                            updatedMailNotifications.array.push(notification);
+                            User.findByIdAndUpdate(sender._id ,{$set:{mailNotifications:updatedMailNotifications}} ,{new: true} ,(err ,user) => {if(err){throw err;}});
+                            //notifiying the user that did not receive
+                            io.to(CC._id).emit('missedMailNotification' ,notification);
+                            CC.mailNotifications.count = CC.mailNotifications.count + 1;
+                            CC.mailNotifications.array.push(notification);
+
+                            //edit usersThatDidNotDelete
+                            var index = mail.usersThatDidNotDelete.indexOf(CC._id);
+                            if(index > -1){
+                                mail.usersThatDidNotDelete.splice(index ,1);
+                            }
+                            
+                        }
+                        CC.save();
+                    });
+                });
+            }
+            mail.save((err)=>{
+                if(err){throw err;}
+                res.redirect("/users/"+req.params.id+"/mails/sent");
+            });
+        });
     });
 });
 
@@ -609,100 +974,261 @@ router.get("/users/:id/mails/sent/:mailId/replies/new" ,(req ,res)=>{
 
 //sending a reply
 router.post("/users/:id/mails/received/:mailId/replies" ,arrUpload ,(req ,res)=>{
-    if(req.body.visibleTo !== undefined){
-        var visibleTo = req.body.visibleTo.split(",");
-    }
-    var mail = new Mail({
-        sent_by: req.params.id,
-        title: req.body.title,
-        text: req.body.text,
-        created_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-        usersThatDidNotDelete: [],
-        mailSize: 0
-    });
-    var textSize = Buffer.byteLength(req.body.text);
-    var filesSize = 0;
-    req.files.forEach(function(file){
-        mail.files.push(file.id);
-        filesSize += file.size;
-    });
-    mail.mailSize = textSize + filesSize;
-    if(req.body.visibleTo !== undefined){
-        visibleTo.forEach(function(vt){
-            var elt = {
-                sending_type: 'visible',
-                sent_to: vt,
-                sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                read: false
-            }
-            mail.sending_history.push(elt);
-            mail.usersThatDidNotDelete.push(vt);
-        });
-    }
-    mail.usersThatDidNotDelete.push(req.params.id);
-    mail.save((err ,mail)=>{
+    var io = req.app.get('io');
+    User.findById(req.params.id ,(err ,sender)=>{
         if(err){throw err}
         if(req.body.visibleTo !== undefined){
-            User.findById(visibleTo[0] ,(err ,vt)=>{
-                if(err){throw err}
-                vt.receivedMails.push(mail);
-                vt.save();
-            });
+            var visibleTo = req.body.visibleTo.split(",");
         }
-        User.findById(req.params.id ,(err ,sender)=>{
-            if(err){throw err}
-            sender.sentMails.push(mail);
-            sender.save(()=>{
-                Mail.findById(req.params.mailId ,(err ,parentMail)=>{
-                    if(err){throw err;}
-                    parentMail.replies.push(mail);
-                    parentMail.save(()=>{
-                        res.redirect("/users/"+req.params.id+"/mails/received/"+req.params.mailId+"/replies");
+        var mail = new Mail({
+            sent_by: req.params.id,
+            title: req.body.title,
+            text: req.body.text,
+            created_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+            usersThatDidNotDelete: [],
+            mailSize: 0
+        });
+
+        //calculating mail size
+        var textSize = Buffer.byteLength(req.body.text);
+        var filesSize = 0;
+        req.files.forEach(function(file){
+            mail.files.push(file.id);
+            filesSize += file.size;
+        });
+        mail.mailSize = textSize + filesSize;
+
+        //checking the sender's sent mails storage
+        if(Number(sender.usedSentMailsStorage) + mail.mailSize < Number(sender.sentMailsStorage)){
+            //send mail
+            if(req.body.visibleTo !== undefined){
+                visibleTo.forEach(function(vt){
+                    var elt = {
+                        sending_type: 'visible',
+                        sent_to: vt,
+                        sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                        read: false
+                    }
+                    mail.sending_history.push(elt);
+                    mail.usersThatDidNotDelete.push(vt);
+                });
+            }
+            mail.usersThatDidNotDelete.push(req.params.id);
+            mail.save((err ,mail)=>{
+                if(err){throw err}
+                if(req.body.visibleTo !== undefined){
+                    User.findById(visibleTo[0] ,(err ,vt)=>{
+                        if(err){throw err}
+                        if(Number(vt.usedReceivedMailsStorage) + Number(mail.mailSize) < Number(vt.receivedMailsStorage)){
+                            vt.receivedMails.push(mail);
+                            vt.usedReceivedMailsStorage = vt.usedReceivedMailsStorage + mail.mailSize;
+                            //handle almost full received mails storage notification
+                            const per = Number(vt.usedReceivedMailsStorage) * 100 / Number(vt.receivedMailsStorage);
+                            if(per > 95){
+                                io.to(vt._id).emit('receivedMailsStorageAlmostFullNotification');
+                                const notification = {
+                                    notifType: 'almostFullReceivedMailsStorage'
+                                }
+                                vt.mailNotifications.count = vt.mailNotifications.count + 1;
+                                vt.mailNotifications.array.push(notification);
+                            }
+                        }else{
+                            //creating notif
+                            const notification = {
+                                notifType : 'mailSendFailed',
+                                mailTitle: mail.title,
+                                at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                                senderId: sender.id,
+                                senderUsername: sender.username,
+                                userThatDidNotReceiveId: vt.id,
+                                userThatDidNotReceiveUsername: vt.username
+                            }
+
+                            //notifiying the sender
+                            var updatedMailNotifications = {
+                                count: sender.mailNotifications.count + 1,
+                                array: sender.mailNotifications.array,
+                            }
+                            updatedMailNotifications.array.push(notification);
+                            User.findByIdAndUpdate(sender._id ,{$set:{mailNotifications:updatedMailNotifications}} ,{new: true} ,(err ,user) => {if(err){throw err;}});
+                            
+                            //notifiying the user that did not receive
+                            io.to(vt._id).emit('missedMailNotification' ,notification);
+                            vt.mailNotifications.count = vt.mailNotifications.count + 1;
+                            vt.mailNotifications.array.push(notification);
+
+                            //edit visibleTo
+                            visibleTo.splice(0 ,1);
+
+                            //edit usersThatDidNotDelete
+                            var index = mail.usersThatDidNotDelete.indexOf(vt._id);
+                            if(index > -1){
+                                mail.usersThatDidNotDelete.splice(index ,1);
+                            }
+                            mail.save();
+                        }
+                        vt.save();
+                    });
+                }
+                sender.sentMails.push(mail);
+                sender.usedSentMailsStorage = sender.usedSentMailsStorage + mail.mailSize;
+                //handle almost full sent mails storage notification
+                const per = Number(sender.usedReceivedMailsStorage) * 100 / Number(sender.receivedMailsStorage);
+                if(per > 95){
+                    io.to(sender._id).emit('sentMailsStorageAlmostFullNotification');
+                    const notification = {
+                        notifType: 'almostFullSentMailsStorage'
+                    }
+                    sender.mailNotifications.count = sender.mailNotifications.count + 1;
+                    sender.mailNotifications.array.push(notification);
+                }
+                sender.save(()=>{
+                    Mail.findById(req.params.mailId ,(err ,parentMail)=>{
+                        if(err){throw err;}
+                        //
+                        const newMailReplyInfos ={
+                            notifType: 'newReply',
+                            replyId: mail._id,
+                            replyTitle: mail.title,
+                            parentMail: req.params.mailId,
+                            parentMailTitle: parentMail.title,
+                            parentMailSender: parentMail.sent_by,
+                            senderId: sender._id,
+                            senderUsername: sender.username,
+                            senderImage: sender.imageUrl,
+                            mailSize: mail.mailSize,
+                            at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                        }
+                        visibleTo.forEach(function(vtid){
+                            User.findById(vtid ,(err ,vt) =>{
+                                if(err){throw err;}
+                                io.to(vt._id).emit('newReply' ,newMailReplyInfos);
+                                vt.mailNotifications.count = vt.mailNotifications.count + 1;
+                                vt.mailNotifications.array.push(newMailReplyInfos);
+                                vt.save();
+                            });
+                        });
+                        //
+                        parentMail.replies.push(mail);
+                        parentMail.save(()=>{
+                            res.redirect("/users/"+req.params.id+"/mails/received/"+req.params.mailId+"/replies");
+                        });
                     });
                 });
             });
-        });
+        }else{
+            //handle not Able To Send Mail Cuz Full sent mails Storage Notification
+            const notification = {
+                notifType: 'notAbleToSendMailCuzFullSentMailsStorage',
+                mailTitle: mail.title
+            }
+            io.to(sender.id).emit('notAbleToSendMailCuzFullSentMailsStorageNotification' ,notification);
+            sender.mailNotifications.count = sender.mailNotifications.count + 1;
+            sender.mailNotifications.array.push(notification);
+            sender.save(()=>{
+                res.redirect("/users/"+req.params.id+"/mails/received/"+req.params.mailId+"/replies");
+            });
+        }
     });
 });
-router.post("/users/:id/mails/sent/:mailId/replies" ,(req ,res)=>{
-    if(req.body.visibleTo !== undefined){
-        var visibleTo = req.body.visibleTo.split(",");
-    }
-
-    var mail = new Mail({
-        sent_by: req.params.id,
-        title: req.body.title,
-        text: req.body.text,
-        created_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-    });
-    if(req.body.visibleTo !== undefined){
-        for(var i = 1 ; i < visibleTo.length ;i++){
-            var elt = {
-                sending_type: 'visible',
-                sent_to: visibleTo[i],
-                sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-                read: false
-            }
-            mail.sending_history.push(elt);
-            mail.usersThatDidNotDelete.push(visibleTo[i]);
-        }
-    }
-    mail.usersThatDidNotDelete.push(req.params.id);
-    mail.save((err ,mail)=>{
+router.post("/users/:id/mails/sent/:mailId/replies" , arrUpload,(req ,res)=>{
+    var io = req.app.get('io');
+    User.findById(req.params.id ,(err ,sender)=>{
         if(err){throw err}
-        User.findById(req.params.id ,(err ,sender)=>{
-            if(err){throw err}
-            sender.sentMails.push(mail);
-            sender.save(()=>{
-                Mail.findById(req.params.mailId ,(err ,parentMail)=>{
-                    if(err){throw err;}
-                    parentMail.replies.push(mail);
-                    parentMail.save(()=>{
-                        res.redirect("/users/"+req.params.id+"/mails/sent/"+req.params.mailId+"/replies");
+        var visibleTo = [];
+        if(req.body.visibleTo !== undefined){
+            visibleTo = req.body.visibleTo.split(",");
+        }
+        var mail = new Mail({
+            sent_by: req.params.id,
+            title: req.body.title,
+            text: req.body.text,
+            created_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+        });
+
+        //calculating mail size
+        var textSize = Buffer.byteLength(req.body.text);
+        var filesSize = 0;
+        req.files.forEach(function(file){
+            mail.files.push(file.id);
+            filesSize += file.size;
+        });
+        mail.mailSize = textSize + filesSize;
+        //checking the sender's sent mails storage
+        if(Number(sender.usedSentMailsStorage) + mail.mailSize < Number(sender.sentMailsStorage)){
+            //send mail
+            if(req.body.visibleTo !== undefined){
+                visibleTo.forEach(vt => {
+                    var elt = {
+                        sending_type: 'visible',
+                        sent_to: vt,
+                        sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
+                        read: false
+                    }
+                    mail.sending_history.push(elt);
+                    mail.usersThatDidNotDelete.push(vt);
+                })
+            }
+            mail.usersThatDidNotDelete.push(req.params.id);
+            mail.save((err ,mail)=>{
+                if(err){throw err}
+                sender.sentMails.push(mail);
+                sender.usedSentMailsStorage = sender.usedSentMailsStorage + mail.mailSize;
+                //handle almost full sent mails storage notification
+                const per = Number(sender.usedReceivedMailsStorage) * 100 / Number(sender.receivedMailsStorage);
+                if(per > 95){
+                    io.to(sender._id).emit('sentMailsStorageAlmostFullNotification');
+                    const notification = {
+                        notifType: 'almostFullSentMailsStorage'
+                    }
+                    sender.mailNotifications.count = sender.mailNotifications.count + 1;
+                    sender.mailNotifications.array.push(notification);
+                }
+                sender.save(()=>{
+                    Mail.findById(req.params.mailId ,(err ,parentMail)=>{
+                        if(err){throw err;}
+                        const newMailReplyInfos ={
+                            notifType: 'newReply',
+                            replyId: mail._id,
+                            replyTitle: mail.title,
+                            parentMail: req.params.mailId,
+                            parentMailTitle: parentMail.title,
+                            parentMailSender: parentMail.sent_by,
+                            senderId: sender._id,
+                            senderUsername: sender.username,
+                            senderImage: sender.imageUrl,
+                            mailSize: mail.mailSize,
+                            at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                        }
+                        visibleTo.forEach(function(vtid){
+                            User.findById(vtid ,(err ,vt) =>{
+                                if(err){throw err;}
+                                io.to(vt._id).emit('newReply' ,newMailReplyInfos);
+                                vt.mailNotifications.count = vt.mailNotifications.count + 1;
+                                vt.mailNotifications.array.push(newMailReplyInfos);
+                                vt.save();
+                            });
+                        });
+                        parentMail.replies.push(mail);
+                        parentMail.save(()=>{
+                            res.redirect("/users/"+req.params.id+"/mails/sent/"+req.params.mailId+"/replies");
+                        });
                     });
                 });
             });
-        });
+        }else{
+            //handle not Able To Send Mail Cuz Full sent mails Storage Notification
+            const notification = {
+                notifType: 'notAbleToSendMailCuzFullSentMailsStorage',
+                mailTitle: mail.title
+            }
+            io.to(sender.id).emit('notAbleToSendMailCuzFullSentMailsStorageNotification' ,notification);
+            sender.mailNotifications.count = sender.mailNotifications.count + 1;
+            sender.mailNotifications.array.push(notification);
+            sender.save(() => {
+                res.redirect("/users/"+req.params.id+"/mails/sent/"+req.params.mailId+"/replies");
+            });
+        }
     });
 });
 
@@ -733,7 +1259,8 @@ router.get("/users/:id/mails/sent/:mailId/replies" ,(req ,res)=>{
                             title: mr.title,
                             senderId : mr.sent_by.id,
                             sent_by: mr.sent_by.username,
-                            senderImage: mr.sent_by.imageUrl
+                            senderImage: mr.sent_by.imageUrl,
+                            size: mr.mailSize
                         }
                         if(reply.senderId == user._id){
                             reply.sending_history = mr.sending_history;
@@ -748,8 +1275,35 @@ router.get("/users/:id/mails/sent/:mailId/replies" ,(req ,res)=>{
                         replies.push(reply);
                     }
                 });
-                // console.log(replies);
-                res.render("users/sentMailReplies" ,{user: user ,mailId: req.params.mailId ,replies: replies});
+
+                const promise = new Promise((resolve ,reject) => {
+                    var removedCount = 0;
+                    var updatedMailNotificationsArray = user.mailNotifications.array.filter(notification => {
+                        if(notification.notifType != 'newReply' || notification.parentMail != req.params.mailId){
+                            return true;
+                        }else{
+                            removedCount = removedCount + 1;
+                        }
+                    });
+                    var updatedMailNotificationsCount = user.mailNotifications.count;
+                    if(user.mailNotifications.count >= removedCount){
+                        updatedMailNotificationsCount = updatedMailNotificationsCount - removedCount;
+                    }
+                    const updatedMailNotifications = {
+                        count: updatedMailNotificationsCount,
+                        array: updatedMailNotificationsArray
+                    }
+                    resolve(updatedMailNotifications);
+                });
+                
+                promise
+                .then(updatedMailNotifications => {
+                    User.findByIdAndUpdate(user._id ,{$set:{mailNotifications:updatedMailNotifications}} ,{new: true} ,(err ,user) => {
+                        if(err){throw err;}
+                        res.render("users/sentMailReplies" ,{user: user ,mailId: req.params.mailId ,replies: replies});
+                    });
+                });
+
             });
         }
     });
@@ -781,7 +1335,8 @@ router.get("/users/:id/mails/received/:mailId/replies" ,(req ,res)=>{
                             title: mr.title,
                             senderId : mr.sent_by.id,
                             sent_by: mr.sent_by.username,
-                            senderImage: mr.sent_by.imageUrl
+                            senderImage: mr.sent_by.imageUrl,
+                            size: mr.mailSize
                         }
                         if(reply.senderId == user.id){
                             reply.sending_history = mr.sending_history;
@@ -796,7 +1351,34 @@ router.get("/users/:id/mails/received/:mailId/replies" ,(req ,res)=>{
                         replies.push(reply);
                     }
                 });
-                res.render("users/receivedMailReplies" ,{user: user ,mailId: req.params.mailId ,replies: replies});
+
+                const promise = new Promise((resolve ,reject) => {
+                    var removedCount = 0;
+                    var updatedMailNotificationsArray = user.mailNotifications.array.filter(notification => {
+                        if(notification.notifType != 'newReply' || notification.parentMail != req.params.mailId){
+                            return true;
+                        }else{
+                            removedCount = removedCount + 1;
+                        }
+                    });
+                    var updatedMailNotificationsCount = user.mailNotifications.count;
+                    if(user.mailNotifications.count >= removedCount){
+                        updatedMailNotificationsCount = updatedMailNotificationsCount - removedCount;
+                    }
+                    const updatedMailNotifications = {
+                        count: updatedMailNotificationsCount,
+                        array: updatedMailNotificationsArray
+                    }
+                    resolve(updatedMailNotifications);
+                });
+                
+                promise
+                .then(updatedMailNotifications => {
+                    User.findByIdAndUpdate(user._id ,{$set:{mailNotifications:updatedMailNotifications}} ,{new: true} ,(err ,user) => {
+                        if(err){throw err;}
+                        res.render("users/receivedMailReplies" ,{user: user ,mailId: req.params.mailId ,replies: replies});
+                    });
+                });
             });
         }
     });
@@ -811,6 +1393,7 @@ router.delete("/users/:id/mails/sent/:mailId" ,(req ,res)=>{
         var index = user.sentMails.indexOf(req.params.mailId);
         if (index > -1) {
             user.sentMails.splice(index, 1);
+            user.usedSentMailsStorage = user.usedSentMailsStorage - req.body.mailSize;
             user.save();
         }
         Mail.findById(req.params.mailId ,(err ,mail)=>{
@@ -842,6 +1425,7 @@ router.delete("/users/:id/mails/received/:mailId" ,(req ,res)=>{
         var index = user.receivedMails.indexOf(req.params.mailId);
         if (index > -1) {
             user.receivedMails.splice(index, 1);
+            user.usedReceivedMailsStorage = user.usedReceivedMailsStorage - req.body.mailSize;
             user.save();
         }
         Mail.findById(req.params.mailId ,(err ,mail)=>{
@@ -854,34 +1438,67 @@ router.delete("/users/:id/mails/received/:mailId" ,(req ,res)=>{
                 repliesIds.forEach(function(replyId){
                     Mail.findById(replyId ,(err ,reply)=>{
                         if(err){throw err;}
-                        if(reply.sent_by != req.params.id){
-                            var index2 = reply.usersThatDidNotDelete.indexOf(req.params.id);
-                            if(index2 > -1){
-                                reply.usersThatDidNotDelete.splice(index, 1);
-                                if(reply.usersThatDidNotDelete.length == 0){
-                                    const filesToDelete = reply.files;
-                                    deleteMailFiles(filesToDelete);
-                                    Mail.findByIdAndRemove(reply._id);
-                                }else{
-                                    reply.save();
+                        //
+                        if(reply != null){
+                            if(reply.sent_by != req.params.id){
+                                var index2 = reply.usersThatDidNotDelete.indexOf(req.params.id);
+                                if(index2 > -1){
+                                    reply.usersThatDidNotDelete.splice(index, 1);
+                                    if(reply.usersThatDidNotDelete.length == 0){
+                                        const filesToDelete = reply.files;
+                                        deleteMailFiles(filesToDelete);
+                                        Mail.findByIdAndRemove(reply._id ,err => {
+                                            if(err){throw err;}
+                                        });
+                                    }else{
+                                        reply.save();
+                                    }
                                 }
                             }
                         }
+                        //
                     });
                 });
-                //if all users deleted the mail , then delete it from database
-                if(mail.usersThatDidNotDelete.length == 0){
-                    const filesToDelete = mail.files;
-                    deleteMailFiles(filesToDelete);
-                    Mail.findByIdAndRemove(req.params.mailId ,(err)=>{
+                //clearing deleted replies notifs
+                const promise = new Promise((resolve ,reject) => {
+                    var removedCount = 0;
+                    var updatedMailNotificationsArray = user.mailNotifications.array.filter(notification => {
+                        if(repliesIds.indexOf(notification.replyId) == -1){
+                            return true;
+                        }else{
+                            removedCount = removedCount + 1;
+                        }
+                    });
+                    var updatedMailNotificationsCount = user.mailNotifications.count;
+                    if(user.mailNotifications.count >= removedCount){
+                        updatedMailNotificationsCount = updatedMailNotificationsCount - removedCount;
+                    }
+                    const updatedMailNotifications = {
+                        count: updatedMailNotificationsCount,
+                        array: updatedMailNotificationsArray
+                    }
+                    resolve(updatedMailNotifications);
+                });
+                
+                promise
+                .then(updatedMailNotifications => {
+                    User.findByIdAndUpdate(user._id ,{$set:{mailNotifications:updatedMailNotifications}} ,{new: true} ,(err ,user) => {
                         if(err){throw err;}
-                        res.redirect("/users/"+req.params.id+"/mails/received/");
+                        //if all users deleted the mail , then delete it from database
+                        if(mail.usersThatDidNotDelete.length == 0){
+                            const filesToDelete = mail.files;
+                            deleteMailFiles(filesToDelete);
+                            Mail.findByIdAndRemove(req.params.mailId ,(err)=>{
+                                if(err){throw err;}
+                                res.redirect("/users/"+req.params.id+"/mails/received/");
+                            });
+                        }else{
+                            mail.save(()=>{
+                                res.redirect("/users/"+req.params.id+"/mails/received/");
+                            });
+                        }
                     });
-                }else{
-                    mail.save(()=>{
-                        res.redirect("/users/"+req.params.id+"/mails/received/");
-                    });
-                }
+                });
             }
         });
     });
@@ -909,11 +1526,13 @@ router.delete("/users/:id/mails/sent/:mailId/replies/:replyId" ,(req ,res)=>{
                             var index = user.sentMails.indexOf(req.params.replyId);
                             if (index > -1) {
                                 user.sentMails.splice(index, 1);
+                                user.usedSentMailsStorage = user.usedSentMailsStorage - req.body.mailSize;
                             }
                         }else if(req.body.replyType == 'receivedReply'){
                             var index = user.receivedMails.indexOf(req.params.replyId);
                             if (index > -1) {
                                 user.receivedMails.splice(index, 1);
+                                user.usedReceivedMailsStorage = user.usedReceivedMailsStorage - req.body.mailSize;
                             }
                         }
                         user.save(()=>{
@@ -949,6 +1568,7 @@ router.delete("/users/:id/mails/received/:mailId/replies/:replyId" ,(req ,res)=>
                             var index = user.sentMails.indexOf(req.params.replyId);
                             if (index > -1) {
                                 user.sentMails.splice(index, 1);
+                                user.usedSentMailsStorage = user.usedSentMailsStorage - req.body.mailSize;
                             }
                             user.save();
                         });

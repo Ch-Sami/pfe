@@ -25,9 +25,10 @@
     <!-- some infos -->
     <p id="userId" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= user._id%></p>
     <input type="text" id="projectType" class="d-none" value="received">
+    <input type="hidden" id="currentPage" value="receivedProjectsPage">
     <!-- Mails list -->
     <textarea name="" id="itemsTextArea" cols="100" rows="10" class="d-none">
-      <%= JSON.stringify(user.receivedProjects)%>
+      <%= JSON.stringify(receivedProjects)%>
     </textarea>
     <!-- search -->
     <div id="search" class="ui search text-center mt-5">
@@ -57,9 +58,9 @@
     <div id="ProjectsContainer" class="scrollDiv container my-4">
         <!------------------------------------------------------------------>
         <!------------------------------------------------------------------>
-        <input type="text" id="arrayLength" class="d-none" value="<%= user.receivedProjects.length%>">
+        <input type="text" id="arrayLength" class="d-none" value="<%= receivedProjects.length%>">
         <% var i = 0;%>
-        <% user.receivedProjects.forEach(function(project){%>
+        <% receivedProjects.forEach(function(project){%>
             <div onclick='location.href="/users/<%= user._id%>/projects/received/<%= project._id%>/detail"' class="hoverableDiv py-2 px-5 m-2">
                 <p class="mb-2"><span class="inputsTitles"><%= project.title%></span></p>
                 <div class="row">
@@ -82,6 +83,7 @@
             </div>
             <% i++; %>
         <%});%>
+        <input type="hidden" id="iValue" value="<%=i%>">
         <!------------------------------------------------------------------>
         <!------------------------------------------------------------------>
     </div>

@@ -1,7 +1,6 @@
 <%- include('../partials/profilHeader')%>
     <div id="contacts" class="container">
         <!-- some needed data -->
-        <p id="userId" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= user._id%></p>
         <p id="contactsForSearchData" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= contactsForSearch%></p>
         <p id="usersListData" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= usersList%></p>
         <!-- users list -->
@@ -45,33 +44,35 @@
     <div id="contactsList" class="container scrollDiv p-4">
         <% contacts.forEach(function(chrArray){%>
             <%if(chrArray.length > 0){%>
-                <div class="CharacterHeader"><span class="text-uppercase"><%= chrArray[0].username[0]%></span></div>
-                <% chrArray.forEach(function(contact){%>
-                    <div class="normalDiv row py-2 px-5 m-2">
-                        <div class="column col-9">
-                            <img class="ui avatar image" src="<%= contact.imageUrl%>">
-                            <p class="mt-1 ml-5"><span class="inputsTitles"><%= contact.username%></span></p>
+                <div id="kkkkkkkk">
+                    <div class="CharacterHeader"><span class="text-uppercase"><%= chrArray[0].username[0]%></span></div>
+                    <% chrArray.forEach(function(contact){%>
+                        <div class="normalDiv row py-2 px-5 m-2">
+                            <div class="column col-9 d-flex">
+                                <img class="ui avatar image" src="<%= contact.imageUrl%>">
+                                <p class="mt-1 ml-5"><span class="inputsTitles"><%= contact.username%></span></p>
+                            </div>
+                            <div class="column col-3 d-flex justify-content-around text-align-center">
+                                <form action="/users/<%= user._id%>/mails/sent/new" method="get">
+                                    <input type="text" value="<%= contact._id%>" class="d-none" name="sendTo">
+                                    <button  class="contactsIcons" data-inverted="" data-tooltip="Send mail" data-position="top center"><i class="fas fa-envelope mt-1"></i></button>
+                                    <!-- <i class="far fa-envelope mt-1"></i> -->
+                                </form>
+                                <a href="/users/<%= user._id%>/contacts/<%= contact._id%>/chat" class="contactsIcons" data-inverted="" data-tooltip="Chat" data-position="top center"><i class="fas fa-comments"></i></a>
+                                <form action="/users/<%= user._id%>/events/new" method="get">
+                                    <input type="text" value="<%= contact._id%>" class="d-none" name="addTo">
+                                    <button  class="contactsIcons" data-inverted="" data-tooltip="Plan an event" data-position="top center"><i class="fas fa-calendar-alt"></i></button>
+                                    <!-- <i class="far fa-calendar-alt"></i> -->
+                                </form>
+                                <a href="/users/<%= contact._id%>/profil" class="contactsIcons" data-inverted="" data-tooltip="Visit profil" data-position="top center"><i class="fas fa-address-card mt-1"></i></a>
+                                <!-- <i class="far fa-address-card mt-1"></i> -->
+                                <form action="/users/<%= user._id%>/contacts/<%= contact._id %>?_method=DELETE" method="post">
+                                    <button  class="contactsIcons" data-inverted="" data-tooltip="Delete contact" data-position="top center"><i class="fas fa-times" ></i></button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="column col-3 d-flex justify-content-around text-align-center">
-                            <form action="/users/<%= user._id%>/mails/sent/new" method="get">
-                                <input type="text" value="<%= contact._id%>" class="d-none" name="sendTo">
-                                <button  class="contactsIcons" data-inverted="" data-tooltip="Send mail" data-position="top center"><i class="fas fa-envelope mt-1"></i></button>
-                                <!-- <i class="far fa-envelope mt-1"></i> -->
-                            </form>
-                            <a href="/users/<%= user._id%>/contacts/<%= contact._id%>/chat" class="contactsIcons" data-inverted="" data-tooltip="Chat" data-position="top center"><i class="fas fa-comments"></i></a>
-                            <form action="/users/<%= user._id%>/events/new" method="get">
-                                <input type="text" value="<%= contact._id%>" class="d-none" name="addTo">
-                                <button  class="contactsIcons" data-inverted="" data-tooltip="Plan an event" data-position="top center"><i class="fas fa-calendar-alt"></i></button>
-                                <!-- <i class="far fa-calendar-alt"></i> -->
-                            </form>
-                            <a href="/users/<%= contact._id%>/profil" class="contactsIcons" data-inverted="" data-tooltip="Visit profil" data-position="top center"><i class="fas fa-address-card mt-1"></i></a>
-                            <!-- <i class="far fa-address-card mt-1"></i> -->
-                            <form action="/users/<%= user._id%>/contacts/<%= contact._id %>?_method=DELETE" method="post">
-                                <button  class="contactsIcons" data-inverted="" data-tooltip="Delete contact" data-position="top center"><i class="fas fa-times" ></i></button>
-                            </form>
-                        </div>
-                    </div>
-                <%});%>
+                    <%});%>
+                </div>
                 <br>
             <%}%>
         <%});%>

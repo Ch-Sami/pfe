@@ -101,15 +101,34 @@
             <div id="progressContainer" class="my-5">
                 <label for="progress">
                     <span class="inputsTitles">Progress</span>
-                    <%if(project.lastUpdateBy !== undefined){%>
-                        <span id="progressUpdateInfo">
-                            <i id="progressUpdateInfoIcon" class="fas fa-exclamation"></i>
-                        </span>
-                        <div id="progressUpdateInfoPopup" class="ui popup">
-                            <span>last update by : </span><span class=" bitraf"><%= project.lastUpdateBy.username%></span>
-                            <span class="ml-3">at : </span><span class="bitraf"><%= project.lastUpdateAt%></span>
+
+
+                    <%if(project.progressHistory.length > 0){%>
+                        <div id="progressHistoryDropdown" class="ui left pointing dropdown link item">
+                            <span id="progressUpdateInfo">
+                                <i id="progressUpdateInfoIcon" class="fas fa-exclamation"></i>
+                            </span>
+                            <div id="progressHistoryMenu" class="menu">
+                              <% project.progressHistory.forEach(function(elt){%>
+                                <div class="item" style="width: 430px;">
+                                    <div class="row">
+                                        <div class="column col-3">
+                                            <span><strong class="bitraf" style="font-size: 1.1em;"><%=elt.oldProgress%></strong><i class="fas fa-percent" style="font-size: 0.8em;"></i> <i class="fas fa-long-arrow-alt-right mx-1"></i> <strong class="bitraf" style="font-size: 1.1em;"><%=elt.newProgress%></strong><i class="fas fa-percent" style="font-size: 0.8em;"></i></span>
+                                        </div>
+                                        <div class="column col-4">
+                                            <span>by : </span><span class="bitraf"><%=elt.progressUpdateBy%></span>
+                                        </div>
+                                        <div class="column col-5">
+                                            <span>at : </span><span class="bitraf"><%= elt.progressUpdateAt%></span>
+                                        </div>    
+                                    </div>
+                                </div>
+                                <%});%>
+                            </div>
                         </div>
                     <%}%>
+
+
                 </label>
                 <div class="ui indicating progress" id="progress" >
                     <div class="bar"></div>
@@ -278,7 +297,7 @@
         </div>
         <form id="saveProgressFrm" action="/users/<%= user.id%>/projects/<%= project._id%>/progress" method="post" class="d-none">
             <div class="ui input">
-                <input type="text" name="lastUpdateBy" value="<%= user._id%>">
+                <input type="text" name="lastProgressUpdateBy" value="<%= user.username%>">
                 <input  id="projectProgress2" type="text" name="updatedProgress"  value="<%= project.progress%>">
             </div>  
         </form>

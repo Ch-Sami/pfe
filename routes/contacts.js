@@ -68,6 +68,8 @@ router.delete("/users/:id/contacts/:contactId" ,(req ,res)=>{
     });
 });
 
+
+
 //show chat
 router.get("/users/:id/contacts/:cnctId/chat" ,(req ,res)=>{
     // {
@@ -107,10 +109,10 @@ router.get("/users/:id/contacts/:cnctId/chat" ,(req ,res)=>{
     //         });
     //     });
     // });
-
     User.findById(req.params.id).populate('sentMessages receivedMessages').exec((err ,user)=>{
         if(err){throw err;}
         else{
+            //getting old discussion
             var sentMessages = [];
             user.sentMessages.forEach(function(message){
                 if(message.sent_to == req.params.cnctId){
@@ -127,39 +129,25 @@ router.get("/users/:id/contacts/:cnctId/chat" ,(req ,res)=>{
             chat.sort((a, b) => a.sent_at.localeCompare(b.sent_at));
             User.findById(req.params.cnctId ,'-children -events -sentProjects -area -office -tags -firstName -lastName -isLoggedUser -receivedProjects -assignedProjects -sentMails -receivedMails -contacts -unit' ,(err ,contact)=>{
                 if(err){throw err;}
-                res.render("users/chat" ,{user: user ,contact: contact ,chat: chat});
+                //clearing messageNotifications from unwanted notifs
+                var trv = false;
+                user.messageNotifications.array.forEach(notification => {
+                    if(notification.senderId == req.params.cnctId){
+                        trv = true;
+                        user.messageNotifications.array.splice(user.messageNotifications.array.indexOf(notification) ,1);
+                    }
+                });
+                if(trv){
+                    user.save(() => {
+                        res.render("users/chat" ,{user: user ,contact: contact ,chat: chat});
+                    });
+                }else{
+                    res.render("users/chat" ,{user: user ,contact: contact ,chat: chat});
+                }
             });
         }
     });
 });
-
-//sent new message
-router.post("/users/:id/contacts/:cnctId/chat" ,(req ,res)=>{
-    var message = new Message({
-        sent_by: req.params.id,
-        sent_to: req.params.cnctId,
-        sent_at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-        text: req.body.text
-    });
-    message.save((err ,message)=>{
-        if(err){throw err;}
-        User.findById(req.params.id ,(err ,user)=>{
-            if(err){throw err;}
-            user.sentMessages.push(message);
-            user.save(()=>{
-                User.findById(req.params.cnctId ,(err ,contact)=>{
-                    if(err){throw err;}
-                    contact.receivedMessages.push(message);
-                    contact.save(()=>{
-                        res.redirect("/users/"+req.params.id+"/contacts/"+req.params.cnctId+"/chat");
-                    });
-                });
-            });
-        });
-    });
-});
-
-
 
 
 module.exports = router;

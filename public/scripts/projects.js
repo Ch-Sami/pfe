@@ -217,7 +217,7 @@ $('#clearAssignToBtn').on('click', function () {
 	$('#assignToList').dropdown('restore defaults')
 });
 
-$('#resendProjectFrm,#newProjectFrm,#showSentProjectFrm,#showReceivedProjectFrm,#showAssignedProjectFrm').submit(function(){
+$('#showSentProjectFrm,#showReceivedProjectFrm,#showAssignedProjectFrm').submit(function(){
   if($('#sentToInput').val() == ''){
     $('#sentToInput').attr('name' ,'');
   }
@@ -228,6 +228,28 @@ $('#resendProjectFrm,#newProjectFrm,#showSentProjectFrm,#showReceivedProjectFrm,
     $('#projectDoc').text(JSON.stringify(savedData));
   });
   return true;
+});
+
+$('#addProjectBtn').on('click' ,function(){
+  if($('#assignedToInput').val() == ''){
+    $('#assignedToInput').attr('name' ,'');
+  }else{
+    $('#assignedToInput').attr('name' ,'assignedTo');
+  }
+  if($('#sentToInput').val() == ''){
+    $('#sentToInput').attr('name' ,'');
+  }else{
+    $('#sentToInput').attr('name' ,'sentTo');
+  }
+  if($('#assignedToInput').val() != '' || $('#sentToInput').val() != ''){
+    newProjectEditor.save().then((savedData) => {
+      $('#projectDoc').text(JSON.stringify(savedData));
+      totalMailSize =+ JSON.stringify(savedData);
+      $('#newProjectFrm').submit();
+    });
+  }else{
+    $('#receiversSelectionWarning').removeClass('d-none');
+  }
 });
 
 
@@ -290,6 +312,7 @@ $('#searchTextbox').on('input' ,function(){
     }
 });
 
+//project history dropdown
 $('#projectHistory').dropdown();
 $('#projectHistory').on('mouseover' ,function(){
   $('#projectHistoryMenu').addClass('d-block');
@@ -298,6 +321,17 @@ $('#projectHistory').on('mouseover' ,function(){
 $('#projectHistory').on('mouseout' ,function(){
   $('#projectHistoryMenu').removeClass('d-block');
   $('#projectHistoryHeader').removeClass('bitraf');
+});
+
+//progress history dropdown
+$('#progressHistoryDropdown').dropdown();
+$('#progressHistoryDropdown').on('mouseover' ,function(){
+  $('#progressHistoryMenu').addClass('d-block');
+  $('#progressHistoryMenu').addClass('bitraf');
+});
+$('#progressHistoryDropdown').on('mouseout' ,function(){
+  $('#progressHistoryMenu').removeClass('d-block');
+  $('#progressHistoryMenu').removeClass('bitraf');
 });
 
 //Project date Picker

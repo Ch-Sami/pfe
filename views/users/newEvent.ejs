@@ -53,60 +53,34 @@
         <div class="container my-4 p-3 py-5">
             <div class="row">
                 <div class="column col-12 text-center">
-                    <!-- users list -->
-                    <textarea name="" id="itemsTextArea" cols="30" rows="10" class="d-none">
-                        <%= usersList%>
-                    </textarea>
-                    <!-- search -->
-                    <div class="d-flex justify-content-center">
-                        <div class="d-inline pb-0 mr-3">
-                            <span class="inputsTitles pb-0 d-inline">Add To</span>
-                        </div>
-                        <section id="search" class="ml-4" style="width: 70%;">
-                            <div class="form-group form-inline">
-                              <input type="text" class="form-control wide" id="searchTextbox" placeholder="Search">
-                            </div>
-                        </section>
+                    <div class="text-center mb-1">
+                        <span class="inputsTitles pb-0 d-inline">Plan to</span>
                     </div>
-                    <!-- results -->
-                    <textarea id="resultTextArea" class="nohighlight m-0 p-0 d-none"></textarea>
-                    <div class="form-group d-none">
-                        <div class="checkbox">
-                          <label>
-                            <input type="checkbox" id="sortCheckbox" checked="checked">Sort
-                          </label>
-                          <span id="helpBlock" class="help-block">Whether to sort the result list, by score.</span>
-                        </div>
-                      </div>
-                    <div class="form-group form-inline d-none">
-                        <label for="thresholdRange">Threshold</label>
-                        <input type="number" id="thresholdRange" min="0" step="0.1" max="1" value="0.6">
-                        <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
-                      </div>
-                    <!-- multiselect -->
-                    <div id="addToList" class="ui multiple selection dropdown" style="width: 70%;">
+                    <div id="addToList" class="ui fluid multiple search selection dropdown">
                         <% if(addTo == 'self'){%>
-                            <input name="addTo" type="hidden" value="<%= user._id%>">
+                            <input id="addToInput" name="addTo" type="hidden" value="<%= user._id%>">
                         <%}else{%>
-                            <input name="addTo" type="hidden" value="<%= addTo._id%>">
+                            <input id="addToInput" name="addTo" type="hidden" value="<%= addTo._id%>">
                         <%}%>
                         <i class="dropdown icon"></i>
-                        <div class="default text mr-2">Send To</div>
-                        <div id="usersList" class="menu d-block">
-                            <% if(addTo == 'self'){%>
-                                <div class="item" data-value="<%= user._id%>">
-                                    <img class="ui avatar image" src="<%= user.imageUrl%>">
-                                    <span class="bitraf mt-2">Myself</span>
-                                </div>
-                            <%}else{%>
-                                <div class="item" data-value="<%= addTo._id%>">
-                                    <img class="ui avatar image" src="<%= addTo.imageUrl%>">
-                                    <span class="bitraf mt-2"><%= addTo.username%></span>
-                                </div>
-                            <%}%>
+                        <div class="default text">Select Users</div>
+                        <div class="menu">
+                            <%usersList.forEach(function(at){%>
+                                <%if(at.id == user.id){%>
+                                    <div class="item" data-value="<%= at._id%>">
+                                        <img class="ui avatar image" src="<%= at.imageUrl%>">
+                                        <span class="bitraf mt-2">Self</span>
+                                    </div>
+                                <%}else{%>
+                                    <div class="item" data-value="<%= at._id%>">
+                                        <img class="ui avatar image" src="<%= at.imageUrl%>">
+                                        <span class="bitraf mt-2"><%= at.username%></span>
+                                    </div>
+                                <%}%>
+                            <%});%>
                         </div>
                     </div>
-                    <div id="clearAddToBtn" class="ui button">Clear Filters</div>
+                    <div id="clearAddToBtn" class="ui button mt-2">Clear</div>
                 </div>
             </div>
         </div>
@@ -118,12 +92,17 @@
         <%}else{%>
             <input type="text" name="redirect" value="contacts" class="d-none">
         <%}%>
-        <div class="my-2">
-            <button id="addEvt" class="standardBtnStyle">Add Event</button>
-            <a id="anlEvt" href="/users/<%= user._id%>/events" class="goBackBtn float-right py-3 px-5">Cancel</a>
-        </div>
-
     </form>
+
+    <div id="receiversSelectionWarning" class="ui red message d-none text-center">
+        <i class="fas fa-exclamation-triangle mr-2 text-center"></i>
+        Cant plan a event without selecting users
+    </div>
+    <div class="my-2">
+        <button id="addEvtBtn" type="button" class="standardBtnStyle">Add Event</button>
+        <a id="anlEvt" href="/users/<%= user._id%>/events" class="goBackBtn float-right py-3 px-5">Cancel</a>
+    </div>
+
 </div>
 
 

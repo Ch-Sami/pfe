@@ -25,6 +25,10 @@
     </head>
 <body>
     
+    <!-- user basic infos -->
+    <input type="hidden"  id="userId" value="<%= user._id%>" style="background-color: chartreuse;">
+    <input type="hidden"  id="userImg" value="<%= user.imageUrl%>" style="background-color: chartreuse;">
+    <input type="hidden"  id="username" value="<%= user.username%>" style="background-color: chartreuse;">
 
     <nav id="mainNavbar" class="navbar navbar-dark navbar-expand-sm py-0">
         <div class="container">
@@ -45,12 +49,135 @@
                       </div>
                  </ul>
                  <ul class="navbar-nav navbar-right">
-                       <li class="nav-item mr-3">
-                        <a class="nav-link" href="#"><i class="fa fa-user" aria-hidden="true"></i> Profil</a>
-                       </li>
-                       <li class="nav-item">
-                        <a class="nav-link" href="#">Logout</a>
-                       </li>
+                    <li class="nav-item mr-3">
+                     <a class="nav-link" href="/users/<%= user._id%>/profil"><i class="fa fa-user" aria-hidden="true"></i></a>
+                    </li>
+                    <li class="nav-item mr-3">
+                        <div id="msgNotificationsDropdown" class="notificationDropdown my-0 py-0">
+                            <a class="nav-link"><i class="fas fa-comments"></i></a>
+                            <div class="floating ui red label" style="top: 0em;">
+                                <span id="msgNotifsCount">
+                                    <%if(user.messageNotifications.count > 0){%>
+                                        <%=user.messageNotifications.count%>
+                                    <%}%>
+                                </span>
+                            </div>
+                            <div id="msgNotificationsContent" class="notificationDropdownContent">
+                                <%if(user.messageNotifications.array.length > 0){%>
+                                    <%user.messageNotifications.array.forEach(function(notification){%>
+                                        <%if(notification.count > 1){%>
+                                            <a href="/users/<%=user._id%>/contacts/<%=notification.senderId%>/chat"><strong class="bitraf mr-2"><i class="far fa-comment"></i></strong>You have received <strong class="bitraf" msgfrom="<%=notification.senderId%>"><%=notification.count%></strong> new private messages from <strong class="bitraf"><%=notification.senderUsername%></strong>.</a>
+                                        <%}else{%>
+                                            <a href="/users/<%=user._id%>/contacts/<%=notification.senderId%>/chat"><strong class="bitraf mr-2"><i class="far fa-comment"></i></strong>You have received <strong class="bitraf" msgfrom="<%=notification.senderId%>">1</strong> new private message from <strong class="bitraf"><%=notification.senderUsername%></strong>.</a>
+                                        <%}%>
+                                    <%});%>
+                                <%}else{%>
+                                    <div id="msgEmptyNotifications" class="emptyNotifications">
+                                        <span class="bitraf">Empty</span>
+                                    </div>
+                                <%}%>
+                            </div>
+                        </div>
+                    </li>   
+                    <li class="nav-item mr-3">
+                        <div id="mailNotificationsDropdown" class="notificationDropdown my-0 py-0">
+                            <a class="nav-link"><i class="fas fa-envelope"></i></a>
+                            <div class="floating ui red label" style="top: 0em;">
+                                <span id="mailNotifsCount">
+                                    <%if(user.mailNotifications.count > 0){%>
+                                        <%=user.mailNotifications.count%>
+                                    <%}%>
+                                </span>
+                            </div>
+                            <div id="mailNotificationsContent" class="notificationDropdownContent">
+                                <%if(user.mailNotifications.array.length > 0){%>
+                                    <%user.mailNotifications.array.forEach(function(notification){%>
+                                        <%if(notification.notifType == 'newMail'){%>
+                                            <%if(notification.count > 1){%>
+                                                <a href="/users/<%=user._id%>/mails/received"><strong class="bitraf mr-2"><i class="far fa-envelope"></i></strong>You have received <strong class="bitraf" mailfrom="<%=notification.senderId%>"><%=notification.count%></strong> new mails from <strong class="bitraf"><%=notification.senderUsername%></strong>.</a>
+                                            <%}else{%>
+                                                <a href="/users/<%=user._id%>/mails/received/<%=notification.mailId%>/content"><strong class="bitraf mr-2"><i class="far fa-envelope"></i></strong>You have received <strong class="bitraf" mailfrom="<%=notification.senderId%>">1</strong> new mail from <strong class="bitraf"><%=notification.senderUsername%></strong>.</a>
+                                            <%}%>
+                                        <%}else if(notification.notifType == 'newReply'){%>
+                                            <%if(notification.parentMailSender == user._id){%>
+                                                <a href="/users/<%=user._id%>/mails/received/<%=notification.replyId%>/content"><strong class="bitraf mr-2"><i class="far fa-envelope"></i></strong><strong class="bitraf"><%=notification.senderUsername%></strong> has replied to the sent mail <strong class="bitraf">"<%=notification.parentMailTitle%>"</strong>.</a>
+                                            <%}else{%>
+                                                <a href="/users/<%=user._id%>/mails/received/<%=notification.replyId%>/content"><strong class="bitraf mr-2"><i class="far fa-envelope"></i></strong><strong class="bitraf"><%=notification.senderUsername%></strong> has replied to the received mail <strong class="bitraf">"<%=notification.parentMailTitle%>"</strong>.</a>
+                                            <%}%>
+                                        <%}else if(notification.notifType == 'mailSendFailed'){%>
+                                            <%if(notification.senderId == user._id){%>
+                                                <a><span class="bitraf mr-2"><i class="fas fa-exclamation-triangle"></i></span><strong class="bitraf"><%= notification.userThatDidNotReceiveUsername%></strong> was not able to receive your mail <strong class="bitraf">"<%= notification.mailTitle%>"</strong> due to his full storage.</a>
+                                            <%}else{%>
+                                                <a href="/users/<%=user._id%>/mails/received"><span class="bitraf mr-2"><i class="fas fa-exclamation-triangle"></i></span> you were not able to receive a mail from <strong class="bitraf"><%=notification.senderUsername%></strong> at <strong class="bitraf">"<%=notification.at%>"</strong> due to your full storage.</a>
+                                            <%}%>
+                                        <%}else if(notification.notifType == 'notAbleToSendMailCuzFullSentMailsStorage'){%>
+                                            <a href="/users/<%=user._id%>/mails/sent"><span class="bitraf mr-2"><i class="fas fa-exclamation-triangle"></i></span> the mail <strong class="bitraf">"<%=notification.mailTitle%>"</strong> was not send due to your full sent mails storage.</a>
+                                        <%}else if(notification.notifType == 'almostFullReceivedMailsStorage'){%>
+                                            <a href="/users/<%=user._id%>/mails/received"><span class="bitraf mr-2"><i class="fas fa-exclamation-triangle"></i></span> your received mails storage is almost full ,their is a risk of not being able to receive large mails in the future.</a>
+                                        <%}else if(notification.notifType == 'almostFullSentMailsStorage'){%>
+                                            <a href="/users/<%=user._id%>/mails/sent"><span class="bitraf mr-2"><i class="fas fa-exclamation-triangle"></i></span> your sent mails storage is almost full ,their is a risk of not being able to send large mails in the future.</a>
+                                        <%}%>
+                                    <%});%>
+                                <%}else{%>
+                                    <div id="mailEmptyNotifications" class="emptyNotifications">
+                                        <span class="bitraf">Empty</span>
+                                    </div>
+                                <%}%>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item mr-3">
+                        <div id="bellNotificationsDropdown" class="notificationDropdown my-0 py-0">
+                            <a class="nav-link"><i class="fas fa-bell"></i></a>
+                            <div class="floating ui red label" style="top: 0em;">
+                                <span id="bellNotifsCount">
+                                    <%if(user.bellNotifications.count > 0){%>
+                                        <%=user.bellNotifications.count%>
+                                    <%}%>
+                                </span>
+                            </div>
+                            <div id="bellNotificationsContent" class="notificationDropdownContent">
+                                <%if(user.bellNotifications.array.length > 0){%>
+                                    <%user.bellNotifications.array.forEach(function(notification){%>
+                                        <%if(notification.notifType == 'receivedProject'){%>
+                                            <%if(notification.count > 1){%>
+                                                <a href="/users/<%=user._id%>/projects/received"><strong class="bitraf mr-2"><i class="fas fa-clipboard-list"></i></strong>You have received <strong class="bitraf" projectType="received"><%=notification.count%></strong> new projects.</a>
+                                            <%}else{%>
+                                                <a href="/users/<%=user._id%>/projects/received/<%=notification.projectId%>/detail"><strong class="bitraf mr-2"><i class="fas fa-clipboard-list"></i></strong>You have received <strong class="bitraf" projectType="received">1</strong> new project at <strong class="bitraf"><%=notification.at%></strong>.</a>
+                                            <%}%>
+                                        <%}else if(notification.notifType == 'assignedProject'){%>
+                                            <%if(notification.count > 1){%>
+                                                <a href="/users/<%=user._id%>/projects/assigned"><strong class="bitraf mr-2"><i class="fas fa-clipboard-list"></i></strong>You have been assigned to <strong class="bitraf" projectType="assigned"><%=notification.count%></strong> projects.</a>
+                                            <%}else{%>
+                                                <a href="/users/<%=user._id%>/projects/assigned/<%=notification.projectId%>/detail"><strong class="bitraf mr-2"><i class="fas fa-clipboard-list"></i></strong>You have been assigned to <strong class="bitraf" projectType="received">1</strong> project at <strong class="bitraf"><%=notification.at%></strong>.</a>
+                                            <%}%>
+                                        <%}else if(notification.notifType == 'updateProject'){%>
+                                            <%if(notification.projectType == 'assigned'){%>
+                                                <a href="/users/<%=user._id%>/projects/assigned/<%=notification.projectId%>/detail"><strong class="bitraf mr-2"><i class="fas fa-exclamation-circle"></i></strong> <strong class="bitraf"><%=notification.username%></strong> has updated the project <strong class="bitraf">"<%=notification.projectTitle%>"</strong> at <strong class="bitraf"><%=notification.at%></strong>.</a>
+                                            <%}else{%>
+                                                <a href="/users/<%=user._id%>/projects/received/<%=notification.projectId%>/detail"><strong class="bitraf mr-2"><i class="fas fa-exclamation-circle"></i></strong> <strong class="bitraf"><%=notification.username%></strong> has updated the project <strong class="bitraf">"<%=notification.projectTitle%>"</strong> at <strong class="bitraf"><%=notification.at%></strong>.</a>
+                                            <%}%>
+                                        <%}else if(notification.notifType == 'unassignProject'){%>
+                                            <a><strong class="bitraf mr-2"><i class="fas fa-exclamation-circle"></i></strong> <strong class="bitraf"><%=notification.username%></strong> has unassigned the project <strong class="bitraf">"<%=notification.projectTitle%>"</strong> at <strong class="bitraf"><%=notification.at%></strong>.</a>
+                                        <%}else if(notification.notifType == 'newEvent'){%>
+                                            <%if(notification.count > 1){%>
+                                                <a href="/users/<%=user._id%>/events"><strong class="bitraf mr-2"><i class="far fa-star"></i></strong> <strong class="bitraf"><%=notification.plannerUsername%></strong> has planned <span class="bitraf" eventFrom="<%=notification.plannerId%>"><%=notification.count%></span> events for you.</a>
+                                            <%}else{%>
+                                                <a href="<%=notification.url%>"><strong class="bitraf mr-2"><i class="far fa-star"></i></strong> <strong class="bitraf"><%=notification.plannerUsername%></strong> has planned <span class="bitraf" eventFrom="<%=notification.plannerId%>">1</span> event <strong class="bitraf">"<%=notification.eventTitle%>"</strong> for you at <strong class="bitraf"><%=notification.at%></strong>.</a>
+                                            <%}%>
+                                        <%}%>
+                                    <%});%>
+                                <%}else{%>
+                                    <div id="bellEmptyNotifications" class="emptyNotifications">
+                                        <span class="bitraf">Empty</span>
+                                    </div>
+                                <%}%>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                     <a class="nav-link" href="#">Logout</a>
+                    </li>
                  </ul>
               </div>
         </div>

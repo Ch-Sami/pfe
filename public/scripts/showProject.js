@@ -135,6 +135,24 @@ $('#progressUp').on('click' ,function(){
   }
 });
 
+//resending project
+$('#resentProjectBtn').on('click' ,function(){
+  if($('#assignedToInput').val() == ''){
+    $('#assignedToInput').attr('name' ,'');
+  }else{
+    $('#assignedToInput').attr('name' ,'assignedTo');
+  }
+  if($('#sentToInput').val() == ''){
+    $('#sentToInput').attr('name' ,'');
+  }else{
+    $('#sentToInput').attr('name' ,'sentTo');
+  }
+  if($('#assignedToInput').val() != '' || $('#sentToInput').val() != ''){
+    $('#resendProjectFrm').submit();
+  }else{
+    $('#receiversSelectionWarning').removeClass('d-none');
+  }
+});
 
 
 //files deleting and cancel deleting

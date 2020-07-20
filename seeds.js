@@ -128,7 +128,9 @@ function seed(){
         isLoggedUser: false,
         unit: {},
         positionName: "CTO ",
-        events: []
+        events: [],
+        usedReceivedMailsStorage: 49950000000,
+        usedSentMailsStorage: 49950000000
     });
 
     unit1.currentHead = user3;

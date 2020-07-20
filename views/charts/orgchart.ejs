@@ -1,6 +1,8 @@
 <%- include('../partials/orgchartheader.ejs')%>
 
 <body translate="no" >
+    <!-- connected user id input here -->
+    
     <p id="gg" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= dataa%></p>
     
     <nav id="mainNavbar" class="navbar navbar-dark navbar-expand-sm py-0">
@@ -22,11 +24,39 @@
                       </div>
                  </ul>
                  <ul class="navbar-nav navbar-right">
-                       <li class="nav-item">
-                       </li>
-                       <li class="nav-item">
-                        <a class="nav-link" href="#">Logout</a>
-                       </li>
+                  <li class="nav-item mr-3">
+                    <a class="nav-link" href=""><i class="fa fa-user" aria-hidden="true"></i> Profil</a>
+                  </li>
+                  <li class="nav-item mr-3">
+                    <div class="notificationDropdown my-0 py-0">
+                        <a class="nav-link"><i class="fas fa-comments"></i></a>
+                        <div class="floating ui red label" style="top: 0em;"><span id="msgNotifsNumber"></span></div>
+                        <div id="msgNotificationsContent" class="notificationDropdownContent">
+                            <!-- nofications items -->
+                        </div>
+                    </div>
+                  </li>   
+                  <li class="nav-item mr-3">
+                      <div class="notificationDropdown my-0 py-0">
+                          <a class="nav-link"><i class="fas fa-envelope"></i></a>
+                          <div class="floating ui red label" style="top: 0em;"><span id="mailNotifsNumber"></span></div>
+                          <div id="mailNotificationsContent" class="notificationDropdownContent">
+                              <!-- nofications items -->
+                          </div>
+                      </div>
+                  </li>
+                  <li class="nav-item mr-3">
+                      <div class="notificationDropdown my-0 py-0">
+                          <a class="nav-link"><i class="fas fa-bell"></i></a>
+                          <div class="floating ui red label" style="top: 0em;"><span id="bellNotifsNumber"></span></div>
+                          <div id="bellNotificationsContent" class="notificationDropdownContent">
+                              <!-- nofications items -->
+                          </div>
+                      </div>
+                  </li>
+                  <li class="nav-item">
+                   <a class="nav-link" href="#">Logout</a>
+                  </li>
                  </ul>
               </div>
         </div>

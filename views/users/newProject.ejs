@@ -45,15 +45,15 @@
             </div>
             
             <!-- files Upload -->
-            <div id="filesUploadContainer" class="container " style="border: 1px solid crimson;">
+            <div id="filesUploadContainer" class="mx-4">
                 <div>
                     <label id="uploadLable" for="upload">
                         <input type="file" class="fileInput" id="upload" name="files" multiple>
-                        Upload Files
+                        <span id="lableTextSpan">Upload Files</span>
+                        <i class="fas fa-paperclip"></i>
                     </label>
                 </div>
                 <div class="files">
-                    <h2>Files Selected</h2>
                     <ul class="files_ul"></ul>
                 </div>
             </div>
@@ -63,12 +63,15 @@
                 <textarea id="projectDoc" name="project[detail]"></textarea>
             </div>
 
-            <label for="editorHugeContainer"><span class="inputsTitles">Documentation</span></label>
-            <div id="editorHugeContainer" class="ce-example">
-                <div class="ce-example__content _ce-example__content--small">
-                    <div id="newProjectEditorjs" class="editorjs"></div>
+            <div class="mx-4">
+                <label for="editorHugeContainer"><span class="inputsTitles">Documentation</span></label>
+                <div id="editorHugeContainer" class="ce-example">
+                    <div class="ce-example__content _ce-example__content--small">
+                        <div id="newProjectEditorjs" class="editorjs"></div>
+                    </div>
                 </div>
             </div>
+            
             <div class="container my-4 p-3 py-5">
                 <div class="row">
                     <div class="column col-sm-6 text-center">
@@ -110,13 +113,24 @@
                     </div>
                 </div>
             </div>
-            
-
-
-            <div class="my-2">
-                <button id="addProject" class="standardBtnStyle">Add Project</button>
-                <a id="anlProject" href="/users/<%= user._id%>/projects/sent" class="goBackBtn float-right py-3 px-5">Cancel</a>
-            </div>
         </form>
+
+            <div class="row mt-2">
+                <div class="column col-12 col-md-3 text-center mb-2">
+                    <button id="addProjectBtn" class="standardBtnStyle">Add Project</button>
+                </div>
+                <div class="column col-0 col-md-6 mb-2">
+                    <div id="receiversSelectionWarning" class="ui red message d-none">
+                        <i class="fas fa-exclamation-triangle mr-2 text-center"></i>
+                        Cant send a project without selecting the receivers
+                    </div>
+                </div>
+                <div class="column col-12 col-md-3 mb-2">
+                    <div class="d-flex justify-content-center">
+                        <a id="anlProject" href="/users/<%= user._id%>/projects/sent" class="goBackBtn float-right py-3 px-5">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        
     </div>
 <%- include('../partials/projectsFooter')%>

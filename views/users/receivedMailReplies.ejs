@@ -4,14 +4,14 @@
       <span class="sentReceivedSpan"><i class="fas fa-envelope-open-text"></i></span>
     </a>
     <a class="active item" href="/users/<%= user._id%>/mails/received/<%= mailId%>/replies">
-      <span class="sentReceivedSpan"><i class="fas fa-reply"></i></span>
+      <span class="sentReceivedSpan"><i class="fas fa-reply-all"></i></span>
     </a>
 </div>
 
-
+<input type="hidden" id="currentPage" value="repliesPage">
 
 <div id="receivedMailRepliesContainer">
-    <div id="receivedMailRepliesList" class="container scrollDiv mt-4 p-4">
+    <div id="repliesList" class="container scrollDiv mt-4 p-4">
       <%var i = 0;%>
       <%replies.forEach(function(reply){%>
         <%if(reply.senderId == user.id){%>
@@ -48,11 +48,14 @@
                               <%}%>
                               <img class="ui avatar image mr-0 pr-0" src="<%= elt.sent_to.imageUrl%>">
                               <span class="bitraf ml-0 pl-0 mr-5"><%= elt.sent_to.username%></span>
-                              <% if(elt.read == false){%>
-                                <span class="float-right bitraf">not yet</span>
-                              <%}else{%>
-                                <span class="float-right" style="color: #09ed1c; white-space:pre;">done   </span>
-                              <%}%>
+                              <span sentToRead="<%= elt.sent_to._id%>">
+                                <% if(elt.read == false){%>
+                                  <span class="float-right bitraf">not yet</span>
+                                <%}else{%>
+                                  <span class="float-right" style="color: #09ed1c; white-space:pre;">done   </span>
+                                <%}%>
+                              </span>
+                              
                               <span class="float-right">read :</span>
                               <span class="bitraf float-right mr-5"> <%= elt.sent_at%></span>
                               <span class="float-right">at :</span>
@@ -62,10 +65,8 @@
                 </div>
                 
                 <div class="float-right d-flex justify-content-between text-align-center ml-4">
-                  <form action="/users/<%= user._id%>/mails/received/<%= mailId%>/replies/<%= reply._id%>/archive" method="POST">
-                    <button  class="contactsIcons" data-inverted="" data-tooltip="Archive" data-position="top center"><i class="fas fa-archive"></i></button>
-                  </form>
                   <form action="/users/<%= user._id%>/mails/received/<%= mailId%>/replies/<%= reply._id%>?_method=DELETE" method="POST">
+                    <input type="hidden" name="mailSize" value="<%=reply.size%>">
                     <input type="hidden" name="replyType" value="sentReply">
                     <button  class="contactsIcons" data-inverted="" data-tooltip="Delete" data-position="top center"><i class="fas fa-trash-alt"></i></button>
                   </form>
@@ -96,10 +97,8 @@
             </div>
             <div class="column col-7 px-0">
               <div class="float-right d-flex justify-content-between text-align-center ml-1">
-                <form action="/users/<%= user._id%>/mails/received/<%= mailId%>/replies/<%= reply._id%>/archive" method="POST">
-                  <button  class="contactsIcons" data-inverted="" data-tooltip="Archive" data-position="top center"><i class="fas fa-archive"></i></button>
-                </form>
                 <form action="/users/<%= user._id%>/mails/received/<%= mailId%>/replies/<%= reply._id%>?_method=DELETE" method="POST">
+                  <input type="hidden" name="mailSize" value="<%=reply.size%>">
                   <input type="hidden" name="replyType" value="visibleReply">
                   <button  class="contactsIcons" data-inverted="" data-tooltip="Delete" data-position="top center"><i class="fas fa-trash-alt"></i></button>
                 </form>
@@ -130,4 +129,6 @@
       <a href="/users/<%= user._id%>/mails/received/<%= mailId%>/replies/new" class="standardBtnStyle p-2" style="width: 30%;">Add reply</a>
     </div>
   </div>
+
+
 <%- include('../partials/mailsFooter')%>

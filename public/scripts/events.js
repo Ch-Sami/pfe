@@ -119,27 +119,31 @@ $('#clearAddToBtn').on('click', function () {
 	$('#addToList').dropdown('restore defaults')
 });
 
-$('#searchTextbox').on('input' ,function(){
-  setTimeout(function(){
-      var usersList = JSON.parse($('#resultTextArea').text());
-      $('#usersList').text('');
-      usersList.forEach(function(elt){
-          $('#usersList').append([
-              '<div class="item" data-value="'+elt._id+'">',
-              '   <img class="ui avatar image" src="'+elt.imageUrl+'">',
-              '   <span class="bitraf">'+elt.username+'</span>',
-              '</div>'
-          ].join('\n'));
-      });
-  } ,300);
-});
+// $('#searchTextbox').on('input' ,function(){
+//   setTimeout(function(){
+//       var usersList = JSON.parse($('#resultTextArea').text());
+//       $('#usersList').text('');
+//       usersList.forEach(function(elt){
+//           $('#usersList').append([
+//               '<div class="item" data-value="'+elt._id+'">',
+//               '   <img class="ui avatar image" src="'+elt.imageUrl+'">',
+//               '   <span class="bitraf">'+elt.username+'</span>',
+//               '</div>'
+//           ].join('\n'));
+//       });
+//   } ,300);
+// });
 
 
-$('#newEvtFrm').submit(function(){
-  newEventEditor.save().then((savedData) => {
+$('#addEvtBtn').on('click' ,function(){
+  if($('#addToInput').val() == ''){
+    $('#receiversSelectionWarning').removeClass('d-none');
+  }else{
+    newEventEditor.save().then((savedData) => {
       $('#evtDesc').text(JSON.stringify(savedData));
+      $('#newEvtFrm').submit();
     });
-  return true;
+  }
 });
 
 

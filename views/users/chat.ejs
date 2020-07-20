@@ -1,5 +1,12 @@
 <%- include('../partials/profilHeader')%>
-    <div id="chatContainer" class="scrollDiv px-4">
+
+    <input type="hidden" id="currentPage" value="chatPage">
+    <!-- contact infos -->
+    <input type="hidden" id="contactId" value="<%= contact._id%>">
+    <input type="hidden" id="contactImg" value="<%= contact.imageUrl%>">
+    <input type="hidden" id="contactUsername" value="<%= contact.username%>">
+
+    <div id="chatContainer" class="discussionContainer scrollDiv px-4">
         <% chat.forEach(function(message){%>
             <% if(message.sent_by == user.id){%>
                 <div class="row justify-content-end">
@@ -10,7 +17,7 @@
                             <span class="time-left"><%= message.sent_at%></span>
                         </div>
                         <div class="column col-1 p-0">
-                            <img src="<%= user.imageUrl%>" class="m-0" alt="Avatar" style="width: 50px; height: 50px;">
+                            <img src="<%= user.imageUrl%>" class="ui mini circular image m-0" alt="Avatar" style="width: 40px; height: 40px;">
                         </div>
                     </div>
                 </div>
@@ -18,7 +25,7 @@
                 <div class="row">
                     <div class="row messageContainer">
                         <div class="column col-1 p-0">
-                            <img src="<%= contact.imageUrl%>" class="m-0" alt="Avatar" style="width: 50px; height: 50px;">
+                            <img src="<%= contact.imageUrl%>" class="ui mini circular image m-0" style="width: 40px; height: 40px;">
                         </div>
                         <div class="column col-11 pl-3">
                             <span class="bitraf" style="font-size: 1.4em; font-weight: 500;"><%= contact.username%></span>
@@ -30,21 +37,15 @@
             <% }%>
         <% });%>
     </div>
-    <div id="newMessage" class="container px-5 pb-4">
-        <form class="ui form" action="/users/<%= user._id%>/contacts/<%= contact._id%>/chat" method="POST">
-            <div class="field">
-                <label><span >New Message</span></label>
-                <textarea rows="2" name="text"></textarea>
+    <div id="newMessage" class="container px-5 pb-4 mt-3">
+        <div id="newPrivateMessageFrm">
+            <label><span >New Message</span></label>
+            <div class="mb-2">
+                <textarea id="privateMessageText" rows="3" name="text" style="width: 100%;"></textarea>
             </div>
-            <button class="ui negative basic button">Send</button>
-            <input
-                    action="action"
-                    onclick="window.history.go(-1); return false;"
-                    type="submit"
-                    value="Cancel"
-                    class="goBackBtn float-right py-3 px-5"
-                />
-        </form>
+            <button id="sendPrivateMessageBtn" class="ui negative basic button">Send</button>
+            <a href="/users/<%= user._id%>/contacts" class="goBackBtn float-right py-3 px-5">Cancel</a>
+        </div>
     </div>
     
     

@@ -4,9 +4,16 @@ const Project = require("./project");
 const Mail = require("./mail");
 const Message = require("./message");
 const eventSchema = require("./event");
+// const Event = require("./event");
 const passportLocalMongoose = require("passport-local-mongoose");
 materializedPlugin = require('mongoose-materialized');
 const conn = require('./connection');
+
+messageNotificationSchema = mongoose.Schema({
+  from: String,
+  count: Number,
+  at: String
+});
 
 const userSchema = mongoose.Schema({
   username: String,
@@ -25,18 +32,36 @@ const userSchema = mongoose.Schema({
   contacts: [{ type: mongoose.Schema.Types.ObjectId, ref:'User'}],
 
   events: [eventSchema],
+  // events: [{ type: mongoose.Schema.Types.ObjectId, ref:'Event'}],
 
   sentProjects: [{ type: mongoose.Schema.Types.ObjectId, ref:'Project'}],
   assignedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref:'Project'}],
   receivedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref:'Project'}],
 
   sentMails: [{ type: mongoose.Schema.Types.ObjectId, ref:'Mail'}],
+  sentMailsStorage: {type: Number ,default: 50000000000},
+  usedSentMailsStorage : {type: Number ,default: 0},
+
   receivedMails: [{type: mongoose.Schema.Types.ObjectId, ref:'Mail'}],
+  receivedMailsStorage: {type: Number ,default: 50000000000},
+  usedReceivedMailsStorage : {type: Number ,default: 0},
 
   sentMessages: [{ type: mongoose.Schema.Types.ObjectId, ref:'Message'}],
   receivedMessages: [{type: mongoose.Schema.Types.ObjectId, ref:'Message'}],
 
-  notifications: [String]
+  messageNotifications: {
+    count: {type: Number ,default: 0},//[],
+    array: []
+  },
+  mailNotifications: {
+    count: {type: Number ,default: 0},
+    array: []
+  },
+  bellNotifications: {
+    count: {type: Number ,default: 0},
+    array: []
+  }
+  
 });
 
 // var autoPopulateChildren = function(next) {

@@ -85,14 +85,20 @@ var newMailEditor = new EditorJS({
 $('.menuItem').removeClass('active menuItemColor');
 $('#showMails').addClass('active menuItemColor');
 
-
-$('#progress').progress({
-  percent: $('#storagePer').val(),
-  limitValues: true
-});
-
-setBarColor($('#storagePer').val());
-
+//mails storage bar
+if($('#currentPage').val() == 'receivedMailsPage' || $('#currentPage').val() == 'sentMailsPage'){
+  var storagePer = (($('#totalMailsSize').val() * 100) / $('#userStorage').val()).toFixed(2);
+  $('#storagePerLable').text(storagePer);
+  if(storagePer < 0.5){
+    storagePer = 0.5
+  }
+  $('#storagePer').val(storagePer);
+  $('#progress').progress({
+    percent: storagePer,
+    limitValues: true
+  });
+  setBarColor(storagePer);
+}
 function setBarColor(storagePer){
   switch(true){
     case (storagePer <= 15):
@@ -113,6 +119,8 @@ function setBarColor(storagePer){
       break;
   }
 }
+
+
 
 //new mail
 let state = {};
@@ -379,57 +387,66 @@ $('#searchTextbox').on('input' ,function(){
     //       });
     //     } ,300);
     //   }
-  }else{
-    setTimeout(function(){
-    var usersList = JSON.parse($('#resultTextArea').text());
-    $('#usersList').text('');
-    var CCs = $("#CCs").val().split(",");
-    var sentTo = $("#sentTo").val().split(",");
-    var userId = $("#userId").val();
-    usersList.forEach(function(elt){
-      if((CCs.indexOf(elt._id) <= -1) && (sentTo.indexOf(elt._id) <= -1) && (elt._id != userId)){
-        $('#usersList').append([                  
-          '<div class="item" data-value="'+elt._id+'">',
-          '   <img class="ui avatar image" src="'+elt.imageUrl+'">',
-          '   <span class="bitraf">'+elt.username+'</span>',
-          '</div>'
-        ].join('\n'));
-      }
-    });
-    },300);
   }
 });
 
-$('#searchTextbox1').on('input' ,function(){
-  setTimeout(function(){
-      var ccFound = JSON.parse($('#resultTextArea1').text());
-      $('#ccMenu').text('');
-      var sentTo = $("#sentTo").val().split(",");
-      var CCs = $("#CCs").val().split(",");
-      var userId = $("#userId").val();
-      ccFound.forEach(function(elt){
-        if((sentTo.indexOf(elt._id) <= -1) && (CCs.indexOf(elt._id) <= -1) && (elt._id != userId)){
-          $('#ccMenu').append([                  
-            '<div class="item" data-value="'+elt._id+'">',
-            '   <img class="ui avatar image" src="'+elt.imageUrl+'">',
-            '   <span class="bitraf">'+elt.username+'</span>',
-            '</div>'
-          ].join('\n'));
-        }  
-      });
-  } ,300);
-});
-
-$('#newMailFrm').submit(function(){
-  $('#totalMailSize').val();
+//sending new mail
+$('#sendMailBtn').on('click' ,function(){
   if($('#CCs').val() == ''){
     $('#CCs').attr('name' ,'');
+  }else{
+    $('#CCs').attr('name' ,'CCs');
   }
-  newMailEditor.save().then((savedData) => {
-    $('#mailText').text(JSON.stringify(savedData));
-    totalMailSize =+ JSON.stringify(savedData)
-  });
-  return true;
+  if($('#sentTo').val() == ''){
+    $('#sentTo').attr('name' ,'');
+  }else{
+    $('#sentTo').attr('name' ,'sentTo');
+  }
+  if($('#CCs').val() != '' || $('#sentTo').val() != ''){
+    newMailEditor.save().then((savedData) => {
+      $('#mailText').text(JSON.stringify(savedData));
+      totalMailSize =+ JSON.stringify(savedData);
+      $('#newMailFrm').submit();
+    });
+  }else{
+    $('#receiversSelectionWarning').removeClass('d-none');
+  }
+});
+
+// re-sending existing mail
+$('#reSentMailBtn').on('click' ,function(){
+  if($('#CCs').val() == ''){
+    $('#CCs').attr('name' ,'');
+  }else{
+    $('#CCs').attr('name' ,'CCs');
+  }
+  if($('#sentTo').val() == ''){
+    $('#sentTo').attr('name' ,'');
+  }else{
+    $('#sentTo').attr('name' ,'sentTo');
+  }
+  if($('#CCs').val() != '' || $('#sentTo').val() != ''){
+    $('#reSentMailFrm').submit();
+  }else{
+    $('#receiversSelectionWarning').removeClass('d-none');
+  }
+});
+
+//sending new reply
+$('#sendMailReplyBtn').on('click' ,function(){
+  if($('#visibleToInput').val() != ''){
+    newMailEditor.save().then((savedData) => {
+      $('#mailText').text(JSON.stringify(savedData));
+      totalMailSize =+ JSON.stringify(savedData);
+      $('#newMailReplyFrm').submit();
+    });
+  }else{
+    $('#receiversSelectionWarning').removeClass('d-none');
+  }
+});
+$('#visibleToList').dropdown();
+$('#clearVisibleToBtn').on('click', function () {
+	$('#visibleToList').dropdown('restore defaults')
 });
 
 //show mail
@@ -463,6 +480,7 @@ for(var i = 0 ; i < $('#mailsLength').val() ;i++){
 //replies
 $('#visibleToList').dropdown();
 
+//replying to a mail
 $('#newMailReplyFrm').submit(function(){
   $("#reTitle").removeAttr('disabled');
   if($('#visibleToInput').val() == ''){
@@ -471,8 +489,9 @@ $('#newMailReplyFrm').submit(function(){
   newMailEditor.save().then((savedData) => {
     $('#mailText').text(JSON.stringify(savedData));
   });
-return true;
+  return true;
 });
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////

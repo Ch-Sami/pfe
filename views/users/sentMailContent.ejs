@@ -4,7 +4,7 @@
       <span class="sentReceivedSpan"><i class="fas fa-envelope-open-text"></i></span>
     </a>
     <a class="item" href="/users/<%= user._id%>/mails/sent/<%= mail._id%>/replies">
-      <span class="sentReceivedSpan"><i class="fas fa-reply"></i></span>
+      <span class="sentReceivedSpan"><i class="fas fa-reply-all"></i></span>
     </a>
 </div>
 <div class="container py-4">
@@ -161,94 +161,72 @@
                 </div>
             </div>
         </div>
-        
-        <div class="container my-4 p-3 py-5">
+
+    <form id="reSentMailFrm" class="ui form text-center" action="/users/<%= user._id%>/mails/sent/<%= mail._id%>/reSent" method="post">
+        <div class="mx-4 my-2 py-3">
             <div class="row">
-                <div class="column col-12 col-sm-6 pl-0 text-center">
-                    <!-- users list -->
-                    <textarea name="" id="itemsTextArea" cols="30" rows="10" class="d-none">
-                        <%= usersList%>
-                    </textarea>
-                    <!-- search -->
-                    <div class="text-center">
-                        <span class="inputsTitles pb-0 d-inline">Send To</span>
+                <div class="column col-12 col-md-6 text-center my-2">
+                    <div class="text-center mb-1">
+                        <span class="inputsTitles pb-0 d-inline">Sent to</span>
                     </div>
-                    <div class="d-flex justify-content-center">
-                        <section id="search" style="width: 100%;">
-                            <div class="form-group form-inline">
-                              <input type="text" class="form-control wide inputStyleClone" style="width: 100%;" id="searchTextbox" placeholder="Search">
-                            </div>
-                        </section>
-                    </div>
-                    <!-- results -->
-                    <textarea id="resultTextArea" class="nohighlight m-0 p-0 d-none"></textarea>
-                    <div class="form-group form-inline d-none">
-                        <label for="thresholdRange">Threshold</label>
-                        <input type="number" id="thresholdRange" min="0" step="0.1" max="1" value="0.6">
-                        <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
-                      </div>
-                    <!-- multiselect -->
-                    <div class="d-flex">
-                        <div id="sendToList" class=" ui multiple selection dropdown" style="width: 90%;">
-                            <input id="sentTo" name="sentTo" type="hidden">
-                            <i class="dropdown icon"></i>
-                            <div class="default text mr-2">Send To</div>
-                            <div id="usersList" class="menu d-block"></div>
+                    <!-- sent to multiselect -->
+                    <div id="sendToList" class="ui fluid multiple search selection dropdown" style="width: 100%;">
+                        <input id="sentTo" name="sentTo" type="hidden">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select Users</div>
+                        <div class="menu">
+                            <%usersList.forEach(function(st){%>
+                                <%if(st._id !== user._id){%>
+                                    <div class="item" data-value="<%= st._id%>">
+                                        <img class="ui avatar image" src="<%= st.imageUrl%>">
+                                        <span class="bitraf mt-2"><%= st.username%></span>
+                                    </div>
+                                <%}%>
+                            <%});%>
                         </div>
-                        <div id="clearSendToBtn" class=" ui button">Clear</div>
                     </div>
+                    <div id="clearSendToBtn" class=" ui button mt-2">Clear</div>
                 </div>
+                
 
-
-
-
-                <div class="column col-12 col-sm-6 pr-0 text-center">
-                    <!-- users list -->
-                    <textarea name="" id="itemsTextArea1" cols="30" rows="10" class="d-none">
-                        <%= usersList%>
-                    </textarea>
-                    <!-- search -->
-                    <div class="text-center">
+                <div class="column col-12 col-md-6 text-center my-2">
+                    <div class="text-center mb-1">
                         <span class="inputsTitles pb-0 d-inline">CCs</span>
                     </div>
-                    <div class="d-flex justify-content-center">
-                        <section id="search2" style="width: 100%;">
-                            <div class="form-group form-inline">
-                              <input type="text" class="form-control wide" style="width: 100%;" id="searchTextbox1" placeholder="Search">
-                            </div>
-                        </section>
-                    </div>
-                    <!-- results -->
-                    <textarea id="resultTextArea1" class="nohighlight m-0 p-0 d-none"></textarea>
-                    <div class="form-group form-inline d-none">
-                        <label for="thresholdRange">Threshold</label>
-                        <input type="number" id="thresholdRange" min="0" step="0.1" max="1" value="0.6">
-                        <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
-                    </div>
-                    <!-- multiselect -->
-                    <div class="d-flex">
-                        <div id="ccList" class="ui multiple selection dropdown" style="width: 90%;">
-                            <input id="CCs" name="CCs" type="hidden">
-                            <i class="dropdown icon"></i>
-                            <div class="default text mr-2">CCs</div>
-                            <div id="ccMenu" class="menu d-block"></div>
+                    <!-- CC multiselect -->
+                    <div id="ccList" class="ui fluid multiple search selection dropdown" style="width: 100%;">
+                        <input id="CCs" name="CCs" type="hidden">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select Users</div>
+                        <div class="menu">
+                            <%usersList.forEach(function(cc){%>
+                                <%if(cc._id !== user._id){%>
+                                    <div class="item" data-value="<%= cc._id%>">
+                                        <img class="ui avatar image" src="<%= cc.imageUrl%>">
+                                        <span class="bitraf mt-2"><%= cc.username%></span>
+                                    </div>
+                                <%}%>
+                            <%});%>
                         </div>
+                    </div>
+                    <div class="text-center mt-2">
                         <div id="clearCcBtn" class="ui button">Clear</div>
                     </div>
-                    
                 </div>
-
             </div>
-        </div>
+        </form>
 
-        <div class="row my-2">
-            <div class="column col-12 col-md-2">
-                <form id="reSentMailFrm" class="ui form text-center" action="/users/<%= user._id%>/mails/sent/<%= mail._id%>/reSent" method="post">
-                    <button id="sendMail" class="standardBtnStyle">Send</button>
-                </form>
+        <div class="row mt-4">
+            <div class="column col-12 col-md-2 text-center mb-2">
+                <button id="reSentMailBtn" class="standardBtnStyle">Send</button>
             </div>
-            <div class="column col-0 col-md-8"></div>
-            <div class="column col-12 col-md-2">
+            <div class="column col-0 col-md-8 mb-2">
+                <div id="receiversSelectionWarning" class="ui red message d-none">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Cant send a mail without selecting the receivers
+                </div>
+            </div>
+            <div class="column col-12 col-md-2 mb-2">
                 <div class="d-flex justify-content-center">
                     <input
                     action="action"
@@ -260,6 +238,7 @@
                 </div>
             </div>
         </div>
+
 </div>
 <%- include('../partials/mailsFooter')%>
 

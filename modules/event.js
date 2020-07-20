@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('./user');
+// const conn = require('./connection');
+
 const eventSchema = mongoose.Schema({
     title: String,
     type: String,
@@ -8,9 +10,11 @@ const eventSchema = mongoose.Schema({
     backgroundColor: String,
     detail: String,
     url: String,
-    planner: {type: mongoose.Schema.Types.ObjectId ,ref: 'User'}
+    planner: {type: mongoose.Schema.Types.ObjectId ,ref: 'User'},
+    //
+    // usersThatDidNotDelete: [{type: mongoose.Schema.Types.ObjectId ,ref: 'User'}]
   });
 
   
-
   module.exports = eventSchema;
+  // module.exports = conn.model('Event' ,eventSchema);
