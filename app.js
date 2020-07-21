@@ -212,7 +212,7 @@ function clearBellNotifCount(userId){
 		if(err){throw err;}
 		user.bellNotifications.count = 0;
 		user.bellNotifications.array.forEach(function(notification){
-			if(notification.notifType == 'unassignProject' || notification.notifType == 'updateProject'){// || notification.notifType == 'newEvent'
+			if(notification.notifType == 'unassignProject' || notification.notifType == 'updateProject' || notification.notifType == 'eventUpdate' || notification.notifType == 'eventCancellation'){
 				user.bellNotifications.array.splice(user.bellNotifications.array.indexOf(notification) ,1);
 			}
 		});

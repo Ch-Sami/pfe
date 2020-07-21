@@ -146,6 +146,44 @@ $('#addEvtBtn').on('click' ,function(){
   }
 });
 
+$('#deleteEventBtn').on('click' ,function(){
+  $('#deleteEventFrm').submit();
+});
+
+$('#rePlanEventBtn').on('click' ,function(){
+  if($('#addToInput').val() == ''){
+    $('#receiversSelectionWarning').removeClass('d-none');
+  }else{
+    $('#rePlanEventFrm').submit();
+  }
+});
+
+////////
+$('.intervalDropdown').dropdown();
+$('.plannedForDropdown').dropdown();
+function addEvents(val){
+  $('#plannedForMenu'+val).addClass('d-block');
+  $('#plannedForHeader'+val).addClass('bitraf');
+}
+function removeEvents(val){
+  $('#plannedForMenu'+val).removeClass('d-block');
+  $('#plannedForHeader'+val).removeClass('bitraf');
+}
+function addEvents2(val){
+  $('#intervalMenu'+val).addClass('d-block');
+  $('#intervaleHeader'+val).addClass('bitraf');
+}
+function removeEvents2(val){
+  $('#intervalMenu'+val).removeClass('d-block');
+  $('#intervaleHeader'+val).removeClass('bitraf');
+}
+for(var i = 0 ; i < $('#plannedEventsLength').val() ;i++){
+  $('#plannedForDropdown'+i).on('mouseover' ,addEvents.bind(null,i));
+  $('#plannedForDropdown'+i).on('mouseout' ,removeEvents.bind(null,i));
+  $('#intervalDropdown'+i).on('mouseover' ,addEvents2.bind(null,i));
+  $('#intervalDropdown'+i).on('mouseout' ,removeEvents2.bind(null,i));
+}
+////////
 
 $('#typeSelector')
   .dropdown()

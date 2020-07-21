@@ -13,8 +13,6 @@ const projectSchema = mongoose.Schema({
     detail: String,
     url: String,
     progress: {type: Number ,default: 1},
-    // lastProgressUpdateBy: {type: mongoose.Schema.Types.ObjectId ,ref: 'User'},
-    // lastProgressUpdateAt: String,
     progressHistory: [{
       progressUpdateBy: String,
       progressUpdateAt: String,

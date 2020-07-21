@@ -6,6 +6,7 @@ const Project = require("../modules/project");
 const Tree = require('../modules/projectTree');
 const Mail = require('../modules/mail');
 const Message = require('../modules/message');
+const Event = require("../modules/event");
 const mongoose = require('mongoose');
 
 const conn = require('../modules/connection');
@@ -389,12 +390,6 @@ router.delete("/users/:id/projects/assigned/:prjId" ,(req ,res)=>{
             var index = user.assignedProjects.indexOf(req.params.prjId);
             if (index > -1) {
                 user.assignedProjects.splice(index, 1);
-                for(var i = 0 ;i < user.events.length ;i++){
-                    if(user.events[i]._id == req.params.prjId){
-                        user.events.splice(i ,1);
-                        break;
-                    }
-                }
                 user.save(()=>{
                     Project.findById(req.params.prjId ,(err ,project)=>{
                         if(err){throw err;}
@@ -402,6 +397,21 @@ router.delete("/users/:id/projects/assigned/:prjId" ,(req ,res)=>{
                             action: 'unassign',
                             actor: req.params.id,
                             at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                        });
+                        //notify parent 
+                        User.findById(user.parentId ,(err ,parent) => {
+                            if(err){throw err;}
+                            const notification = {
+                                notifType: 'unassignProject',
+                                userId: user._id,
+                                username: user.username,
+                                projectTitle: project.title,
+                                at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+                            }
+                            io.to(parent._id).emit('projectUnassignNotification' ,notification);
+                            parent.bellNotifications.array.push(notification);
+                            parent.bellNotifications.count = parent.bellNotifications.count + 1;
+                            parent.save();
                         });
                         project.save(()=>{
                             Tree.findOne({user :req.params.id ,project: req.params.prjId} ,(err ,treeNode)=>{
@@ -416,23 +426,7 @@ router.delete("/users/:id/projects/assigned/:prjId" ,(req ,res)=>{
                                     treeNode.assigned = false;
                                     treeNode.save((err)=>{
                                         if(err){throw err;}
-                                        //notify parent 
-                                        User.findById(user.parentId ,(err ,parent) => {
-                                            if(err){throw err;}
-                                            const notification = {
-                                                notifType: 'unassignProject',
-                                                userId: user._id,
-                                                username: user.username,
-                                                projectTitle: project.title,
-                                                at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-                                            }
-                                            io.to(parent._id).emit('projectUnassignNotification' ,notification);
-                                            parent.bellNotifications.array.push(notification);
-                                            parent.bellNotifications.count = parent.bellNotifications.count + 1;
-                                            parent.save(()=>{
-                                                res.redirect("/users/"+req.params.id+"/projects/assigned");
-                                            });
-                                        });
+                                        res.redirect("/users/"+req.params.id+"/projects/assigned");
                                     });
                                 }
                             });
@@ -1097,16 +1091,11 @@ router.post("/users/:id/projects/sent" ,arrUpload ,(req ,res)=>{
                                                 sentTo: false
                                             });
                                             tree.save();
-                                            //pushing the project to the user as an event
+                                            
                                             User.findById(at._id ,(err ,user)=>{
                                                 if(err){throw err;}
-                                                else{
-                                                    user.assignedProjects.push(project);
-                                                    var event = project;
-                                                    event.url = ('/users/'+user._id+'/projects/assigned/'+project._id+'/detail');
-                                                    user.events.push(event);
-                                                    user.save();
-                                                }
+                                                user.assignedProjects.push(project);
+                                                user.save();
                                             });  
                                         }
                                         else{
@@ -1117,9 +1106,6 @@ router.post("/users/:id/projects/sent" ,arrUpload ,(req ,res)=>{
                                                     if(err){throw err;}
                                                     else{
                                                         user.assignedProjects.push(project);
-                                                        var event = project;
-                                                        event.url = ('/users/'+user._id+'/projects/assigned/'+project._id+'/detail');
-                                                        user.events.push(event);
                                                         user.save();
                                                     }
                                                 });  
@@ -1313,14 +1299,10 @@ router.post("/users/:id/projects/sent/:prjId/reSend" ,(req ,res)=>{
                                                 sentTo: false
                                             });
                                             tree.save();
-                                            //pushing the project to the user as an event
                                             User.findById(at._id ,(err ,user)=>{
                                                 if(err){throw err;}
                                                 else{
                                                     user.assignedProjects.push(project);
-                                                    var event = project;
-                                                    event.url = ('/users/'+user._id+'/projects/assigned/'+project._id+'/detail');
-                                                    user.events.push(event);
                                                     user.save();
                                                 }
                                             });  
@@ -1333,9 +1315,6 @@ router.post("/users/:id/projects/sent/:prjId/reSend" ,(req ,res)=>{
                                                     if(err){throw err;}
                                                     else{
                                                         user.assignedProjects.push(project);
-                                                        var event = project;
-                                                        event.url = ('/users/'+user._id+'/projects/assigned/'+project._id+'/detail');
-                                                        user.events.push(event);
                                                         user.save();
                                                     }
                                                 });  

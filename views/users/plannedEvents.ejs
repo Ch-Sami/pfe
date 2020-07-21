@@ -1,0 +1,60 @@
+<%- include('../partials/profilHeader')%>
+<div class="ui blue two item menu" style="border-top: none; border-right: none; border-left: none;">
+  <a id="calendarBtn" class="item" href="/users/<%= user._id%>/events/calendar">
+    <span class="sentReceivedSpan">Calendar</span>
+  </a>
+  <a id="plannedEventsBtn" class="active item" href="/users/<%= user._id%>/events/planned">
+    <span class="sentReceivedSpan">Planned Events</span>
+  </a>
+</div>
+
+<div id="mailsList" class="container scrollDiv p-4">
+    <input type="hidden" id="plannedEventsLength" value="<%=events.length%>">
+    <% var i = 0;%>
+    <%events.forEach(function(event){%>
+        <div onclick='location.href="/users/<%= user._id%>/events/<%= event._id%>"' class="hoverableDiv row d-flex py-2 pl-5 pr-2 m-2">
+            <div class="row" style="width: 100%;">
+                <div class="column col-6">
+                    <span class="inputsTitles"><i class="far fa-star mr-2"></i><%= event.title%></span>
+                </div>
+                <div class="column col-3">
+                    <div id="plannedForDropdown<%=i%>" class="ui top right pointing dropdown link item float-right">
+                        <span id="plannedForHeader<%=i%>">
+                            <i class="fas fa-users"></i> Planned for
+                        </span>
+                        <i class="dropdown icon"></i>
+                        <div id="plannedForMenu<%=i%>" class="menu">
+                            <%event.plannedFor.forEach(function(pf){%>
+                                <div class="item">
+                                    <img class="ui avatar image" src="<%= pf.imageUrl%>">
+                                    <span class="bitraf mt-2"><%= pf.username%></span>
+                                </div>
+                            <%});%>
+                        </div>
+                    </div>
+                </div>
+                <div class="column col-3">
+                    <div id="intervalDropdown<%=i%>" class="ui top right pointing dropdown link item float-right">
+                        <span id="intervalHeader<%=i%>">
+                          <i class="fas fa-calendar-day"></i> Interval
+                        </span>
+                        <i class="dropdown icon"></i>
+                        <div id="intervalMenu<%=i%>" class="menu">
+                            <div class="item row">
+                                <div class="column col-6">
+                                    Start : <span class="bitraf"><%=event.start%></span>
+                                </div>
+                                <div class="column col-6">
+                                    End : <span class="bitraf"><%=event.end%></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <%i++;%>
+    <%});%>
+</div>
+
+<%- include('../partials/eventsFooter')%>

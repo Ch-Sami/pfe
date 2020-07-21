@@ -15,7 +15,7 @@
         <link rel="stylesheet" href="/stylesheets/style1.css">
         <link href="/stylesheets/event.css" rel="stylesheet">
         <script src="/scripts/json-preview.js"></script>
-       
+        
         <link href='/stylesheets/profil.css' rel='stylesheet' />
         
 
@@ -165,6 +165,10 @@
                                             <%}else{%>
                                                 <a href="<%=notification.url%>"><strong class="bitraf mr-2"><i class="far fa-star"></i></strong> <strong class="bitraf"><%=notification.plannerUsername%></strong> has planned <span class="bitraf" eventFrom="<%=notification.plannerId%>">1</span> event <strong class="bitraf">"<%=notification.eventTitle%>"</strong> for you at <strong class="bitraf"><%=notification.at%></strong>.</a>
                                             <%}%>
+                                        <%}else if(notification.notifType == 'eventUpdate'){%>
+                                            <a href="<%=notification.url%>"><strong class="bitraf mr-2"><i class="fas fa-exclamation-circle"></i></strong> <strong class="bitraf"><%=notification.plannerUsername%></strong> has updated <strong class="bitraf">"<%=notification.eventTitle%>"</strong> at <strong class="bitraf"><%=notification.at%></strong>.</a>
+                                        <%}else if(notification.notifType == 'eventCancellation'){%>
+                                            <a><strong class="bitraf mr-2"><i class="fas fa-exclamation-circle"></i></strong> <strong class="bitraf"><%=notification.plannerUsername%></strong> has canceled your <strong class="bitraf">"<%=notification.eventTitle%>"</strong> at <strong class="bitraf"><%=notification.at%></strong>.</a>
                                         <%}%>
                                     <%});%>
                                 <%}else{%>
@@ -194,8 +198,8 @@
                 <a id="showContacts" class="item menuItem" href="/users/<%= user._id%>/contacts">
                     Contacts
                 </a>
-                <a id="showCalendar" class="item menuItem" href="/users/<%= user._id%>/events">
-                    Calendar
+                <a id="showCalendar" class="item menuItem" href="/users/<%= user._id%>/events/calendar">
+                    Events
                 </a>
                 <a id="showProjects" class="item menuItem" href="/users/<%= user._id%>/projects/assigned">
                     Projects

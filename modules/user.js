@@ -3,8 +3,8 @@ const Unit = require("./unit");
 const Project = require("./project");
 const Mail = require("./mail");
 const Message = require("./message");
-const eventSchema = require("./event");
-// const Event = require("./event");
+// const eventSchema = require("./event");
+const Event = require("./event");
 const passportLocalMongoose = require("passport-local-mongoose");
 materializedPlugin = require('mongoose-materialized');
 const conn = require('./connection');
@@ -31,8 +31,9 @@ const userSchema = mongoose.Schema({
 
   contacts: [{ type: mongoose.Schema.Types.ObjectId, ref:'User'}],
 
-  events: [eventSchema],
-  // events: [{ type: mongoose.Schema.Types.ObjectId, ref:'Event'}],
+  // events: [eventSchema],
+  events: [{ type: mongoose.Schema.Types.ObjectId, ref:'Event'}],
+  // plannedEvents: [{ type: mongoose.Schema.Types.ObjectId, ref:'Event'}],
 
   sentProjects: [{ type: mongoose.Schema.Types.ObjectId, ref:'Project'}],
   assignedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref:'Project'}],

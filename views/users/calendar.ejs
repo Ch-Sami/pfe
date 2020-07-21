@@ -1,0 +1,19 @@
+<%- include('../partials/profilHeader')%>
+<div class="ui blue two item menu" style="border-top: none; border-right: none; border-left: none;">
+  <a id="calendarBtn" class="active item" href="/users/<%= user._id%>/events/calendar">
+    <span class="sentReceivedSpan">Calendar</span>
+  </a>
+  <a id="plannedEventsBtn" class="item" href="/users/<%= user._id%>/events/planned">
+    <span class="sentReceivedSpan">Planned Events</span>
+  </a>
+</div>
+<p id="events" style="color: rgb(0, 0, 0, 0); font-size: 0px; display: none;"><%= JSON.stringify(events)%></p>
+<div class="container mb-2 mt-3 px-5">
+  <form action="/users/<%= user._id%>/events/new" method="get">
+    <input type="text" name="addTo" value="self&others" class="d-none">
+    <button id="newEvtBtn" class="d-block standardBtnStyle mt-2 mb-3" style="padding: 7px; width: 100%;">Plan new Event</button>
+  </form>
+</div>
+<div id='calendar'></div>
+
+<%- include('../partials/eventsFooter')%>

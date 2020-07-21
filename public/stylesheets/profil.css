@@ -281,7 +281,38 @@
 /* event css*/
 /* event css*/
 
+#plannedForContainer{
+  font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+  border: 1px solid rgba(34,36,38,.15);
+  color: rgba(0,0,0,.87);
+  border-radius: .28571429rem;
+  padding: 4px;
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 
+/* width */
+.plannedForContainer::-webkit-scrollbar {
+  width: 10px;
+}
+/* Track */
+.plannedForContainer::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+/* Handle */
+.plannedForContainer::-webkit-scrollbar-thumb:hover {
+  background: #c31432;  /* fallback for old browsers */
+  background: -webkit-linear-gradient(to top,#c31432, #240b36, #c31432);  /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(to top,#c31432, #240b36, #c31432); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+/* Handle on hover */
+.plannedForContainer::-webkit-scrollbar-thumb {
+  background: #c31432;  /* fallback for old browsers */
+  background: -webkit-linear-gradient(to top,#240b36, #c31432 ,#240b36);  /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(to top,#240b36, #c31432 ,#240b36); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    
+}
 
 
 /* filePreveiw */

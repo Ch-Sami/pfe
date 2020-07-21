@@ -1,5 +1,5 @@
 <%- include('../partials/profilHeader')%>
-            <% if(event.planner.username !== user.username){%>
+            <% if(event.planner.id !== user.id){%>
                 <div class="d-flex justify-content-end">
                     <span class="bitraf mr-2">planned to you by </span>
                     <div onclick='location.href="<%= event.planner.profileUrl%>"' class="hoverableDiv px-2">
@@ -8,31 +8,27 @@
                     </div>
                 </div>
             <%}%>
-            <form class="ui form m-5" action="/users/<%= user._id%>/events/<%= event._id%>?_method=DELETE" method="post">
-                <div class="two fields mb-3">
-                    <div class="field mr-3">
+            <form id="deleteEventFrm" class="ui form m-4" action="/users/<%= user._id%>/events/<%= event._id%>?_method=DELETE" method="post">
+                <input type="hidden" name="deleter" value="<%=user._id%>">
+                <div class="row mb-4">
+                    <div class="column col-md-6">
                         <label for="title"><span class="inputsTitles">Title</span></label>
-                        <input id="title" name="event[title]" placeholder="Title" value="<%= event.title%>" disabled>  
+                        <input id="title" name="event[title]" class="inputStyleClone" placeholder="Title" value="<%= event.title%>" disabled>  
                     </div>
-                    <div class="field ml-3">
-                        <label>
-                            <span class="inputsTitles">Type</span>
-                            <input id="type" type="text" name="event[type]" placeholder="Type" value="<%= event.type%>" disabled>
-                        </label>
+                    <div class="column col-md-6">
+                        <label><span class="inputsTitles">Type</span></label>
+                        <input id="type" type="text" name="event[type]" class="inputStyleClone" placeholder="Type" value="<%= event.type%>" disabled>
                     </div>
                 </div>
-                <div class="two fields mb-3">
-                    <div class="field mr-3">
-                        <label>
-                            <span class="inputsTitles">Start</span>
-                            <input id="start" type="text" name="event[start]" placeholder="Start date" value="<%= event.start%>" disabled>
-                        </label>
+
+                <div class="row mb-4">
+                    <div class="column col-md-6">
+                        <label><span class="inputsTitles">Start</span></label>
+                        <input id="start" type="text" name="event[start]" placeholder="Start date" value="<%= event.start%>" disabled>
                     </div>
-                    <div class="field ml-3">
-                        <label>
-                            <span class="inputsTitles">End</span>
-                            <input id="end" type="text" name="event[end]" placeholder="End date" value="<%= event.end%>" disabled>
-                        </label>
+                    <div class="column col-md-6">
+                        <label><span class="inputsTitles">End</span></label>
+                        <input id="end" type="text" name="event[end]" placeholder="End date" value="<%= event.end%>" disabled>
                     </div>
                 </div>
                 
@@ -47,10 +43,82 @@
                     </div>
                 </div>
 
-                <div class="my-4">
-                    <a href="/users/<%= user._id%>/events/<%= event._id%>/edit" id="saveBtn" class="standardBtnStyle">Update</a>
-                    <button id="deleteEventBtn" class="standardBtnStyle">Delete</button>
-                    <a id="goBackBtn" href="/users/<%= user._id%>/events" class="goBackBtn float-right py-3 px-5">Go Back</a>
-                </div>
             </form>
+                
+            <% if(event.planner.id == user.id && event.plannedFor.length > 0){%>
+                <div class="mx-4 mt-3">
+                    <span class="inputsTitles">Planned for</span>
+                    <div id="plannedForContainer" class="mt-1">
+                        <%event.plannedFor.forEach(function(pf){%>
+                            <div class="row">
+                                <div class="column col-11">
+                                    <img class="ui avatar image" src="<%= pf.imageUrl%>">
+                                    <span class="bitraf mt-2"><%= pf.username%></span>
+                                </div>
+                                <div class="column col-1">
+                                    <form action="/users/<%= pf._id%>/events/<%= event._id%>?_method=DELETE" method="POST">
+                                        <input type="hidden" name="deleter" value="<%=user._id%>">
+                                        <button class="contactsIcons float-right" data-inverted="" data-tooltip="Unplan" data-position="top center"><i class="far fa-calendar-times"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        <%});%>
+                    </div>
+                </div>
+            <%}%>
+            <% if(event.planner.id == user.id){%>
+                <form id="rePlanEventFrm" class="ui form m-4" action="/users/<%= user._id%>/events/<%=event._id%>/rePlan" method="post">
+                    
+                        <div class="mb-1">
+                            <span class="inputsTitles pb-0 d-inline">Plan for</span>
+                        </div>
+                        <div class="row">
+                            <div class="column col-12 text-center">
+                                <div id="addToList" class="ui fluid multiple search selection dropdown">
+                                    <input id="addToInput" name="addTo" type="hidden" value="">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Select Users</div>
+                                    <div class="menu">
+                                        <%usersList.forEach(function(at){%>
+                                            <%if(at.id == user.id){%>
+                                                <div class="item" data-value="<%= at._id%>">
+                                                    <img class="ui avatar image" src="<%= at.imageUrl%>">
+                                                    <span class="bitraf mt-2">Self</span>
+                                                </div>
+                                            <%}else{%>
+                                                <div class="item" data-value="<%= at._id%>">
+                                                    <img class="ui avatar image" src="<%= at.imageUrl%>">
+                                                    <span class="bitraf mt-2"><%= at.username%></span>
+                                                </div>
+                                            <%}%>
+                                        <%});%>
+                                    </div>
+                                </div>
+                                <div id="clearAddToBtn" class="ui button mt-2">Clear</div>
+                            </div>
+                        </div>
+                    
+                </form>
+                <div id="receiversSelectionWarning" class="ui red message d-none text-center">
+                    <i class="fas fa-exclamation-triangle mr-2 text-center"></i>
+                    Cant plan a event without selecting users
+                </div>
+            <%}%>
+
+            <div class="m-4">
+                <% if(event.planner.id == user.id){%>
+                    <button id="rePlanEventBtn" type="button" class="standardBtnStyle">Plan</button>
+                    <a href="/users/<%= user._id%>/events/<%= event._id%>/edit" id="saveBtn" class="standardBtnStyle">Update</a>
+                <%}%>
+                <button id="deleteEventBtn" type="button" class="standardBtnStyle">Delete</button>
+                <input
+                    action="action"
+                    onclick="window.history.go(-1); return false;"
+                    type="submit"
+                    value="Go back"
+                    class="goBackBtn float-right py-3 px-5"
+                />
+                <!-- <a id="goBackBtn" href="/users//events/calendar" class="goBackBtn float-right py-3 px-5">Go Back</a> -->
+            </div>
+            
 <%- include('../partials/eventsFooter')%>

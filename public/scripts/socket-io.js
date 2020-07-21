@@ -98,6 +98,14 @@ socket.on('newEventNotification' ,notification => {
     handleNewEventNotification(notification);
 });
 
+socket.on('eventUpdateNotification' ,notification => {
+    handleEventUpdateNotification(notification);
+});
+
+socket.on('eventCancellationNotification' ,notification => {
+    handleEventCancellationNotification(notification);
+});
+
 socket.on('receivedMailsStorageAlmostFullNotification' ,() => {
     handleReceivedMailsStorageAlmostFullNotification();
 });
@@ -634,6 +642,19 @@ function handleNewEventNotification(notification){
     }
 }
 
+function handleEventUpdateNotification(notification){
+    incrementBellNotifsCount();
+    $('#bellNotificationsContent').append(`
+        <a href="${notification.url}"><strong class="bitraf mr-2"><i class="fas fa-exclamation-circle"></i></strong> <strong class="bitraf">${notification.plannerUsername}</strong> has updated <strong class="bitraf">"${notification.eventTitle}"</strong> at <strong class="bitraf">${notification.at}</strong>.</a>
+    `);
+}
+
+function handleEventCancellationNotification(notification){
+    incrementBellNotifsCount();
+    $('#bellNotificationsContent').append(`
+        <a><strong class="bitraf mr-2"><i class="fas fa-exclamation-circle"></i></strong> <strong class="bitraf">${notification.plannerUsername}</strong> has canceled your <strong class="bitraf">"${notification.eventTitle}"</strong> at <strong class="bitraf">${notification.at}</strong>.</a>
+    `);
+}
 
 
 
