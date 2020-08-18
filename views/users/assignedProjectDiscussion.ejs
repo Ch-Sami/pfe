@@ -11,6 +11,7 @@
         </a>
     </div>
     <input type="hidden" id="projectId" value="<%= project._id%>">
+    <input type="hidden" id="projectTitle" value="<%= project.title%>">
     <input type="hidden" id="currentPage" value="projectDiscussion">
     <div id="projectDiscussion" class="discussionContainer scrollDiv px-4">
         <% project.discussion.forEach(function(message){%>

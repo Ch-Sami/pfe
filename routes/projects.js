@@ -44,32 +44,62 @@ const projectFilesStorage = new GridFsStorage({
 
 //init upload
 const projectFilesUpload = multer({
-    storage: projectFilesStorage
+    storage: projectFilesStorage,
+    fileFilter: function(req ,file ,cb){
+    	checkFileType(file ,cb);
+    }
 });
 //upload array of files midware
 const arrUpload = projectFilesUpload.array('files', 12); // 'files' is the name of the input[type="file"] that contains the file
-// multer({
-// 	storage: storage,
-// 	//limits: {fileSize: [size in bytes]},      //sets the max size , if larger than that ,upload func will throw an error.
-// 	fileFilter: function(req ,file ,cb){        //to allow only a certaine type of files/images
-// 		checkFileType(file ,cb);
-// 	}
-// });
 
 
 //check file type
 function checkFileType(file ,cb){;
 	//allowed extentions
-	const filetypes = /txt|webm|mpg|mp2|mpeg|mpe|mpv|ogg|mp4|m4p|m4v|avi|wmv|mov|qt|flv|swf|avchd|tif|tiff|bmp|jpg|jpeg|gif|png|eps|raw|cr2|nef|orf|sr2|flac|m4a|mp3|wav|wma|aac|pptx|ppsx|ppt|pps|pptm|potm|ppa|mpotx|ppsm|doc|dot|docx|dotx|docm|dotm|rtf|wpd|xls|xlsx|xlsm|xlsb|xlt|xltx|xltm|csv|ppt|pptx|pptm|pps|ppsx|ppsm|pot|potx|potm|vsd|vsdx|vsdm|svg|pub|msg|vcf|ics|mpp|odt|odp|ods/;
+	const allowedExtentions = /pdf|txt|tif|tiff|bmp|jpg|jpeg|gif|png|eps|raw|cr2|nef|orf|sr2|webm|mpg|mp2|mpeg|mpe|mpv|ogg|mp4|m4p|m4v|avi|wmv|mov|qt|flv|swf|avchd|flac|mpa|mp3|wav|wma|aac|pptx|ppsx|ppt|pps|pptm|potm|ppa|pot|mpotx|ppsm|potx|potm|doc|dot|docx|dotx|docm|dotm|rtf|xls|xlsx|xlsm|xlsb|xlt|xltx|xltm|xla|xlam|csv|vsd|pub/;
 	//check extention
-	const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-	//check mime type
-	const mimetype = filetypes.test(file.mimetype);
+    const extname = allowedExtentions.test(path.extname(file.originalname).toLowerCase());
+    //allowed mime types
+    //check mime type
+    const allowedMimeTypes = [
+        "application/msword"
+        ,"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ,"application/vnd.openxmlformats-officedocument.wordprocessingml.template"
+        ,"application/vnd.ms-word.document.macroEnabled.12"
+        ,"application/vnd.ms-excel"
+        ,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ,"application/vnd.openxmlformats-officedocument.spreadsheetml.template"
+        ,"application/vnd.ms-excel.sheet.macroEnabled.12"
+        ,"application/vnd.ms-excel.template.macroEnabled.12"
+        ,"application/vnd.ms-excel.addin.macroEnabled.12"
+        ,"application/vnd.ms-excel.sheet.binary.macroEnabled.12"
+        ,"application/vnd.ms-powerpoint"
+        ,"application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        ,"application/vnd.openxmlformats-officedocument.presentationml.template"
+        ,"application/vnd.openxmlformats-officedocument.presentationml.slideshow"
+        ,"application/vnd.ms-powerpoint.addin.macroEnabled.12"
+        ,"application/vnd.ms-powerpoint.presentation.macroEnabled.12"
+        ,"application/vnd.ms-powerpoint.template.macroEnabled.12"
+        ,"application/vnd.ms-powerpoint.slideshow.macroEnabled.12"
+        ,"application/vnd.visio"
+        ,"text/csv"
+        ,"application/pdf"
+        ,"application/zip"
+        ,"application/x-rar-compressed"
+        ,"application/x-7z-compressed"
+    ]
+    var mimetype = false;
+    if(file.mimetype.split("/")[0] == "video" ||file.mimetype.split("/")[0] == "image" || file.mimetype.split("/")[0] == "audio"){
+        mimetype = true;
+    }else{
+        mimetype = (allowedMimeTypes.indexOf(file.mimetype) > -1) ? true : false;
+    }
+
 	//returning
 	if(extname && mimetype){
 		return cb(null ,true);
 	}else{
-		cb('ERROR : file extention not allowed !');
+		cb('ERROR : file not allowed !');
 	}
 }
 
@@ -304,7 +334,7 @@ router.get("/users/:id/projects/assigned/:prjId/detail" ,(req ,res)=>{
     User.findById(req.params.id ,(err ,user)=>{
         if(err){throw err;}
         else{
-            user.getChildren(function(err ,children){
+            User.find({parentId: req.params.id} ,function(err ,children){
                 if(err){throw err;}
                 Project.findById(req.params.prjId ,'-discussion -tree -sentTo -assignedTo -createdBy').populate([{
                     path: 'lastProgressUpdateBy',
@@ -341,7 +371,7 @@ router.get("/users/:id/projects/assigned/:prjId/detail" ,(req ,res)=>{
                         .then(updatedBellNotifications => {
                             User.findByIdAndUpdate(user._id ,{$set:{bellNotifications:updatedBellNotifications}} ,{new: true} ,(err ,user) => {
                                 if(err){throw err;}
-                                res.render("users/assignedProjectDetail" ,{user: user ,children: children ,project: project ,files: files});
+                                res.render("users/assignedProjectDetail" ,{user: user ,children: children ,project: project ,files: files ,projectType: 'assigned'});
                             });
                         });
                     });
@@ -359,7 +389,15 @@ router.get("/users/:id/projects/assigned/:prjId/discussion" ,(req ,res)=>{
         else{
             Project.findById(req.params.prjId ,'-tree -sentTo -assignedTo -createdBy' ,(err ,project)=>{
                 if(err){throw err;}
-                res.render("users/assignedProjectDiscussion" ,{user: user ,project: project});
+                user.bellNotifications.array.forEach(notification =>{
+                    if(notification.notifType == 'projectDiscussion' && notification.projectId == project.id){
+                        user.bellNotifications.count -= notification.count;
+                        user.bellNotifications.array.splice(user.bellNotifications.array.indexOf(notification) ,1);
+                    }
+                });
+                user.save(() => {
+                    res.render("users/assignedProjectDiscussion" ,{user: user ,project: project});
+                });
             });
         }
     });
@@ -496,7 +534,7 @@ router.get("/users/:id/projects/received/:prjId/detail" ,(req ,res)=>{
     User.findById(req.params.id ,(err ,user)=>{
         if(err){throw err;}
         else{
-            user.getChildren(function(err ,children){
+            User.find({parentId: req.params.id} ,function(err ,children){
                 if(err){throw err;}
                 Project.findById(req.params.prjId ,'-discussion -tree -sentTo -assignedTo -createdBy').populate([{
                     path: 'lastProgressUpdateBy',
@@ -534,7 +572,7 @@ router.get("/users/:id/projects/received/:prjId/detail" ,(req ,res)=>{
                         .then(updatedBellNotifications => {
                             User.findByIdAndUpdate(user._id ,{$set:{bellNotifications:updatedBellNotifications}} ,{new: true} ,(err ,user) => {
                                 if(err){throw err;}
-                                res.render("users/receivedProjectDetail" ,{user: user ,children: children ,project: project ,files: files});
+                                res.render("users/receivedProjectDetail" ,{user: user ,children: children ,project: project ,files: files ,projectType: 'received'});
                             });
                         });
                     });
@@ -551,7 +589,15 @@ router.get("/users/:id/projects/received/:prjId/discussion" ,(req ,res)=>{
         else{
             Project.findById(req.params.prjId ,'-tree -sentTo -assignedTo -createdBy' ,(err ,project)=>{
                 if(err){throw err;}
-                res.render("users/receivedProjectDiscussion" ,{user: user ,project: project});
+                user.bellNotifications.array.forEach(notification =>{
+                    if(notification.notifType == 'projectDiscussion' && notification.projectId == project.id){
+                        user.bellNotifications.count -= notification.count;
+                        user.bellNotifications.array.splice(user.bellNotifications.array.indexOf(notification) ,1);
+                    }
+                });
+                user.save(() => {
+                    res.render("users/receivedProjectDiscussion" ,{user: user ,project: project});
+                });
             }); 
         }
     });
@@ -625,8 +671,7 @@ router.get("/users/:id/projects/new" ,(req ,res)=>{
     User.findById(req.params.id).exec((err ,user)=>{
         if(err){throw err;}
         else{
-            user.getChildren(function(err ,children){
-                if(err){throw err;}
+            User.find({parentId: req.params.id} ,function(err ,children){
                 res.render("users/newProject" ,{user: user ,children: children});
             });
         }
@@ -638,7 +683,7 @@ router.get("/users/:id/projects/sent/:prjId/detail" ,(req ,res)=>{
     User.findById(req.params.id ,(err ,user)=>{
         if(err){throw err;}
         else{
-            user.getChildren(function(err ,children){
+            User.find({parentId: req.params.id} ,function(err ,children){
                 if(err){throw err;}
                 Project.findById(req.params.prjId ,'-discussion -tree -sentTo -assignedTo -createdBy').populate([{
                     path: 'lastProgressUpdateBy',
@@ -654,7 +699,7 @@ router.get("/users/:id/projects/sent/:prjId/detail" ,(req ,res)=>{
 
                     populateProjectFiles(project.files)
                     .then(files => {
-                        res.render("users/sentProjectDetail" ,{user: user ,children: children ,project: project ,files: files});
+                        res.render("users/sentProjectDetail" ,{user: user ,children: children ,project: project ,files: files ,projectType: 'sent'});
                     });
                     
                 });
@@ -670,7 +715,16 @@ router.get("/users/:id/projects/sent/:prjId/discussion" ,(req ,res)=>{
         else{
             Project.findById(req.params.prjId ,'-tree -sentTo -assignedTo -createdBy' ,(err ,project)=>{
                 if(err){throw err;}
-                res.render("users/sentProjectDiscussion" ,{user: user ,project: project});
+                if(err){throw err;}
+                user.bellNotifications.array.forEach(notification =>{
+                    if(notification.notifType == 'projectDiscussion' && notification.projectId == project.id){
+                        user.bellNotifications.count -= notification.count;
+                        user.bellNotifications.array.splice(user.bellNotifications.array.indexOf(notification) ,1);
+                    }
+                });
+                user.save(() => {
+                    res.render("users/sentProjectDiscussion" ,{user: user ,project: project});
+                });
             });
         }
     });
@@ -794,7 +848,7 @@ router.put("/users/:id/projects/sent/:prjId" ,arrUpload ,(req ,res)=>{
                     project.files.splice(index ,1);
                 }
                 const fileIdObj = new mongoose.mongo.ObjectId(fileId);
-                gfsProject.remove({_id: fileIdObj ,root: 'projectMails'});
+                gfsProject.remove({_id: fileIdObj ,root: 'projectFiles'});
             });
         }
         
@@ -893,8 +947,6 @@ router.post("/users/:id/projects/:prjId/progress" ,(req ,res)=>{
         const oldProgress = project.progress;
         const newProgress = req.body.updatedProgress;
         project.progress = req.body.updatedProgress;
-        // project.lastProgressUpdateBy = req.body.lastProgressUpdateBy;
-        // project.lastProgressUpdateAt = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
         project.progressHistory.push({
             progressUpdateBy: req.body.lastProgressUpdateBy,
             progressUpdateAt: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
@@ -1130,7 +1182,7 @@ router.post("/users/:id/projects/sent" ,arrUpload ,(req ,res)=>{
 });
 
 //re-sending a sent project
-router.post("/users/:id/projects/sent/:prjId/reSend" ,(req ,res)=>{
+router.post("/users/:id/projects/:prjId/send" ,(req ,res)=>{
     var io = req.app.get('io');
     var assignedTo = [];
     var sentTo = [];

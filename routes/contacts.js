@@ -17,24 +17,70 @@ router.get("/users/:id/contacts" ,(req ,res)=>{
     }).exec((err ,user)=>{
         if(err){throw err;}
         else{
-            var contactsForSearch = user.contacts;
-            var contacts = [];
-            for (i = 0; i < 26; i++) {
-                // console.log((i+10).toString(36));
-                // console.log(String.fromCharCode(97 + i)); //(97 lowerCase) - (65 upperCase)
-                var chrL = String.fromCharCode(97 + i);
-                var chrU = String.fromCharCode(65 + i);
-                var chrArray = [];
-                user.contacts.forEach(function(contact){
-                    if(contact.username[0] == chrL || contact.username[0] == chrU){
-                        chrArray.push(contact);
-                    }
-                });
-                contacts.push(chrArray.sort());
-            }
-            User.find({} ,'-children -events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit' ,(err ,usersList)=>{
+            user.getChildren((err ,descendants) => {
                 if(err){throw err;}
-                res.render("users/contacts" ,{user: user ,contacts: contacts ,usersList: JSON.stringify(usersList) ,contactsForSearch: JSON.stringify(contactsForSearch)});
+                var contactsForSearch = [];
+                user.contacts.forEach(elt => {
+                    var cfs = {
+                        _id: elt._id,
+                        username: elt.username,
+                        imageUrl: elt.imageUrl,
+                        isDescendant: false
+                    }
+                    descendants.forEach(descendant => {
+                        if(elt.id == descendant.id){
+                            cfs.isDescendant = true;
+                        }
+                    });
+                    contactsForSearch.push(cfs);
+                });
+
+                var contacts = [];
+                for (i = 0; i < 26; i++) {
+                    // console.log((i+10).toString(36));
+                    // console.log(String.fromCharCode(97 + i)); //(97 lowerCase) - (65 upperCase)
+                    var chrL = String.fromCharCode(97 + i);
+                    var chrU = String.fromCharCode(65 + i);
+                    var chrArray = [];
+                    user.contacts.forEach(function(contact){
+                        var cnt = {
+                            _id: contact._id,
+                            username: contact.username,
+                            imageUrl: contact.imageUrl,
+                            isDescendant: false
+                        }
+                        if(contact.username[0] == chrL || contact.username[0] == chrU){
+                            descendants.forEach(descendant => {
+                                if(contact.id == descendant.id){
+                                    cnt.isDescendant = true;
+                                }
+                            });
+                            chrArray.push(cnt);
+                        }
+                    });
+                    contacts.push(chrArray.sort());
+                }
+                User.find({} ,'-children -events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit' ,(err ,usersList)=>{
+                    if(err){throw err;}
+                    var usersList2 = [];
+                    usersList.forEach(elt => {
+                        var usr = {
+                            _id: elt._id,
+                            username: elt.username,
+                            imageUrl: elt.imageUrl,
+                            isDescendant: false
+                        }
+                        descendants.forEach(descendant => {
+                            if(elt.id == descendant.id){
+                                usr.isDescendant = true;
+                            }
+                        });
+                        usersList2.push(usr);
+                    });
+                    
+                    
+                    res.render("users/contacts" ,{user: user ,contacts: contacts ,usersList: JSON.stringify(usersList2) ,contactsForSearch: JSON.stringify(contactsForSearch)});
+                });
             });
         }
     });

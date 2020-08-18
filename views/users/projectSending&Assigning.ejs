@@ -1,0 +1,55 @@
+<form id="sendProjectFrm" action="/users/<%= user.id%>/projects/<%= project._id%>/send" method="post">
+    <div class="container my-4 p-3 py-5">
+        <div class="row d-flex justify-content-center">
+
+            <%if(children.length > 0){%>
+                <div class="column col-sm-6 text-center">
+                    <span class="inputsTitles d-block my-1">Send To</span>
+                    <div id="sendToList" class="ui multiple selection dropdown mt-2 mb-1 d-block">
+                        <input id="sentToInput" name="sentTo" type="hidden">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Send To</div>
+                        <div class="menu">
+                            <%children.forEach(function(child){%>
+                                <div class="item" data-value="<%= child._id%>">
+                                    <img class="ui avatar image" src="<%= child.imageUrl%>">
+                                    <span class="bitraf"><%= child.username%></span>
+                                </div>
+                            <%});%>
+                        </div>
+                    </div>
+                    <div id="clearSendToBtn" class="ui button my-2">Clear Filters</div>
+                </div>
+            <%}%>
+            
+            <%if(children.length > 0 || projectType == 'received'){%>
+                <div class="column col-sm-6 text-center">
+                    <span class="inputsTitles d-block my-1">Assign To</span>
+                    <div id="assignToList" class="ui multiple selection dropdown mt-2 mb-1 d-block">
+                        <input id="assignedToInput" name="assignedTo" type="hidden">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Assign To</div>
+                        <div class="menu">
+                            <%if(projectType == 'received'){%>
+                                <div class="item" data-value="<%= user._id%>">
+                                    <img class="ui avatar image" src="<%= user.imageUrl%>">
+                                    <span class="bitraf">Self</span>
+                                </div>
+                            <%}%>
+                            <%if(children.length > 0){%>
+                                <%children.forEach(function(child){%>
+                                    <div class="item" data-value="<%= child._id%>">
+                                        <img class="ui avatar image" src="<%= child.imageUrl%>">
+                                        <span class="bitraf"><%= child.username%></span>
+                                    </div>
+                                <%});%>  
+                            <%}%>
+                        </div>
+                    </div>
+                    <div id="clearAssignToBtn" class="ui button my-2">Clear Filters</div>
+                </div>
+            <%}%>
+        </div>
+    </div>
+            
+</form>

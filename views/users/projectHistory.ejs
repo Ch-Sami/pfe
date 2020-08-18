@@ -1,0 +1,63 @@
+<!-- History -->
+<div class="d-flex justify-content-end">
+    <div id="projectHistory" class=" mr-3 ui top right pointing dropdown link item">
+        <span id="projectHistoryHeader">
+          <i class="fas fa-history"></i> History
+        </span>
+        <i class="dropdown icon"></i>
+        <div id="projectHistoryMenu" class="menu">
+          <% project.history.forEach(function(elt){%>
+              <div class="item">
+                <div class="row">
+                    <%if(elt.action == 'create'){%>
+                        <div class="column col-2 d-flex align-items-center">
+                            <span style="white-space:pre;">created by     : </span>
+                        </div>
+                        <div class="column col-6 d-flex align-items-center">
+                            <img class="ui avatar image mr-2 pr-0" src="<%= elt.actor.imageUrl%>">
+                            <span class="bitraf ml-0 pl-0 mr-5"><%= elt.actor.username%></span>
+                        </div> 
+                    <%}else if(elt.action == 'update'){%>
+                        <div class="column col-2 d-flex align-items-center">
+                            <span style="white-space:pre;">updated by     : </span>
+                        </div>
+                        <div class="column col-6 d-flex align-items-center">
+                            <img class="ui avatar image mr-2 pr-0" src="<%= elt.actor.imageUrl%>">
+                            <span class="bitraf ml-0 pl-0 mr-5"><%= elt.actor.username%></span>
+                        </div> 
+                    <%}else if(elt.action == 'unassign'){%>
+                        <div class="column col-2 d-flex align-items-center">
+                            <span style="white-space:pre;">unAssigned to : </span>
+                        </div>
+                        <div class="column col-6 d-flex align-items-center">
+                            <img class="ui avatar image mr-2 pr-0" src="<%= elt.actor.imageUrl%>">
+                            <span class="bitraf ml-0 pl-0 mr-5"><%= elt.actor.username%></span>
+                        </div> 
+                    <%}else{%>
+                        <div class="column col-2 d-flex align-items-center">
+                            <%if(elt.action == 'send'){%>
+                                <span style="white-space:pre;">sent to    : </span>
+                            <%}else if(elt.action == 'assign'){%>
+                                <span style="white-space:pre;">assigned to : </span>
+                            <%}%>
+                        </div>
+                        <div class="column col-3 d-flex align-items-center">
+                            <img class="ui avatar image mr-0 pr-0" src="<%= elt.receiver.imageUrl%>">
+                            <span class="bitraf ml-0 pl-0 mr-5"><%= elt.receiver.username%></span>
+                        </div>
+                        <div class="column col-3 d-flex align-items-center">
+                            <span>By:</span>
+                            <img class="ui avatar image mr-0 pr-0" src="<%= elt.actor.imageUrl%>">
+                            <span class="bitraf ml-0 pl-0 mr-5"><%= elt.actor.username%></span>
+                        </div>
+                    <%}%>
+                    <div class="column col-4 d-flex align-items-center">
+                        <span>at :</span>
+                        <span class="bitraf mr-5"> <%= elt.at%></span>
+                    </div>
+                </div>
+              </div>
+          <%});%>
+        </div>
+      </div>
+</div>

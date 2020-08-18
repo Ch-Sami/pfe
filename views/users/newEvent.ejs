@@ -66,17 +66,10 @@
                         <div class="default text">Select Users</div>
                         <div class="menu">
                             <%usersList.forEach(function(at){%>
-                                <%if(at.id == user.id){%>
-                                    <div class="item" data-value="<%= at._id%>">
-                                        <img class="ui avatar image" src="<%= at.imageUrl%>">
-                                        <span class="bitraf mt-2">Self</span>
-                                    </div>
-                                <%}else{%>
-                                    <div class="item" data-value="<%= at._id%>">
-                                        <img class="ui avatar image" src="<%= at.imageUrl%>">
-                                        <span class="bitraf mt-2"><%= at.username%></span>
-                                    </div>
-                                <%}%>
+                                <div class="item" data-value="<%= at._id%>">
+                                    <img class="ui avatar image" src="<%= at.imageUrl%>">
+                                    <span class="bitraf mt-2"><%= at.username%></span>
+                                </div>
                             <%});%>
                         </div>
                     </div>

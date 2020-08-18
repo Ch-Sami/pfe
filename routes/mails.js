@@ -43,32 +43,62 @@ const mailFilesStorage = new GridFsStorage({
 
 //init upload
 const mailFilesUpload = multer({
-    storage: mailFilesStorage
+    storage: mailFilesStorage,
+    fileFilter: function(req ,file ,cb){
+    	checkFileType(file ,cb);
+    }
 });
 //upload array of files midware
 const arrUpload = mailFilesUpload.array('files', 12); // 'files' is the name of the input[type="file"] that contains the file
-// multer({
-// 	storage: storage,
-// 	//limits: {fileSize: [size in bytes]},      //sets the max size , if larger than that ,upload func will throw an error.
-// 	fileFilter: function(req ,file ,cb){        //to allow only a certaine type of files/images
-// 		checkFileType(file ,cb);
-// 	}
-// });
 
 
 //check file type
 function checkFileType(file ,cb){;
 	//allowed extentions
-	const filetypes = /txt|webm|mpg|mp2|mpeg|mpe|mpv|ogg|mp4|m4p|m4v|avi|wmv|mov|qt|flv|swf|avchd|tif|tiff|bmp|jpg|jpeg|gif|png|eps|raw|cr2|nef|orf|sr2|flac|m4a|mp3|wav|wma|aac|pptx|ppsx|ppt|pps|pptm|potm|ppa|mpotx|ppsm|doc|dot|docx|dotx|docm|dotm|rtf|wpd|xls|xlsx|xlsm|xlsb|xlt|xltx|xltm|csv|ppt|pptx|pptm|pps|ppsx|ppsm|pot|potx|potm|vsd|vsdx|vsdm|svg|pub|msg|vcf|ics|mpp|odt|odp|ods/;
+	const allowedExtentions = /pdf|txt|tif|tiff|bmp|jpg|jpeg|gif|png|eps|raw|cr2|nef|orf|sr2|webm|mpg|mp2|mpeg|mpe|mpv|ogg|mp4|m4p|m4v|avi|wmv|mov|qt|flv|swf|avchd|flac|mpa|mp3|wav|wma|aac|pptx|ppsx|ppt|pps|pptm|potm|ppa|pot|mpotx|ppsm|potx|potm|doc|dot|docx|dotx|docm|dotm|rtf|xls|xlsx|xlsm|xlsb|xlt|xltx|xltm|xla|xlam|csv|vsd|pub/;
 	//check extention
-	const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-	//check mime type
-	const mimetype = filetypes.test(file.mimetype);
+    const extname = allowedExtentions.test(path.extname(file.originalname).toLowerCase());
+    //allowed mime types
+    //check mime type
+    const allowedMimeTypes = [
+        "application/msword"
+        ,"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ,"application/vnd.openxmlformats-officedocument.wordprocessingml.template"
+        ,"application/vnd.ms-word.document.macroEnabled.12"
+        ,"application/vnd.ms-excel"
+        ,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ,"application/vnd.openxmlformats-officedocument.spreadsheetml.template"
+        ,"application/vnd.ms-excel.sheet.macroEnabled.12"
+        ,"application/vnd.ms-excel.template.macroEnabled.12"
+        ,"application/vnd.ms-excel.addin.macroEnabled.12"
+        ,"application/vnd.ms-excel.sheet.binary.macroEnabled.12"
+        ,"application/vnd.ms-powerpoint"
+        ,"application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        ,"application/vnd.openxmlformats-officedocument.presentationml.template"
+        ,"application/vnd.openxmlformats-officedocument.presentationml.slideshow"
+        ,"application/vnd.ms-powerpoint.addin.macroEnabled.12"
+        ,"application/vnd.ms-powerpoint.presentation.macroEnabled.12"
+        ,"application/vnd.ms-powerpoint.template.macroEnabled.12"
+        ,"application/vnd.ms-powerpoint.slideshow.macroEnabled.12"
+        ,"application/vnd.visio"
+        ,"text/csv"
+        ,"application/pdf"
+        ,"application/zip"
+        ,"application/x-rar-compressed"
+        ,"application/x-7z-compressed"
+    ]
+    var mimetype = false;
+    if(file.mimetype.split("/")[0] == "video" ||file.mimetype.split("/")[0] == "image" || file.mimetype.split("/")[0] == "audio"){
+        mimetype = true;
+    }else{
+        mimetype = (allowedMimeTypes.indexOf(file.mimetype) > -1) ? true : false;
+    }
+
 	//returning
 	if(extname && mimetype){
 		return cb(null ,true);
 	}else{
-		cb('ERROR : file extention not allowed !');
+		cb('ERROR : file not allowed !');
 	}
 }
 
@@ -319,9 +349,9 @@ const txtExt = /txt/;
 const imageExt = /tif|tiff|bmp|jpg|jpeg|gif|png|eps|raw|cr2|nef|orf|sr2/;
 const videoExt = /webm|mpg|mp2|mpeg|mpe|mpv|ogg|mp4|m4p|m4v|avi|wmv|mov|qt|flv|swf|avchd/;
 const audioExt = /flac|mpa|mp3|wav|wma|aac/;
-const powerPointExt = /pptx|ppsx|ppt|pps|pptm|potm|ppa|mpotx|ppsm|odp/;
-const wordExt = /doc|dot|docx|dotx|docm|dotm|rtf|wpd|odt/;
-const excelExt = /xls|xlsx|xlsm|xlsb|xlt|xltx|xltm|csv|ods/;
+const powerPointExt = /pptx|ppsx|ppt|pps|pptm|potm|ppa|mpotx|ppsm|pot|ppa/;
+const wordExt = /doc|dot|docx|dotx|docm|dotm|/;
+const excelExt = /xls|xlsx|xlsm|xlsb|xlt|xltx|xltm|xla|xlam/;
 const visioExt = /vsd|vsdx|vsdm|svg/;
 const publisherExt = /pub/;
 //get file and determine its extention
@@ -1083,7 +1113,10 @@ router.post("/users/:id/mails/received/:mailId/replies" ,arrUpload ,(req ,res)=>
                     sender.mailNotifications.array.push(notification);
                 }
                 sender.save(()=>{
-                    Mail.findById(req.params.mailId ,(err ,parentMail)=>{
+                    Mail.findById(req.params.mailId).populate({
+                        path: 'sent_by',
+                        select: '-children -events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts'
+                    }).exec((err ,parentMail)=>{
                         if(err){throw err;}
                         //
                         const newMailReplyInfos ={
@@ -1092,7 +1125,7 @@ router.post("/users/:id/mails/received/:mailId/replies" ,arrUpload ,(req ,res)=>
                             replyTitle: mail.title,
                             parentMail: req.params.mailId,
                             parentMailTitle: parentMail.title,
-                            parentMailSender: parentMail.sent_by,
+                            parentMailSender: parentMail.sent_by.id,
                             senderId: sender._id,
                             senderUsername: sender.username,
                             senderImage: sender.imageUrl,

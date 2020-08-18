@@ -172,6 +172,8 @@ for(let i = 0 ; i < $('#filesArrayLength').val() ; i++){
 $('#updateSentProjectFrm').submit(function(){
   editor.save().then((savedData) => {
     $('#projectDoc').text(JSON.stringify(savedData));
+    $('.file-chooser__input').attr('name','');
+    $('.file-chooser__input').remove();
+    return true;
   });
-  return true;
 });

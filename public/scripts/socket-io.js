@@ -25,6 +25,7 @@ socket.emit('joinRoom' ,{room: userId});
 socket.on('privateMessage' ,privateMessage => {
     if($('#currentPage').val() == 'chatPage' && $('#contactId').val() == privateMessage.sender){
         appendNewReceivedPrivateMessage(privateMessage);
+        deleteNewReceivedPrivateMessageNotification(privateMessage);
         scrollDown();
     }else{
         handleNewReceivedPrivateMessageNotification(privateMessage);
@@ -35,9 +36,10 @@ socket.on('privateMessage' ,privateMessage => {
 socket.on('projectDiscussionMessage' ,projectDiscussionMessage => {
     if($('#currentPage').val() == 'projectDiscussion'){
         appendNewProjectDiscussionMessage(projectDiscussionMessage);
+        deleteNewProjectDiscussionMessageNotification(projectDiscussionMessage);
         scrollDown();
     }else{
-        //handle notification
+        handleNewProjectDiscussionMessageNotification(projectDiscussionMessage);
     }
 });
 
@@ -45,6 +47,7 @@ socket.on('projectDiscussionMessage' ,projectDiscussionMessage => {
 socket.on('newMail' ,newMailInfos =>{
     if($('#currentPage').val() == 'receivedMailsPage'){
         appendNewMail(newMailInfos);
+        deleteNewMailNotification(newMailInfos);
         calculateNewStoragePer(newMailInfos.mailSize);
     }else{
         handleNewMailNotification(newMailInfos);
@@ -55,6 +58,7 @@ socket.on('newMail' ,newMailInfos =>{
 socket.on('newReply' ,newMailReplyInfos =>{
     if($('#currentPage').val() == 'repliesPage'){
         appendNewMailReply(newMailReplyInfos);
+        deleteNewMailReplyNotification(newMailReplyInfos);
     }else if($('#currentPage').val() == 'sentMailsPage' && userId == newMailReplyInfos.parentMailSender){
         appendReplyInSentMailRepliesMenu(newMailReplyInfos);
     }else{
@@ -73,6 +77,7 @@ socket.on('mailRead' ,readerId =>{
 socket.on('newReceivedProject' ,newReceivedProject =>{
     if($('#currentPage').val() == 'receivedProjectsPage'){
         appendNewReceivedProject(newReceivedProject);
+        deleteNewReceivedProjectNotification(newReceivedProject);
     }else{
         handleNewReceivedProjectNotification(newReceivedProject);
     }
@@ -81,6 +86,7 @@ socket.on('newReceivedProject' ,newReceivedProject =>{
 socket.on('newAssignedProject' ,newAssignedProject =>{
     if($('#currentPage').val() == 'assignedProjectsPage'){
         appendNewAssignedProject(newAssignedProject);
+        deleteNewAssignedProjectNotification(newAssignedProject);
     }else{
         handleNewAssignedProjectNotification(newAssignedProject);
     }
@@ -187,7 +193,8 @@ $('#sendProjectDiscussionMessageBtn').on('click' ,function(e){
             userImage: userImg,
             text: $('#projectDiscussionMessageText').val(),
             at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-            projectId: $('#projectId').val()
+            projectId: $('#projectId').val(),
+            projectTitle: $('#projectTitle').val()
         }
         socket.emit('projectDiscussionMessage' ,projectDiscussionMessage);
         $('#projectDiscussion').append(`
@@ -605,6 +612,22 @@ function handleNewAssignedProjectNotification(newAssignedProject){
     }
 }
 
+function handleNewProjectDiscussionMessageNotification(projectDiscussionMessage){
+    incrementBellNotifsCount();
+    const count = $('[discussionOf='+projectDiscussionMessage.projectId+']');
+    if(count.length == 0){
+        $('#bellNotificationsContent').append(`
+            <a href="/users/${userId}/projects/${projectDiscussionMessage.projectType}/${projectDiscussionMessage.projectId}/discussion"><strong class="bitraf mr-2"><i class="far fa-comments"></i></strong> <strong class="bitraf" discussionOf="${projectDiscussionMessage.projectId}">1</strong> new message in <strong class="bitraf">${projectDiscussionMessage.projectTitle}</strong>'s group discussion.</a>
+        `);
+    }else{
+        newNumber = Number(count.text()) + 1;
+        count.parent().remove();
+        $('#bellNotificationsContent').append(`
+            <a href="/users/${userId}/projects/${projectDiscussionMessage.projectType}/${projectDiscussionMessage.projectId}/discussion"><strong class="bitraf mr-2"><i class="far fa-comments"></i></strong> <strong class="bitraf" discussionOf="${projectDiscussionMessage.projectId}">${newNumber}</strong> new messages in <strong class="bitraf">${projectDiscussionMessage.projectTitle}</strong>'s group discussion.</a>
+        `);
+    }
+}
+
 function handleProjectUpdateNotification(notification){
     incrementBellNotifsCount();
     if(notification.projectType == 'assigned'){
@@ -656,19 +679,31 @@ function handleEventCancellationNotification(notification){
     `);
 }
 
+function deleteNewReceivedPrivateMessageNotification(privateMessage){
+    socket.emit('deleteNewReceivedPrivateMessageNotification' ,privateMessage);
+}
 
+function deleteNewMailNotification(newMailInfos){
+    newMailInfos.receiver = userId;
+    socket.emit('deleteNewMailNotification' ,newMailInfos);
+}
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//presence & remplacant
-//
-//
-//
-//
+function deleteNewMailReplyNotification(newMailReplyInfos){
+    newMailReplyInfos.receiver = userId;
+    socket.emit('deleteNewMailReplyNotification' ,newMailReplyInfos);
+}
+
+function deleteNewReceivedProjectNotification(newReceivedProject){
+    newReceivedProject.receiver = userId;
+    socket.emit('deleteNewReceivedProjectNotification' ,newReceivedProject);
+}
+
+function deleteNewAssignedProjectNotification(newAssignedProject){
+    newAssignedProject.receiver = userId;
+    socket.emit('deleteNewAssignedProjectNotification' ,newAssignedProject);
+}
+
+function deleteNewProjectDiscussionMessageNotification(projectDiscussionMessage){
+    projectDiscussionMessage.receiver = userId;
+    socket.emit('deleteNewProjectDiscussionMessageNotification' ,projectDiscussionMessage);
+}

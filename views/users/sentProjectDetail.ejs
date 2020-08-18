@@ -13,284 +13,39 @@
     <div class="container py-4">
 
         <!-- History -->
-        <div class="d-flex justify-content-end">
-            <div id="projectHistory" class=" mr-3 ui top right pointing dropdown link item">
-                <span id="projectHistoryHeader">
-                  <i class="fas fa-history"></i> History
-                </span>
-                <i class="dropdown icon"></i>
-                <div id="projectHistoryMenu" class="menu">
-                  <% project.history.forEach(function(elt){%>
-                      <div class="item">
-                        <div class="row">
-                            <%if(elt.action == 'create'){%>
-                                <div class="column col-2 d-flex align-items-center">
-                                    <span style="white-space:pre;">created by     : </span>
-                                </div>
-                                <div class="column col-6 d-flex align-items-center">
-                                    <img class="ui avatar image mr-2 pr-0" src="<%= elt.actor.imageUrl%>">
-                                    <span class="bitraf ml-0 pl-0 mr-5"><%= elt.actor.username%></span>
-                                </div> 
-                            <%}else if(elt.action == 'update'){%>
-                                <div class="column col-2 d-flex align-items-center">
-                                    <span style="white-space:pre;">updated by     : </span>
-                                </div>
-                                <div class="column col-6 d-flex align-items-center">
-                                    <img class="ui avatar image mr-2 pr-0" src="<%= elt.actor.imageUrl%>">
-                                    <span class="bitraf ml-0 pl-0 mr-5"><%= elt.actor.username%></span>
-                                </div> 
-                            <%}else if(elt.action == 'unassign'){%>
-                                <div class="column col-2 d-flex align-items-center">
-                                    <span style="white-space:pre;">unAssigned to : </span>
-                                </div>
-                                <div class="column col-6 d-flex align-items-center">
-                                    <img class="ui avatar image mr-2 pr-0" src="<%= elt.actor.imageUrl%>">
-                                    <span class="bitraf ml-0 pl-0 mr-5"><%= elt.actor.username%></span>
-                                </div> 
-                            <%}else{%>
-                                <div class="column col-2 d-flex align-items-center">
-                                    <%if(elt.action == 'send'){%>
-                                        <span style="white-space:pre;">sent to    : </span>
-                                    <%}else if(elt.action == 'assign'){%>
-                                        <span style="white-space:pre;">assigned to : </span>
-                                    <%}%>
-                                </div>
-                                <div class="column col-3 d-flex align-items-center">
-                                    <img class="ui avatar image mr-0 pr-0" src="<%= elt.receiver.imageUrl%>">
-                                    <span class="bitraf ml-0 pl-0 mr-5"><%= elt.receiver.username%></span>
-                                </div>
-                                <div class="column col-3 d-flex align-items-center">
-                                    <span>By:</span>
-                                    <img class="ui avatar image mr-0 pr-0" src="<%= elt.actor.imageUrl%>">
-                                    <span class="bitraf ml-0 pl-0 mr-5"><%= elt.actor.username%></span>
-                                </div>
-                            <%}%>
-                            <div class="column col-4 d-flex align-items-center">
-                                <span>at :</span>
-                                <span class="bitraf mr-5"> <%= elt.at%></span>
-                            </div>
-                        </div>
-                      </div>
-                  <%});%>
-                </div>
-              </div>
+        <%- include('./projectHistory')%>
+
+        <!-- project details -->
+        <%- include('./projectDetails')%>
+
+        <!-- project progress -->
+        <%- include('./projectProgress')%>
+            
+        <!-- project files -->
+        <%- include('./projectFiles')%>
+
+        <!-- project text -->
+        <%- include('./projectText')%>
+
+        <!-- project sending & assigning -->
+        <%- include('./projectSending&Assigning')%>
+        
+        <!-- warning message -->
+        <div id="receiversSelectionWarning" class="ui red message text-center d-none">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            Cant send a project without selecting the receivers
         </div>
 
-        
-            <div class="row">
-                <div class="column col-12 col-sm-6 mb-3">
-                    <label for="projectTitle"><span class="inputsTitles">Title</span></label>
-                    <input id="projectTitle" class="inputStyleClone" type="text" name="project[title]" placeholder="Title" value="<%= project.title%>" disabled>
-                </div>
-                <div class="column col-12 col-sm-6 mb-3">
-                    <label for="projectType"><span class="inputsTitles">Type</span></label>
-                    <input id="projectType" class="inputStyleClone" type="text" name="project[type]" value="project" disabled>
-                </div>
+        <div class="my-2 d-flex justify-content-between">
+            <div>
+                <%if(children.length > 0){%>
+                    <button id="sendProjectBtn" class="standardBtnStyle">Re-Send Project</button>
+                <%}%>
+                <a href="/users/<%= user.id%>/projects/sent/<%= project._id%>/edit" class="standardBtnStyle">Update</a>
+                <button type="button" id="deleteProjectBtn" class="standardBtnStyle">Delete</button>
             </div>
-            <div class="row">
-                <div class="column col-12 col-sm-6 mb-3">
-                    <label for="startDate"><span id="start" class="inputsTitles">Start</span></label>
-                    <input id="startDate" class="inputStyleClone" type="text" name="project[start]" placeholder="Start date" value="<%= project.start%>" disabled/>
-                </div>
-                <div class="column col-12 col-sm-6 mb-3">
-                    <label for="endDate"><span class="inputsTitles">End</span></label>
-                    <input id="endDate" class="inputStyleClone" type="text" name="project[end]" placeholder="End date" value="<%= project.end%>" disabled/>
-                </div>
-            </div>
-
-            <div id="progressContainer" class="my-5">
-                <label for="progress">
-                    <span class="inputsTitles">Progress</span>
-                    <%if(project.progressHistory.length > 0){%>
-                        <div id="progressHistoryDropdown" class="ui left pointing dropdown link item">
-                            <span id="progressUpdateInfo">
-                                <i id="progressUpdateInfoIcon" class="fas fa-exclamation"></i>
-                            </span>
-                            <div id="progressHistoryMenu" class="menu">
-                              <% project.progressHistory.forEach(function(elt){%>
-                                <div class="item" style="width: 430px;">
-                                    <div class="row">
-                                        <div class="column col-3">
-                                            <span><strong class="bitraf" style="font-size: 1.1em;"><%=elt.oldProgress%></strong><i class="fas fa-percent" style="font-size: 0.8em;"></i> <i class="fas fa-long-arrow-alt-right mx-1"></i> <strong class="bitraf" style="font-size: 1.1em;"><%=elt.newProgress%></strong><i class="fas fa-percent" style="font-size: 0.8em;"></i></span>
-                                        </div>
-                                        <div class="column col-4">
-                                            <span>by : </span><span class="bitraf"><%=elt.progressUpdateBy%></span>
-                                        </div>
-                                        <div class="column col-5">
-                                            <span>at : </span><span class="bitraf"><%= elt.progressUpdateAt%></span>
-                                        </div>    
-                                    </div>
-                                </div>
-                                <%});%>
-                            </div>
-                        </div>
-                    <%}%>
-                </label>
-                <div class="ui indicating progress" id="progress" >
-                    <div class="bar"></div>
-                </div>
-                <div class="d-flex justify-content-center">
-                    <div class="ui input d-none">
-                        <input  id="projectProgress" type="text" name="project[progress]"  value="<%= project.progress%>">
-                    </div>  
-                </div>
-            </div>
-            
-            <!-- project files -->
-            <%if(files.length > 0){%>
-                <div class="mb-4">
-                    <label for="filesContainer"><span class="inputsTitles">Files</span></label>
-                    <div id="filesContainer">
-                        <%files.forEach(function(file){%>
-                            <div class="row">
-                                <div class="column col-10">
-                                    <%if(file.fileType == 'pdf'){%>
-                                        <i class="far fa-file-pdf  fileIcone"></i>
-                                        <!-- <img class="ui mini right spaced image" src=""> -->
-                                    <%}else if(file.fileType == 'text'){%>
-                                        <i class="far fa-file-alt  fileIcone"></i>
-                                        <!-- <img class="ui mini right spaced image" src="/public/icons/text.PNG"> -->
-                                    <%}else if(file.fileType == 'image'){%>
-                                        <!-- <i class="far fa-file-image  fileIcone"></i> -->
-                                        <img class="ui mini right spaced image" src="/projects/<%=project._id%>/files/<%=file._id%>">
-                                    <%}else if(file.fileType == 'video'){%>
-                                        <i class="far fa-file-video  fileIcone"></i>
-                                        <!-- <img class="ui mini right spaced image" src="/public/icons/video.PNG"> -->
-                                    <%}else if(file.fileType == 'audio'){%>
-                                        <i class="far fa-file-audio  fileIcone"></i>
-                                        <!-- <img class="ui mini right spaced image" src="/public/icons/audio.PNG"> -->
-                                    <%}else if(file.fileType == 'word'){%>
-                                        <i class="far fa-file-word  fileIcone"></i>
-                                        <!-- <img class="ui mini right spaced image" src="/public/icons/word.PNG"> -->
-                                    <%}else if(file.fileType == 'excel'){%>
-                                        <i class="far fa-file-excel  fileIcone"></i>
-                                        <!-- <img class="ui mini right spaced image" src="/public/icons/excel.PNG"> -->
-                                    <%}else if(file.fileType == 'powerPoint'){%>
-                                        <i class="far fa-file-pdf  fileIcone"></i>
-                                        <!-- <img class="ui mini right spaced image" src="/public/icons/powerPoint.PNG"> -->
-                                    <%}else if(file.fileType == 'visio'){%>
-                                        <i class="far fa-file  fileIcone"></i>
-                                        <!-- <img class="ui mini right spaced image" src="/public/icons/visio.PNG"> -->
-                                    <%}else if(file.fileType == 'publisher'){%>
-                                        <i class="far fa-file  fileIcone"></i>
-                                        <!-- <img class="ui mini right spaced image" src="/public/icons/publisher.PNG"> -->
-                                    <%}else if(file.fileType == 'other'){%>
-                                        <i class="far fa-file  fileIcone"></i>
-                                        <!-- <img class="ui mini right spaced image" src="/public/icons/other.PNG"> -->
-                                    <%}%>
-                                    <span><%= file.filename%></span>
-                                </div>
-                                <div class="column col-1 d-flex align-items-center justify-content-end p-0">
-                                    <%if(file.fileType == 'pdf' || file.fileType == 'text' || file.fileType == 'image'){%>
-                                        <a class="filesOptionsIcons" href="/projects/<%=project._id%>/files/<%=file._id%>" data-inverted="" data-tooltip="Preview" data-position="top center" class="float-right">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    <%}else if(file.fileType == 'video'){%>
-                                        <form action="/projects/<%=project._id%>/files/videos/<%=file._id%>/play" method="GET" class="float-right">
-                                            <input type="hidden" name="videoName" value="<%=file.filename%>">
-                                            <button class="filesOptionsIcons" data-inverted="" data-tooltip="play" data-position="top center">
-                                                <i class="fas fa-play"></i>
-                                            </button>
-                                        </form>
-                                    <%}else if(file.fileType == 'audio'){%>
-                                        <form action="/projects/<%=project._id%>/files/audios/<%=file._id%>/play" method="GET" class="float-right">
-                                            <input type="hidden" name="audioName" value="<%=file.filename%>">
-                                            <button class="filesOptionsIcons" data-inverted="" data-tooltip="play" data-position="top center">
-                                                <i class="fas fa-play"></i>
-                                            </button>
-                                        </form>
-                                    <%}%>
-                                </div>
-                                <div class="column col-1 d-flex align-items-center justify-content-center pr-0">
-                                    <a class="filesOptionsIcons" href="/projects/<%=project._id%>/files/<%=file._id%>" data-inverted="" data-tooltip="Download" data-position="top center" download>
-                                        <i class="fas fa-download"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        <%});%>
-                    </div>
-                </div>
-            <%}%>
-
-
-            <!-- text -->
-            <div class="field my-1 d-none">
-                <textarea id="projectDoc" name="project[detail]"> <%= project.detail%> </textarea>
-            </div>
-
-            <label for="editorHugeContainer"><span class="inputsTitles">Documentation</span></label>
-            <div id="editorHugeContainer" class="ce-example">
-                <div class="ce-example__content _ce-example__content--small">
-                    <div id="showProjectEditorjs" class="editorjs"></div>
-                </div>
-            </div>
-
-
-        <form id="resendProjectFrm" action="/users/<%= user.id%>/projects/sent/<%= project._id%>/reSend" method="post">
-            <!-- send options -->
-            <%if(children.length > 0){%>
-                <div class="container my-4 p-3 py-5">
-                    <div class="row">
-                        <div class="column col-sm-6 text-center">
-                            <span class="inputsTitles d-block my-1">Send To</span>
-    
-                            <div id="sendToList" class="ui multiple selection dropdown mt-2 mb-1 d-block">
-                                <input id="sentToInput" name="sentTo" type="hidden">
-                                <i class="dropdown icon"></i>
-                                <div class="default text">Send To</div>
-                                <div class="menu">
-                                    <%children.forEach(function(child){%>
-                                        <div class="item" data-value="<%= child._id%>">
-                                            <img class="ui avatar image" src="<%= child.imageUrl%>">
-                                            <span class="bitraf"><%= child.username%></span>
-                                        </div>
-                                    <%});%>
-                                </div>
-                            </div>
-                            <div id="clearSendToBtn" class="ui button my-2">Clear Filters</div>
-    
-                        </div>
-                        <div class="column col-sm-6 text-center">
-                            <span class="inputsTitles d-block my-1">Assign To</span>
-    
-                            <div id="assignToList" class="ui multiple selection dropdown mt-2 mb-1 d-block">
-                                <input id="assignedToInput" name="assignedTo" type="hidden">
-                                <i class="dropdown icon"></i>
-                                <div class="default text">Assign To</div>
-                                <div class="menu">
-                                    <%children.forEach(function(child){%>
-                                        <div class="item" data-value="<%= child._id%>">
-                                            <img class="ui avatar image" src="<%= child.imageUrl%>">
-                                            <span class="bitraf"><%= child.username%></span>
-                                        </div>
-                                    <%});%>  
-                                </div>
-                            </div>
-                            <div id="clearAssignToBtn" class="ui button my-2">Clear Filters</div>
-                        </div>
-                    </div>
-                </div>
-            <%}%>
-            
-        </form>
-        
-            <div id="receiversSelectionWarning" class="ui red message d-none text-center">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                Cant send a project without selecting the receivers
-            </div>
-            <div class="my-2 d-flex justify-content-between">
-                <div>
-                    <%if(children.length > 0){%>
-                        <button id="resentProjectBtn" class="standardBtnStyle">Re-Send Project</button>
-                    <%}%>
-                    <a href="/users/<%= user.id%>/projects/sent/<%= project._id%>/edit" class="standardBtnStyle">Update</a>
-                    <button type="button" id="deleteProjectBtn" class="standardBtnStyle">Delete</button>
-                </div>
-                <a href="/users/<%= user._id%>/projects/sent" class="goBackBtn float-right py-3 px-5">Go Back</a>
-            </div>
-        
-        
-
+            <a href="/users/<%= user._id%>/projects/sent" class="goBackBtn float-right py-3 px-5">Go Back</a>
+        </div>
         <form id="deleteProjectFrm" action="/users/<%= user.id%>/projects/sent/<%= project._id%>?_method=DELETE" method="post"></form>
     </div>
 <%- include('../partials/projectsFooter')%>

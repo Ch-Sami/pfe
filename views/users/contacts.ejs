@@ -53,17 +53,20 @@
                                 <p class="mt-1 ml-5"><span class="inputsTitles"><%= contact.username%></span></p>
                             </div>
                             <div class="column col-3 d-flex justify-content-around text-align-center">
+                                
                                 <form action="/users/<%= user._id%>/mails/sent/new" method="get">
                                     <input type="text" value="<%= contact._id%>" class="d-none" name="sendTo">
                                     <button  class="contactsIcons" data-inverted="" data-tooltip="Send mail" data-position="top center"><i class="fas fa-envelope mt-1"></i></button>
                                     <!-- <i class="far fa-envelope mt-1"></i> -->
                                 </form>
                                 <a href="/users/<%= user._id%>/contacts/<%= contact._id%>/chat" class="contactsIcons" data-inverted="" data-tooltip="Chat" data-position="top center"><i class="fas fa-comments"></i></a>
-                                <form action="/users/<%= user._id%>/events/new" method="get">
-                                    <input type="text" value="<%= contact._id%>" class="d-none" name="addTo">
-                                    <button  class="contactsIcons" data-inverted="" data-tooltip="Plan an event" data-position="top center"><i class="fas fa-calendar-alt"></i></button>
-                                    <!-- <i class="far fa-calendar-alt"></i> -->
-                                </form>
+                                <%if(contact.isDescendant){%>
+                                    <form action="/users/<%= user._id%>/events/new" method="get">
+                                        <input type="text" value="<%= contact._id%>" class="d-none" name="addTo">
+                                        <button  class="contactsIcons" data-inverted="" data-tooltip="Plan an event" data-position="top center"><i class="fas fa-calendar-alt"></i></button>
+                                        <!-- <i class="far fa-calendar-alt"></i> -->
+                                    </form>
+                                <%}%>
                                 <a href="/users/<%= contact._id%>/profil" class="contactsIcons" data-inverted="" data-tooltip="Visit profil" data-position="top center"><i class="fas fa-address-card mt-1"></i></a>
                                 <!-- <i class="far fa-address-card mt-1"></i> -->
                                 <form action="/users/<%= user._id%>/contacts/<%= contact._id %>?_method=DELETE" method="post">

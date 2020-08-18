@@ -1,0 +1,49 @@
+<div id="progressContainer" class="my-5">
+    <label for="progress">
+        <span class="inputsTitles">Progress</span>
+        <%if(project.progressHistory.length > 0){%>
+            <div id="progressHistoryDropdown" class="ui left pointing dropdown link item">
+                <span id="progressUpdateInfo">
+                    <i id="progressUpdateInfoIcon" class="fas fa-exclamation"></i>
+                </span>
+                <div id="progressHistoryMenu" class="menu">
+                  <% project.progressHistory.forEach(function(elt){%>
+                    <div class="item" style="width: 430px;">
+                        <div class="row">
+                            <div class="column col-3">
+                                <span><strong class="bitraf" style="font-size: 1.1em;"><%=elt.oldProgress%></strong><i class="fas fa-percent" style="font-size: 0.8em;"></i> <i class="fas fa-long-arrow-alt-right mx-1"></i> <strong class="bitraf" style="font-size: 1.1em;"><%=elt.newProgress%></strong><i class="fas fa-percent" style="font-size: 0.8em;"></i></span>
+                            </div>
+                            <div class="column col-4">
+                                <span>by : </span><span class="bitraf"><%=elt.progressUpdateBy%></span>
+                            </div>
+                            <div class="column col-5">
+                                <span>at : </span><span class="bitraf"><%= elt.progressUpdateAt%></span>
+                            </div>    
+                        </div>
+                    </div>
+                    <%});%>
+                </div>
+            </div>
+        <%}%>
+    </label>
+    <div class="ui indicating progress" id="progress" >
+        <div class="bar"></div>
+    </div>
+    <div class="d-flex justify-content-center">
+        <div class="ui input d-none">
+            <input  id="projectProgress" type="text" name="project[progress]"  value="<%= project.progress%>">
+        </div>  
+        <%if(projectType == 'assigned'){%>
+            <button id="progressDown" type="button" class="btn btn-outline-danger mr-2"><i class="fa fa-minus" aria-hidden="true"></i></button>
+            <form id="saveProgressFrm" action="/users/<%= user.id%>/projects/<%= project._id%>/progress" method="post">
+                <div class="ui input">
+                    <input type="hidden" name="lastProgressUpdateBy" value="<%= user.username%>">
+                    <input  id="projectProgress2" type="hidden" name="updatedProgress"  value="<%= project.progress%>">
+                    <button id="saveProgress" class="ui inverted purple button">Save progress</button>
+                </div>  
+            </form>
+            <button id="progressUp" type="button" class="btn btn-outline-success ml-2"><i class="fa fa-plus" aria-hidden="true"></i></button>
+        <%}%>
+    </div>
+    
+</div>

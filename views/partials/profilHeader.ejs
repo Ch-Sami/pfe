@@ -15,7 +15,7 @@
         <link rel="stylesheet" href="/stylesheets/style1.css">
         <link href="/stylesheets/event.css" rel="stylesheet">
         <script src="/scripts/json-preview.js"></script>
-        
+        <link rel="stylesheet" href="/stylesheets/filesUploader.css">
         <link href='/stylesheets/profil.css' rel='stylesheet' />
         
 
@@ -169,6 +169,12 @@
                                             <a href="<%=notification.url%>"><strong class="bitraf mr-2"><i class="fas fa-exclamation-circle"></i></strong> <strong class="bitraf"><%=notification.plannerUsername%></strong> has updated <strong class="bitraf">"<%=notification.eventTitle%>"</strong> at <strong class="bitraf"><%=notification.at%></strong>.</a>
                                         <%}else if(notification.notifType == 'eventCancellation'){%>
                                             <a><strong class="bitraf mr-2"><i class="fas fa-exclamation-circle"></i></strong> <strong class="bitraf"><%=notification.plannerUsername%></strong> has canceled your <strong class="bitraf">"<%=notification.eventTitle%>"</strong> at <strong class="bitraf"><%=notification.at%></strong>.</a>
+                                        <%}else if(notification.notifType == 'projectDiscussion'){%>
+                                            <%if(notification.count > 1){%>
+                                                <a href="/users/<%=user._id%>/projects/<%=notification.projectType%>/<%=notification.projectId%>/discussion"><strong class="bitraf mr-2"><i class="far fa-comments"></i></strong> <strong class="bitraf" discussionOf="<%=notification.projectId%>"><%=notification.count%></strong> new messages in <strong class="bitraf"><%=notification.projectTitle%></strong>'s group discussion.</a>
+                                            <%}else{%>
+                                                <a href="/users/<%=user._id%>/projects/<%=notification.projectType%>/<%=notification.projectId%>/discussion"><strong class="bitraf mr-2"><i class="far fa-comments"></i></strong> <strong class="bitraf" discussionOf="<%=notification.projectId%>">1</strong> new message in <strong class="bitraf"><%=notification.projectTitle%></strong>'s group discussion.</a>
+                                            <%}%>
                                         <%}%>
                                     <%});%>
                                 <%}else{%>

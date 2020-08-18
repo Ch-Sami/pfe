@@ -111,18 +111,7 @@
             <input type="hidden" id="filesArrayLength" value="<%= files.length%>">
             
             <!-- files to add -->
-            <div id="filesUploadContainer">
-                <div>
-                    <label id="uploadLable" for="upload">
-                        <input type="file" class="fileInput" id="upload" name="files" multiple>
-                        <span id="lableTextSpan">Add Files</span>
-                        <i class="fas fa-paperclip"></i>
-                    </label>
-                </div>
-                <div class="files">
-                    <ul class="files_ul"></ul>
-                </div>
-            </div>
+            <%- include('./filesUploader') %>
             
             
             <div class="field my-1 d-none">

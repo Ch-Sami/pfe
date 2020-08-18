@@ -132,9 +132,10 @@ $('#progressUp').on('click' ,function(){
   });
   }
 });
-$('#saveProgress').on('click' ,function(){
+
+$('#saveProgressFrm').on('submit' ,function(){
   $('#projectProgress2').val($('#projectProgress').val());
-  $('#saveProgressFrm').submit();
+  return true;
 });
 
 $('#progressUpdateInfo')
@@ -145,64 +146,64 @@ $('#progressUpdateInfo')
   });
 
 
-  let state = {};
+  // let state = {};
 
-  // state management
-  function updateState(newState) {
-    state = { ...state, ...newState };
-  }
-  function typeOf(obj) {
-    return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
-  }
-  // event handlers
-  $("#upload").change(function(e) {
-    let files = document.getElementsByClassName("fileInput")[0].files;
-    let filesArr = Array.from(files);
-    updateState({ files: files, filesArr: filesArr });
+  // // state management
+  // function updateState(newState) {
+  //   state = { ...state, ...newState };
+  // }
+  // function typeOf(obj) {
+  //   return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
+  // }
+  // // event handlers
+  // $("#upload").change(function(e) {
+  //   let files = document.getElementsByClassName("fileInput")[0].files;
+  //   let filesArr = Array.from(files);
+  //   updateState({ files: files, filesArr: filesArr });
   
-    renderFileList();
-  });
+  //   renderFileList();
+  // });
   
   
-  $(".files").on("click", "li > div > div > i", function(e) {
-    let key = $(this)
-      .parent()
-      .parent()
-      .parent()
-      .attr("key");
-    let curArr = state.filesArr;
-    curArr.splice(key, 1);
-    updateState({ filesArr: curArr });
-    renderFileList();
-  });
+  // $(".files").on("click", "li > div > div > i", function(e) {
+  //   let key = $(this)
+  //     .parent()
+  //     .parent()
+  //     .parent()
+  //     .attr("key");
+  //   let curArr = state.filesArr;
+  //   curArr.splice(key, 1);
+  //   updateState({ filesArr: curArr });
+  //   renderFileList();
+  // });
   
-  // render functions
-  function renderFileList() {
-    let fileMap = state.filesArr.map((file, index) => {
-      let suffix = "bytes";
-      let size = file.size;
-      if (size >= 1024 && size < 1024000) {
-        suffix = "KB";
-        size = Math.round(size / 1024 * 100) / 100;
-      } else if (size >= 1024000) {
-        suffix = "MB";
-        size = Math.round(size / 1024000 * 100) / 100;
-      }
+  // // render functions
+  // function renderFileList() {
+  //   let fileMap = state.filesArr.map((file, index) => {
+  //     let suffix = "bytes";
+  //     let size = file.size;
+  //     if (size >= 1024 && size < 1024000) {
+  //       suffix = "KB";
+  //       size = Math.round(size / 1024 * 100) / 100;
+  //     } else if (size >= 1024000) {
+  //       suffix = "MB";
+  //       size = Math.round(size / 1024000 * 100) / 100;
+  //     }
       
-      return `<li class='.file_li' key="${index}">
-                <div class="row" >
-                  <div class="column col-11">
-                    ${file.name}
-                    <span class="file-size">${size} ${suffix}</span>
-                  </div>
-                  <div class="column col-1 px-0 d-flex justify-content-center align-items-end">
-                    <i class="fas fa-trash-alt file_delete_i"></i>
-                  </div>
-                </div>
-              </li>`;     
-    });
-    $(".files_ul").html(fileMap);
-  }
+  //     return `<li class='.file_li' key="${index}">
+  //               <div class="row" >
+  //                 <div class="column col-11">
+  //                   ${file.name}
+  //                   <span class="file-size">${size} ${suffix}</span>
+  //                 </div>
+  //                 <div class="column col-1 px-0 d-flex justify-content-center align-items-end">
+  //                   <i class="fas fa-trash-alt file_delete_i"></i>
+  //                 </div>
+  //               </div>
+  //             </li>`;     
+  //   });
+  //   $(".files_ul").html(fileMap);
+  // }
   
 
 
@@ -245,6 +246,8 @@ $('#addProjectBtn').on('click' ,function(){
     newProjectEditor.save().then((savedData) => {
       $('#projectDoc').text(JSON.stringify(savedData));
       totalMailSize =+ JSON.stringify(savedData);
+      $('.file-chooser__input').attr('name','');
+      $('.file-chooser__input').remove();
       $('#newProjectFrm').submit();
     });
   }else{
@@ -252,13 +255,31 @@ $('#addProjectBtn').on('click' ,function(){
   }
 });
 
+//sending an existing project
+$('#sendProjectBtn').on('click' ,function(){
+  if($('#assignedToInput').val() == ''){
+    $('#assignedToInput').attr('name' ,'');
+  }else{
+    $('#assignedToInput').attr('name' ,'assignedTo');
+  }
+  if($('#sentToInput').val() == ''){
+    $('#sentToInput').attr('name' ,'');
+  }else{
+    $('#sentToInput').attr('name' ,'sentTo');
+  }
+  if($('#assignedToInput').val() != '' || $('#sentToInput').val() != ''){
+    $('#sendProjectFrm').submit();
+  }else{
+    $('#receiversSelectionWarning').removeClass('d-none');
+  }
+});
 
+//unassigning a project
 $('#unassignBtn').on('click' ,function(){
   $('#unassignFrm').submit();
 });
-// $('#resendProjectBtn').on('click' ,function(){
-//   $('#resentProjectFrm').submit();
-// });
+
+//deleting a project
 $('#deleteProjectBtn').on('click' ,function(){
   $('#deleteProjectFrm').submit();
 });

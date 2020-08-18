@@ -79,45 +79,64 @@ let io = socketio(server);
 //necessary requires
 const Message = require('./modules/message');
 const Tree = require('./modules/projectTree');
+const { resolve } = require("path");
+const { reject } = require("async");
 
 //help functions
 function savePrivateMessage(privateMessage){
-    var message = new Message({
-        sent_by: privateMessage.sender,
-        sent_to: privateMessage.receiver,
-        sent_at: privateMessage.at,
-        text: privateMessage.text
-    });
-    message.save((err ,message)=>{
-        if(err){throw err;}
-        User.findById(privateMessage.sender ,(err ,user)=>{
-            if(err){throw err;}
-            user.sentMessages.push(message);
-            user.save(()=>{
-                User.findById(privateMessage.receiver ,(err ,contact)=>{
-					if(err){throw err;}
-					contact.receivedMessages.push(message);
-					//save new private message notification
-					var count = 1;
-					contact.messageNotifications.array.forEach(notification => {
-						if(notification.senderId == privateMessage.sender){
-							count = notification.count + 1;
-							contact.messageNotifications.array.splice(contact.messageNotifications.array.indexOf(notification) ,1);
-						}
-					});
-					const newNotif = {
-						senderId: privateMessage.sender,
-						senderUsername: privateMessage.senderUsername,
-						count: count,
-						at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-					};
-					contact.messageNotifications.array.push(newNotif);
-					contact.messageNotifications.count = contact.messageNotifications.count + 1;
-                    contact.save();
-                });
-            });
-        });
-    });
+	const promise = new Promise((resolve ,reject) => {
+    	var message = new Message({
+    	    sent_by: privateMessage.sender,
+    	    sent_to: privateMessage.receiver,
+    	    sent_at: privateMessage.at,
+    	    text: privateMessage.text
+    	});
+    	message.save((err ,message)=>{
+    	    if(err){reject(err);}
+    	    User.findById(privateMessage.sender ,(err ,user)=>{
+    	        if(err){reject(err);}
+    	        user.sentMessages.push(message);
+    	        user.save(()=>{
+    	            User.findById(privateMessage.receiver ,(err ,contact)=>{
+						if(err){throw err;}
+						contact.receivedMessages.push(message);
+						//save new private message notification
+						var count = 1;
+						contact.messageNotifications.array.forEach(notification => {
+							if(notification.senderId == privateMessage.sender){
+								count = notification.count + 1;
+								contact.messageNotifications.array.splice(contact.messageNotifications.array.indexOf(notification) ,1);
+							}
+						});
+						const newNotif = {
+							senderId: privateMessage.sender,
+							senderUsername: privateMessage.senderUsername,
+							count: count,
+							at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+						};
+						contact.messageNotifications.array.push(newNotif);
+						contact.messageNotifications.count = contact.messageNotifications.count + 1;
+    	                contact.save( () =>{
+							resolve(true);
+						});
+    	            });
+    	        });
+    	    });
+		});
+	});
+}
+
+function deleteNewReceivedPrivateMessageNotification(privateMessage){
+	User.findById(privateMessage.receiver ,(err ,user) =>{
+		if(err){throw err;}
+		user.messageNotifications.array.forEach(notification =>{
+			if(notification.senderId == privateMessage.sender){
+				user.messageNotifications.count -= notification.count;
+				user.messageNotifications.array.splice(user.messageNotifications.array.indexOf(notification) ,1);
+			}
+		});
+		user.save();
+	});
 }
 
 function saveProjectDiscussionMessage(projectDiscussionMessage){
@@ -152,39 +171,18 @@ function saveProjectDiscussionMessage(projectDiscussionMessage){
 	});
 	return myPromise;
 }
-
-// function saveNewReceivedPrivateMessageNotification(privateMessage){
-// 	const promise = new Promise((resolve ,reject) => {
-// 		User.findById(privateMessage.receiver ,(err ,user) => {
-// 			if(err){reject(err);}
-// 			var count = 1;
-// 			user.messageNotifications.array.forEach(notification => {
-// 				if(notification.senderId == privateMessage.sender){
-// 					count = notification.count + 1;
-// 					user.messageNotifications.array.splice(user.messageNotifications.array.indexOf(notification) ,1);
-// 				}
-// 			});
-// 			const newNotif = {
-// 				senderId: privateMessage.sender,
-// 				senderUsername: privateMessage.senderUsername,
-// 				count: count,
-// 				at: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-// 			};
-// 			user.messageNotifications.array.push(newNotif);
-// 			user.messageNotifications.count = user.messageNotifications.count + 1;
-// 			resolve(user.messageNotifications);
-// 		});
-// 	});
-// 	promise
-// 	.then(updatedMessageNotifications => {
-// 		User.findByIdAndUpdate(privateMessage.receiver ,{$set:{messageNotifications:updatedMessageNotifications}} ,{new: true} ,(err ,user) => {
-// 			if(err){throw err;}
-// 		});
-// 	})
-// 	.catch(err => {
-// 		throw err;
-// 	});
-// }
+function deleteNewProjectDiscussionMessageNotification(projectDiscussionMessage){
+	User.findById(projectDiscussionMessage.receiver ,(err ,user) =>{
+		if(err){throw err;}
+		user.bellNotifications.array.forEach(notification =>{
+			if(notification.notifType == 'projectDiscussion' && notification.projectId == projectDiscussionMessage.projectId){
+				user.bellNotifications.count -= notification.count;
+				user.bellNotifications.array.splice(user.bellNotifications.array.indexOf(notification) ,1);
+			}
+		});
+		user.save();
+	});
+}
 
 function clearMsgNotifCount(userId){
 	User.findById(userId ,(err ,user) => {
@@ -201,6 +199,58 @@ function clearMailNotifCount(userId){
 		user.mailNotifications.array.forEach(function(notification){
 			if(notification.notifType == 'mailSendFailed' || notification.notifType == 'notAbleToSendMailCuzFullSentMailsStorage' || notification.notifType == 'almostFullReceivedMailsStorage' || notification.notifType == 'almostFullSentMailsStorage' ){
 				user.mailNotifications.array.splice(user.mailNotifications.array.indexOf(notification) ,1);
+			}
+		});
+		user.save();
+	});
+}
+
+function deleteNewMailNotification(newMailInfos){
+	User.findById(newMailInfos.receiver ,(err ,user) => {
+		if(err){throw err;}
+		user.mailNotifications.array.forEach(notification => {
+			if(notification.notifType == 'newMail' && notification.senderId == newMailInfos.senderId){
+				user.mailNotifications.count -= notification.count;
+				user.mailNotifications.array.splice(user.mailNotifications.array.indexOf(notification) ,1);
+			}
+		});
+		user.save();
+	});
+}
+
+function deleteNewMailReplyNotification(newMailReplyInfos){
+	User.findById(newMailReplyInfos.receiver ,(err ,user) => {
+		if(err){throw err;}
+		user.mailNotifications.array.forEach(notification => {
+			if(notification.notifType == 'newReply' && notification.senderId == newMailReplyInfos.senderId){
+				user.mailNotifications.count -= 1;
+				user.mailNotifications.array.splice(user.mailNotifications.array.indexOf(notification) ,1);
+			}
+		});
+		user.save();
+	});
+}
+
+function deleteNewReceivedProjectNotification(newReceivedProject){
+	User.findById(newReceivedProject.receiver ,(err ,user) => {
+		if(err){throw err;}
+		user.bellNotifications.array.forEach(notification => {
+			if(notification.notifType == 'receivedProject'){
+				user.bellNotifications.count -= notification.count;
+				user.bellNotifications.array.splice(user.bellNotifications.array.indexOf(notification) ,1);
+			}
+		});
+		user.save();
+	});
+}
+
+function deleteNewAssignedProjectNotification(newAssignedProject){
+	User.findById(newAssignedProject.receiver ,(err ,user) => {
+		if(err){throw err;}
+		user.bellNotifications.array.forEach(notification => {
+			if(notification.notifType == 'assignedProject'){
+				user.bellNotifications.count -= notification.count;
+				user.bellNotifications.array.splice(user.bellNotifications.array.indexOf(notification) ,1);
 			}
 		});
 		user.save();
@@ -229,17 +279,33 @@ io.on('connection' ,socket => {
 
 	//private message
 	socket.on('privateMessage' ,privateMessage => {
-		socket.to(privateMessage.receiver).emit('privateMessage' ,privateMessage);
-		savePrivateMessage(privateMessage);
+		async function myAsyncFunc(){
+			try{
+				await savePrivateMessage(privateMessage);
+			}catch(err){
+				return err;
+			}
+		}
+		myAsyncFunc()
+		.then(result => {
+			socket.to(privateMessage.receiver).emit('privateMessage' ,privateMessage);
+		})
+		.catch(err =>{
+			throw err;
+		});
 	});
-	socket.on('saveNewReceivedPrivateMessageNotification' ,privateMessage => {
-		saveNewReceivedPrivateMessageNotification(privateMessage);
-	});
+	
 	socket.on('clearMsgNotifCount' ,userId => {
 		clearMsgNotifCount(userId);
 	});
+	socket.on('deleteNewReceivedPrivateMessageNotification' ,privateMessage =>{
+		deleteNewReceivedPrivateMessageNotification(privateMessage);
+	});
 
 	//mails
+	socket.on('deleteNewMailNotification' ,newMailInfos =>{
+		deleteNewMailNotification(newMailInfos);
+	});
 	socket.on('newReply' ,visibleTo => {
 		visibleTo.forEach(function(vt){
 			socket.to(vt).emit('newReply');
@@ -251,7 +317,9 @@ io.on('connection' ,socket => {
 	socket.on('saveNewMailReplyNotification' ,newMailReplyInfos =>{
 		saveNewMailReplyNotification(newMailReplyInfos);
 	});
-	
+	socket.on('deleteNewMailReplyNotification' ,newMailReplyInfos => {
+		deleteNewMailReplyNotification(newMailReplyInfos);
+	});
 	socket.on('clearMailNotifCount' ,userId => {
 		clearMailNotifCount(userId);
 	});
@@ -261,7 +329,41 @@ io.on('connection' ,socket => {
 		saveProjectDiscussionMessage(projectDiscussionMessage)
 		.then( receivers => {
 			receivers.forEach(function(receiver){
-				socket.to(receiver).emit('projectDiscussionMessage' ,projectDiscussionMessage);
+				//
+				//
+				if(receiver == projectDiscussionMessage.userId){
+					socket.to(receiver).emit('projectDiscussionMessage' ,projectDiscussionMessage);
+				}else{
+					User.findById(receiver ,(err ,user) => {
+						var count = 0;
+						user.bellNotifications.array.forEach(notification => {
+							if(notification.projectId == projectDiscussionMessage.projectId && notification.notifType == 'projectDiscussion'){
+								count = notification.count;
+								user.bellNotifications.array.splice(user.bellNotifications.array.indexOf(notification) ,1);
+							}
+						});
+						const newNotif = {
+							count: count + 1,
+							notifType: 'projectDiscussion',
+							projectId: projectDiscussionMessage.projectId,
+							projectTitle: projectDiscussionMessage.projectTitle,
+							projectType: ''
+						}
+						if(user.sentProjects.indexOf(projectDiscussionMessage.projectId) > -1){
+							newNotif.projectType = 'sent';
+						}else if(user.assignedProjects.indexOf(projectDiscussionMessage.projectId) > -1){
+							newNotif.projectType = 'assigned';
+						}else if(user.receivedProjects.indexOf(projectDiscussionMessage.projectId) > -1){
+							newNotif.projectType = 'received';
+						}
+						projectDiscussionMessage.projectType = newNotif.projectType;
+						user.bellNotifications.count += 1;
+						user.bellNotifications.array.push(newNotif);
+						user.save(()=>{
+							socket.to(receiver).emit('projectDiscussionMessage' ,projectDiscussionMessage);
+						});
+					});
+				}
 			});
 		})
 		.catch(err => {
@@ -269,6 +371,17 @@ io.on('connection' ,socket => {
 		});
 	});
 
+	socket.on('deleteNewProjectDiscussionMessageNotification' ,projectDiscussionMessage =>{
+		deleteNewProjectDiscussionMessageNotification(projectDiscussionMessage);
+	});
+
+	socket.on('deleteNewReceivedProjectNotification' ,newReceivedProject =>{
+		deleteNewReceivedProjectNotification(newReceivedProject);
+	});
+
+	socket.on('deleteNewAssignedProjectNotification' ,newAssignedProject => {
+		deleteNewAssignedProjectNotification(newAssignedProject);
+	});
 
 	socket.on('clearBellNotifCount' ,userId => {
 		clearBellNotifCount(userId);

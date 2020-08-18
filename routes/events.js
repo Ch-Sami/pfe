@@ -88,9 +88,22 @@ router.get("/users/:id/events/new" ,(req ,res)=>{
     User.findById(req.params.id ,(err ,user)=>{
         if(err){throw err;}
         else{
-            User.find({} ,'-events -sentProjects -receivedProjects -tags -office -firstName -lastName -area -isLoggedUser -assignedProjects -sentMails -receivedMails -contacts -unit' ,(err ,usersList)=>{
+            user.getChildren((err ,descendants) => {
                 if(err){throw err;}
                 else{
+                    var usersList = [];
+                    usersList.push({
+                        _id: user._id,
+                        username: 'Self',
+                        imageUrl: user.imageUrl
+                    });
+                    descendants.forEach(descendant => {
+                        usersList.push({
+                            _id: descendant._id,
+                            username: descendant.username,
+                            imageUrl: descendant.imageUrl
+                        });
+                    });
                     if(req.query.addTo == 'self&others'){
                         res.render("users/newEvent" ,{user: user ,addTo: 'self' ,usersList: usersList});
                     }else{
@@ -281,21 +294,38 @@ router.get("/users/:id/events/:evtId" ,(req ,res)=>{
             .then(updatedBellNotifications => {
                 User.findByIdAndUpdate(user._id ,{$set:{bellNotifications:updatedBellNotifications}} ,{new: true} ,(err ,user) => {
                     if(err){throw err;}
-                    User.find({} ,'-events -sentProjects -assignedProjects -receivedProjects -unit -area -profileUrl -sentMails -receivedMails -contacts' ,(err ,usersList)=>{
+                    user.getChildren( (err ,descendants) => {
                         if(err){throw err;}
-                        var filtredUsersList = [];
-                        usersList.forEach(elt =>{
+                        var filtredDescendants = [];
+                        descendants.forEach(descendant =>{
                             var trv = false
                             myEvent.plannedFor.forEach(pf =>{
-                                if(elt.id == pf.id){
+                                if(descendant.id == pf.id){
                                     trv = true;
                                 }
                             });
                             if(trv == false){
-                                filtredUsersList.push(elt);
+                                filtredDescendants.push({
+                                    _id: descendant._id,
+                                    username: descendant.username,
+                                    imageUrl: descendant.imageUrl
+                                });
                             }
                         });
-                        res.render("users/showEvent" ,{user: user ,event: myEvent ,usersList: filtredUsersList});
+                        var usersList = [];
+                        usersList.push({
+                            _id: user._id,
+                            username: 'Self',
+                            imageUrl: user.imageUrl
+                        });
+                        filtredDescendants.forEach(descendant => {
+                            usersList.push({
+                                _id: descendant._id,
+                                username: descendant.username,
+                                imageUrl: descendant.imageUrl
+                            });
+                        });
+                        res.render("users/showEvent" ,{user: user ,event: myEvent ,usersList: usersList});
                     }); 
                 });
             });
@@ -389,13 +419,11 @@ router.delete("/users/:id/events/:evtId" ,(req ,res)=>{
         }
         if(req.body.deleter == req.params.id){
             if(event.usersThatDidNotDelete.length < 1){
-                console.log(1);////////////////////////////////////////////////////////////
                 Event.findByIdAndRemove(req.params.evtId ,(err) => { 
                     if(err){throw err;}
                     res.redirect("/users/"+req.body.deleter+"/events/calendar");
                 });
             }else{
-                console.log(2);////////////////////////////////////////////////////////////
                 event.save(()=>{
                     User.findById(req.params.id ,(err ,user)=>{
                         if(err){throw err}
@@ -410,7 +438,6 @@ router.delete("/users/:id/events/:evtId" ,(req ,res)=>{
                 });
             }
         }else{
-            console.log(3);////////////////////////////////////////////////////////////
             User.findById(event.planner ,(err ,planner)=>{
                 if(err){throw err;}
                 event.save((err ,event)=>{
@@ -444,13 +471,11 @@ router.delete("/users/:id/events/:evtId" ,(req ,res)=>{
                         user.bellNotifications.count = user.bellNotifications.count + 1;
                         user.save(()=>{
                             if(event.usersThatDidNotDelete.length < 1){
-                                console.log(4);////////////////////////////////////////////////////////////
                                 Event.findByIdAndRemove(req.params.evtId ,(err) => { 
                                     if(err){throw err;}
                                     res.redirect("/users/"+req.body.deleter+"/events/planned");
                                 });
                             }else{
-                                console.log(5);////////////////////////////////////////////////////////////
                                 event.save(() => {
                                     res.redirect("/users/"+req.body.deleter+"/events/"+event._id);
                                 });

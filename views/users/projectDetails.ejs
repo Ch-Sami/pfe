@@ -1,0 +1,20 @@
+<div class="row">
+    <div class="column col-12 col-sm-6 mb-3">
+        <label for="projectTitle"><span class="inputsTitles">Title</span></label>
+        <input id="projectTitle" class="inputStyleClone" type="text" name="project[title]" placeholder="Title" value="<%= project.title%>" disabled>
+    </div>
+    <div class="column col-12 col-sm-6 mb-3">
+        <label for="projectType"><span class="inputsTitles">Type</span></label>
+        <input id="projectType" class="inputStyleClone" type="text" name="project[type]" value="project" disabled>
+    </div>
+</div>
+<div class="row">
+    <div class="column col-12 col-sm-6 mb-3">
+        <label for="startDate"><span id="start" class="inputsTitles">Start</span></label>
+        <input id="startDate" class="inputStyleClone" type="text" name="project[start]" placeholder="Start date" value="<%= project.start%>" disabled/>
+    </div>
+    <div class="column col-12 col-sm-6 mb-3">
+        <label for="endDate"><span class="inputsTitles">End</span></label>
+        <input id="endDate" class="inputStyleClone" type="text" name="project[end]" placeholder="End date" value="<%= project.end%>" disabled/>
+    </div>
+</div>
